@@ -1,0 +1,1772 @@
+ Soil Water Balance Code compiled on: Nov 20 2012 09:23:55
+ Model execution started: 20191205_165703
+ Running recharge.ctl
+ A downhill routing table exists from a previous run...
+ >> GRID 660 338  1476100   5017100   1542100   5050900  100.0
+ Reading in grid dimensions
+    NX:    660
+    NY:    338
+    X0:   1476100.0000
+    Y0:   5017100.0000
+    X1:   1542100.0000
+    Y1:   5050900.0000
+    grid cell size:    100.0
+    total number of gridcells:   223080
+ >> GRID_LENGTH_UNITS METERS
+ Setting grid length units
+ >> SUPPRESS_SCREEN_OUTPUT
+ >> GROWING_SEASON 133 268 TRUE
+ Reading growing season
+ Northern Hemisphere =  T
+ >> ANSI_COLORS FALSE
+ Setting ANSI color screen output option
+ >> RLE_MULTIPLIER 1000
+ Setting the value for the RLE multiplier
+ >> PRECIPITATION SINGLE_STATION
+ Configuring precipitation data input
+   Precip data will be read for a single station
+ >> TEMPERATURE SINGLE_STATION
+ Configuring temperature data input
+   Temperature data will be read for a single station
+ >> OUTPUT_GRID_SUFFIX asc
+ Setting output grid file suffix
+ >> INITIAL_ABSTRACTION_METHOD HAWKINS
+ Setting initial abstraction method
+ >> INITIAL_FROZEN_GROUND_INDEX CONSTANT 100
+ Initializing continuous frozen ground index
+ >> UPPER_LIMIT_CFGI 83.
+ Initializing upper boundary for continuous frozen ground index threshold
+ Ground will be considered frozen at a CFGI value of:    83.0000000    
+ >> LOWER_LIMIT_CFGI 55.
+ Initializing lower boundary for continuous frozen ground index threshold
+ Ground will be considered unfrozen at a CFGI value of:    55.0000000    
+ >> FLOW_DIRECTION ARC_GRID input\flow_direction.asc
+ Populating flow direction grid
+ Summary of integer grid data values
+      43191 grid cells have value:        1
+      26010 grid cells have value:        2
+     133161 grid cells have value:        4
+      11074 grid cells have value:        8
+       8794 grid cells have value:       16
+         47 grid cells have value:       32
+        565 grid cells have value:       64
+        238 grid cells have value:      128
+ Total number of grid cells:                      223080
+ Total number of grid cells with value >= 0:      223080
+ >> SOIL_GROUP ARC_GRID input\soils_hyd_grp.asc
+ Populating soil group grid
+ Summary of integer grid data values
+     223080 grid cells have value:        2
+ Total number of grid cells:                      223080
+ Total number of grid cells with value >= 0:      223080
+ >> LAND_USE ARC_GRID input\land_cover.asc
+ Populating land use grid
+ Summary of integer grid data values
+      95008 grid cells have value:        1
+     128072 grid cells have value:        2
+ Total number of grid cells:                      223080
+ Total number of grid cells with value >= 0:      223080
+ >> LAND_USE_LOOKUP_TABLE std_input\LU_lookup_WISCLAND_w_forested_hillslope.txt
+ Reading land-use lookup table
+ ==> allocating memory for           2 landuse types within lookup table
+ ==> allocating memory for           4 soil types within lookup table
+ 
+ -----------------------------------------------------------
+ Reading landuse record number            1  of            2
+ 
+   landuse type =            1
+   landuse description = 1.1   High Intensity (commercial and business)
+   assumed % imperviousness = 0.85
+   curve number for soil group           1 :    89.0000000    
+   curve number for soil group           2 :    92.0000000    
+   curve number for soil group           3 :    94.0000000    
+   curve number for soil group           4 :    95.0000000    
+   MAXIMUM RECHARGE for soil group           1 :    2.00000000    
+   MAXIMUM RECHARGE for soil group           2 :   0.600000024    
+   MAXIMUM RECHARGE for soil group           3 :   0.239999995    
+   MAXIMUM RECHARGE for soil group           4 :   0.119999997    
+   Interception value for growing season =    0.00000000    
+   Interception value for non-growing season =    0.00000000    
+   ROOTING DEPTH for soil group           1 :    3.32999992    
+   ROOTING DEPTH for soil group           2 :    3.32999992    
+   ROOTING DEPTH for soil group           3 :    3.32999992    
+   ROOTING DEPTH for soil group           4 :    2.22000003    
+ 
+ -----------------------------------------------------------
+ Reading landuse record number            2  of            2
+ 
+   landuse type =            2
+   landuse description = 2 AGRICULTURE
+   assumed % imperviousness = **
+   curve number for soil group           1 :    65.0000000    
+   curve number for soil group           2 :    75.0000000    
+   curve number for soil group           3 :    82.0000000    
+   curve number for soil group           4 :    86.0000000    
+   MAXIMUM RECHARGE for soil group           1 :    2.00000000    
+   MAXIMUM RECHARGE for soil group           2 :   0.600000024    
+   MAXIMUM RECHARGE for soil group           3 :   0.239999995    
+   MAXIMUM RECHARGE for soil group           4 :   0.119999997    
+   Interception value for growing season =    0.00000000    
+   Interception value for non-growing season =    0.00000000    
+   ROOTING DEPTH for soil group           1 :    3.32999992    
+   ROOTING DEPTH for soil group           2 :    3.60999990    
+   ROOTING DEPTH for soil group           3 :    3.40000010    
+   ROOTING DEPTH for soil group           4 :    2.10999990    
+ >> WATER_CAPACITY ARC_GRID input\soils_awc.asc
+ Populating water capacity grid
+ Water capacity grid MINIMUM VALUE:   2.20000005    
+ Water capacity grid MAXIMUM VALUE:   2.20000005    
+ >> SM T-M std_input\soil-moisture-retention-extended.grd
+ Configuring soil-moisture options
+ Reading std_input\soil-moisture-retention-extended.grd for soil-moisture retention information
+ Read in the soil-moisture retention file with the following dimensions:
+ iNX =           35
+ iNY =          408
+ iDataType =            1
+ rX0, rX1 =   0.50000000000000000        17.500000000000000     
+ rY0, rY1 =   -40.700000000000003        0.0000000000000000     
+ >> INITIAL_SOIL_MOISTURE CONSTANT 100
+ Populating initial moisture grid
+ Initial soil moisture grid MINIMUM VALUE:   100.000000    
+ Initial soil moisture grid MAXIMUM VALUE:   100.000000    
+ >> INITIAL_SNOW_COVER CONSTANT 0
+ Reading initial snow cover
+ >> RUNOFF C-N DOWNHILL
+ Configuring runoff options
+ Configuring the curve number runoff model
+ Configuring the downhill runoff procedure
+ >> ET J-H 42 0.23 0.25 0.5
+ Configuring ET options
+ Configuring Jensen-Haise PET model
+ >> DISLIN_PARAMETERS RECHARGE
+ Setting the values for DISLIN parameters
+ >> SET_Z_AXIS_RANGE DAILY 0 1.5 0.1
+ >> SET_Z_AXIS_RANGE MONTHLY 0 10 1.0
+ >> SET_Z_AXIS_RANGE ANNUAL 0 50 5.
+ >> Z_AXIS_TITLE RECHARGE, IN INCHES
+ >> DISLIN_PARAMETERS ACT_ET
+ Setting the values for DISLIN parameters
+ >> SET_Z_AXIS_RANGE DAILY 0 0.8 0.05
+ >> SET_Z_AXIS_RANGE MONTHLY 0 10. 0.5
+ >> SET_Z_AXIS_RANGE ANNUAL 0 40. 5.0
+ >> Z_AXIS_TITLE ACTUAL ET, IN INCHES
+ >> DISLIN_PARAMETERS POT_ET
+ Setting the values for DISLIN parameters
+ >> SET_Z_AXIS_RANGE DAILY 0 0.8 0.05
+ >> SET_Z_AXIS_RANGE MONTHLY 0 10. 0.5
+ >> SET_Z_AXIS_RANGE ANNUAL 0 45. 5.
+ >> Z_AXIS_TITLE POTENTIAL ET, IN INCHES
+ >> DISLIN_PARAMETERS SM_APWL
+ Setting the values for DISLIN parameters
+ >> SET_Z_AXIS_RANGE DAILY -20. 0. 2.0
+ >> Z_AXIS_TITLE ACCUMULATED POTENTIAL WATER LOSS, IN INCHES
+ >> SET_COLOR_TABLE RRAIN
+ >> OUTPUT_OPTIONS RECHARGE NONE GRID PLOT
+ Setting the output options
+ Options have been set for: RECHARGE
+ STAT_INFO(iVarNum)%iAnnualOutput:            2
+ STAT_INFO(iVarNum)%iMonthlyOutput:            1
+ STAT_INFO(iVarNum)%iDailyOutput:            0
+ STAT_INFO(iVarNum)%iNetCDFOutput:            0
+ >> OUTPUT_OPTIONS SM_APWL NONE NONE NONE
+ Setting the output options
+ Options have been set for: SM_APWL
+ STAT_INFO(iVarNum)%iAnnualOutput:            0
+ STAT_INFO(iVarNum)%iMonthlyOutput:            0
+ STAT_INFO(iVarNum)%iDailyOutput:            0
+ STAT_INFO(iVarNum)%iNetCDFOutput:            0
+ >> OUTPUT_OPTIONS SNOWCOVER NONE NONE NONE
+ Setting the output options
+ Options have been set for: SNOWCOVER
+ STAT_INFO(iVarNum)%iAnnualOutput:            0
+ STAT_INFO(iVarNum)%iMonthlyOutput:            0
+ STAT_INFO(iVarNum)%iDailyOutput:            0
+ STAT_INFO(iVarNum)%iNetCDFOutput:            0
+ >> OUTPUT_OPTIONS INTERCEPTION NONE NONE PLOT
+ Setting the output options
+ Options have been set for: INTERCEPTION
+ STAT_INFO(iVarNum)%iAnnualOutput:            2
+ STAT_INFO(iVarNum)%iMonthlyOutput:            0
+ STAT_INFO(iVarNum)%iDailyOutput:            0
+ STAT_INFO(iVarNum)%iNetCDFOutput:            0
+ >> OUTPUT_OPTIONS RUNOFF_OUTSIDE NONE NONE PLOT
+ Setting the output options
+ Options have been set for: RUNOFF_OUTSIDE
+ STAT_INFO(iVarNum)%iAnnualOutput:            2
+ STAT_INFO(iVarNum)%iMonthlyOutput:            0
+ STAT_INFO(iVarNum)%iDailyOutput:            0
+ STAT_INFO(iVarNum)%iNetCDFOutput:            0
+ >> OUTPUT_OPTIONS ACT_ET NONE NONE NONE
+ Setting the output options
+ Options have been set for: ACT_ET
+ STAT_INFO(iVarNum)%iAnnualOutput:            0
+ STAT_INFO(iVarNum)%iMonthlyOutput:            0
+ STAT_INFO(iVarNum)%iDailyOutput:            0
+ STAT_INFO(iVarNum)%iNetCDFOutput:            0
+ >> OUTPUT_OPTIONS POT_ET NONE GRID PLOT
+ Setting the output options
+ Options have been set for: POT_ET
+ STAT_INFO(iVarNum)%iAnnualOutput:            2
+ STAT_INFO(iVarNum)%iMonthlyOutput:            1
+ STAT_INFO(iVarNum)%iDailyOutput:            0
+ STAT_INFO(iVarNum)%iNetCDFOutput:            0
+ >> OUTPUT_FORMAT ARC_GRID
+ Selecting ARC output format
+ >> SOLVE climate\MSN_1989.txt
+ Solving the model
+ Skipping: Month Day Year TAVG (F) Precipitation (in) Avg Rel Hum (%) TMAX (F) TMIN (F) WINDVEL (m/sec) Min Rel Hum (%) Sunshine
+
+ Opened binary file for INTERCEPTION on unit 201
+ start date offset: 65
+ end date offset: 77
+ end-of-header offset: 89
+NX:  660
+NY:  338
+data type:    2
+cell size:     100.000
+length units:    0
+SI var:    6
+RLE_MULT: 1000
+RL__OFFSET:       0.000
+X0, X1: 1476100.000    1542100.000
+Y0, Y1: 5017100.000    5050900.000
+ Opened binary file for RUNOFF_OUTSIDE on unit 202
+ start date offset: 65
+ end date offset: 77
+ end-of-header offset: 89
+NX:  660
+NY:  338
+data type:    2
+cell size:     100.000
+length units:    0
+SI var:    8
+RLE_MULT: 1000
+RL__OFFSET:       0.000
+X0, X1: 1476100.000    1542100.000
+Y0, Y1: 5017100.000    5050900.000
+ Opened binary file for RECHARGE on unit 203
+ start date offset: 65
+ end date offset: 77
+ end-of-header offset: 89
+NX:  660
+NY:  338
+data type:    2
+cell size:     100.000
+length units:    0
+SI var:   11
+RLE_MULT: 1000
+RL__OFFSET:       0.000
+X0, X1: 1476100.000    1542100.000
+Y0, Y1: 5017100.000    5050900.000
+ Opened binary file for POT_ET on unit 204
+ start date offset: 65
+ end date offset: 77
+ end-of-header offset: 89
+NX:  660
+NY:  338
+data type:    2
+cell size:     100.000
+length units:    0
+SI var:   23
+RLE_MULT: 1000
+RL__OFFSET:       0.000
+X0, X1: 1476100.000    1542100.000
+Y0, Y1: 5017100.000    5050900.000
+ model.f95: model_ConfigureRunoffDownhill
+ Configuring the downhill routing table...
+ Iteration            1         181270  of       223080  cells have been configured
+ Iteration            2         215106  of       223080  cells have been configured
+ Iteration            3         217506  of       223080  cells have been configured
+ Iteration            4         219285  of       223080  cells have been configured
+ Iteration            5         219807  of       223080  cells have been configured
+ Iteration            6         220332  of       223080  cells have been configured
+ Iteration            7         220702  of       223080  cells have been configured
+ Iteration            8         221272  of       223080  cells have been configured
+ Iteration            9         221468  of       223080  cells have been configured
+ Iteration           10         221648  of       223080  cells have been configured
+ Iteration           11         221827  of       223080  cells have been configured
+ Iteration           12         221951  of       223080  cells have been configured
+ Iteration           13         222114  of       223080  cells have been configured
+ Iteration           14         222225  of       223080  cells have been configured
+ Iteration           15         222301  of       223080  cells have been configured
+ Iteration           16         222448  of       223080  cells have been configured
+ Iteration           17         222491  of       223080  cells have been configured
+ Iteration           18         222527  of       223080  cells have been configured
+ Iteration           19         222567  of       223080  cells have been configured
+ Iteration           20         222615  of       223080  cells have been configured
+ Iteration           21         222667  of       223080  cells have been configured
+ Iteration           22         222706  of       223080  cells have been configured
+ Iteration           23         222757  of       223080  cells have been configured
+ Iteration           24         222798  of       223080  cells have been configured
+ Iteration           25         222830  of       223080  cells have been configured
+ Iteration           26         222852  of       223080  cells have been configured
+ Iteration           27         222873  of       223080  cells have been configured
+ Iteration           28         222897  of       223080  cells have been configured
+ Iteration           29         222936  of       223080  cells have been configured
+ Iteration           30         222950  of       223080  cells have been configured
+ Iteration           31         222961  of       223080  cells have been configured
+ Iteration           32         222973  of       223080  cells have been configured
+ Iteration           33         222988  of       223080  cells have been configured
+ Iteration           34         222997  of       223080  cells have been configured
+ Iteration           35         223008  of       223080  cells have been configured
+ Iteration           36         223024  of       223080  cells have been configured
+ Iteration           37         223033  of       223080  cells have been configured
+ Iteration           38         223036  of       223080  cells have been configured
+ Iteration           39         223051  of       223080  cells have been configured
+ Iteration           40         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           41         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           42         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           43         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           44         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           45         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           46         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           47         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           48         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           49         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           50         223058  of       223080  cells have been configured
+
+ Summary of remaining unmarked cells
+          8 unmarked grid cells have flowdir value:        1
+          5 unmarked grid cells have flowdir value:        4
+          2 unmarked grid cells have flowdir value:        8
+          6 unmarked grid cells have flowdir value:       32
+          1 unmarked grid cells have flowdir value:       64
+   ------------------------------------------------------------
+         22 Total cells with nonzero flow direction values
+ Iteration           51         223058  of       223080  cells have been configured
+   Number of passes required:           51
+ 
+ model.f95: model_InitializeFlowDirection
+ depression found in cell (row, col):            5           2
+ depression found in cell (row, col):            7           3
+ depression found in cell (row, col):            8           4
+ depression found in cell (row, col):            9           4
+ depression found in cell (row, col):           47          10
+ depression found in cell (row, col):           49          10
+ depression found in cell (row, col):           50          10
+ depression found in cell (row, col):           55           8
+ depression found in cell (row, col):           98          19
+ depression found in cell (row, col):          100          21
+ depression found in cell (row, col):          102          21
+ depression found in cell (row, col):          103          21
+ depression found in cell (row, col):          105          21
+ depression found in cell (row, col):          106          21
+ depression found in cell (row, col):          108          21
+ depression found in cell (row, col):          109          21
+ depression found in cell (row, col):          111          21
+ depression found in cell (row, col):          113          21
+ depression found in cell (row, col):          114          21
+ depression found in cell (row, col):          128          54
+ depression found in cell (row, col):          134          65
+ depression found in cell (row, col):          135          65
+ depression found in cell (row, col):          137          67
+ depression found in cell (row, col):          138          67
+ depression found in cell (row, col):          139          67
+ depression found in cell (row, col):          142          72
+ depression found in cell (row, col):          146          75
+ depression found in cell (row, col):          149          75
+ depression found in cell (row, col):          152          74
+ depression found in cell (row, col):          154          74
+ depression found in cell (row, col):          157          76
+ depression found in cell (row, col):          160          75
+ depression found in cell (row, col):          162          75
+ depression found in cell (row, col):          165          75
+ depression found in cell (row, col):          167          77
+ depression found in cell (row, col):          168          77
+ depression found in cell (row, col):          171          82
+ depression found in cell (row, col):          173          83
+ depression found in cell (row, col):          175          84
+ depression found in cell (row, col):          176          85
+ depression found in cell (row, col):          178          86
+ depression found in cell (row, col):          179          86
+ depression found in cell (row, col):          180          86
+ depression found in cell (row, col):          181          86
+ depression found in cell (row, col):          182          86
+ depression found in cell (row, col):          183          87
+ depression found in cell (row, col):          185          87
+ depression found in cell (row, col):          187          88
+ depression found in cell (row, col):          191          92
+ depression found in cell (row, col):          192          91
+ depression found in cell (row, col):          193          91
+ depression found in cell (row, col):          194          91
+ depression found in cell (row, col):          195          90
+ depression found in cell (row, col):          197          89
+ depression found in cell (row, col):          198          89
+ depression found in cell (row, col):          199          89
+ depression found in cell (row, col):          200          89
+ depression found in cell (row, col):          202          87
+ depression found in cell (row, col):          203          87
+ depression found in cell (row, col):          214         101
+ depression found in cell (row, col):          215         101
+ depression found in cell (row, col):          216         102
+ depression found in cell (row, col):          217         102
+ depression found in cell (row, col):          218         102
+ depression found in cell (row, col):          219         103
+ depression found in cell (row, col):          220         103
+ depression found in cell (row, col):          221         103
+ depression found in cell (row, col):          223         103
+ depression found in cell (row, col):          224         102
+ depression found in cell (row, col):          225         102
+ depression found in cell (row, col):          226         102
+ depression found in cell (row, col):          233         120
+ depression found in cell (row, col):          234         120
+ depression found in cell (row, col):          235         120
+ depression found in cell (row, col):          236         120
+ depression found in cell (row, col):          238         120
+ depression found in cell (row, col):          239         120
+ depression found in cell (row, col):          240         120
+ depression found in cell (row, col):          241         121
+ depression found in cell (row, col):          242         121
+ depression found in cell (row, col):          243         121
+ depression found in cell (row, col):          245         122
+ depression found in cell (row, col):          246         122
+ depression found in cell (row, col):          247         122
+ depression found in cell (row, col):          249         122
+ depression found in cell (row, col):          250         121
+ depression found in cell (row, col):          255         117
+ depression found in cell (row, col):          256         117
+ depression found in cell (row, col):          257         116
+ depression found in cell (row, col):          259         115
+ depression found in cell (row, col):          260         115
+ depression found in cell (row, col):          261         116
+ depression found in cell (row, col):          262         116
+ depression found in cell (row, col):          263         116
+ depression found in cell (row, col):          265         116
+ depression found in cell (row, col):          266         116
+ depression found in cell (row, col):          267         116
+ depression found in cell (row, col):          268         115
+ depression found in cell (row, col):          270         114
+ depression found in cell (row, col):          271         114
+ depression found in cell (row, col):          276         118
+ depression found in cell (row, col):          277         118
+ depression found in cell (row, col):          278         117
+ depression found in cell (row, col):          279         117
+ depression found in cell (row, col):          280         118
+ depression found in cell (row, col):          282         119
+ depression found in cell (row, col):          283         119
+ depression found in cell (row, col):          288         124
+ depression found in cell (row, col):          289         124
+ depression found in cell (row, col):          294         132
+ depression found in cell (row, col):          295         132
+ depression found in cell (row, col):          296         133
+ depression found in cell (row, col):          297         133
+ depression found in cell (row, col):          301         146
+ depression found in cell (row, col):          302         146
+ depression found in cell (row, col):          307         152
+ depression found in cell (row, col):          308         152
+ depression found in cell (row, col):          309         153
+ depression found in cell (row, col):          311         153
+ depression found in cell (row, col):          312         153
+ depression found in cell (row, col):          313         153
+ depression found in cell (row, col):          314         154
+ depression found in cell (row, col):          315         154
+ depression found in cell (row, col):          317         156
+ depression found in cell (row, col):          330         184
+ depression found in cell (row, col):          331         184
+ depression found in cell (row, col):          332         184
+ depression found in cell (row, col):          333         184
+ depression found in cell (row, col):          334         184
+ depression found in cell (row, col):          335         184
+ depression found in cell (row, col):          336         184
+ depression found in cell (row, col):          337         183
+ model.f95: model_InitializeET
+ model_InitializeET : 
+   filename = climate\MSN_1989.txt
+ Initializing Jensen-Haise PET model
+ model.f95: calling model_InitializeSM
+ model.f95: runoff_InitializeCurveNumber
+ Initializing the base curve numbers
+ CN minimum:    75.0000000    
+ CN maximum:    92.0000000    
+ returning from base curve number initialization...
+ model.f95: model_InitialMaxInfil
+ Opening time series file: climate\MSN_1989.txt
+ Skipping: Month Day Year TAVG (F) Precipitation (in) Avg Rel Hum (%) TMAX (F) TMIN (F) WINDVEL (m/sec) Min Rel Hum (%) Sunshine
+
+ Beginning calculations for day:   1    JAN     1/ 1/2023
+ Beginning calculations for day:   2    JAN     1/ 2/2023
+ Beginning calculations for day:   3    JAN     1/ 3/2023
+ Beginning calculations for day:   4    JAN     1/ 4/2023
+ Beginning calculations for day:   5    JAN     1/ 5/2023
+ Beginning calculations for day:   6    JAN     1/ 6/2023
+ Beginning calculations for day:   7    JAN     1/ 7/2023
+ Beginning calculations for day:   8    JAN     1/ 8/2023
+ Beginning calculations for day:   9    JAN     1/ 9/2023
+ Beginning calculations for day:  10    JAN     1/10/2023
+ Beginning calculations for day:  11    JAN     1/11/2023
+ Beginning calculations for day:  12    JAN     1/12/2023
+ Beginning calculations for day:  13    JAN     1/13/2023
+ Beginning calculations for day:  14    JAN     1/14/2023
+ Beginning calculations for day:  15    JAN     1/15/2023
+ Beginning calculations for day:  16    JAN     1/16/2023
+ Beginning calculations for day:  17    JAN     1/17/2023
+ Beginning calculations for day:  18    JAN     1/18/2023
+ Beginning calculations for day:  19    JAN     1/19/2023
+ Beginning calculations for day:  20    JAN     1/20/2023
+ Beginning calculations for day:  21    JAN     1/21/2023
+ Beginning calculations for day:  22    JAN     1/22/2023
+ Beginning calculations for day:  23    JAN     1/23/2023
+ Beginning calculations for day:  24    JAN     1/24/2023
+ Beginning calculations for day:  25    JAN     1/25/2023
+ Beginning calculations for day:  26    JAN     1/26/2023
+ Beginning calculations for day:  27    JAN     1/27/2023
+ Beginning calculations for day:  28    JAN     1/28/2023
+ Beginning calculations for day:  29    JAN     1/29/2023
+ Beginning calculations for day:  30    JAN     1/30/2023
+ Beginning calculations for day:  31    JAN     1/31/2023
+finished monthly calculations for:  1/2023
+ Beginning calculations for day:  32    FEB     2/ 1/2023
+ Beginning calculations for day:  33    FEB     2/ 2/2023
+ Beginning calculations for day:  34    FEB     2/ 3/2023
+ Beginning calculations for day:  35    FEB     2/ 4/2023
+ Beginning calculations for day:  36    FEB     2/ 5/2023
+ Beginning calculations for day:  37    FEB     2/ 6/2023
+ Beginning calculations for day:  38    FEB     2/ 7/2023
+ Beginning calculations for day:  39    FEB     2/ 8/2023
+ Beginning calculations for day:  40    FEB     2/ 9/2023
+ Beginning calculations for day:  41    FEB     2/10/2023
+ Beginning calculations for day:  42    FEB     2/11/2023
+ Beginning calculations for day:  43    FEB     2/12/2023
+ Beginning calculations for day:  44    FEB     2/13/2023
+ Beginning calculations for day:  45    FEB     2/14/2023
+ Beginning calculations for day:  46    FEB     2/15/2023
+ Beginning calculations for day:  47    FEB     2/16/2023
+ Beginning calculations for day:  48    FEB     2/17/2023
+ Beginning calculations for day:  49    FEB     2/18/2023
+ Beginning calculations for day:  50    FEB     2/19/2023
+ Beginning calculations for day:  51    FEB     2/20/2023
+ Beginning calculations for day:  52    FEB     2/21/2023
+ Beginning calculations for day:  53    FEB     2/22/2023
+ Beginning calculations for day:  54    FEB     2/23/2023
+ Beginning calculations for day:  55    FEB     2/24/2023
+ Beginning calculations for day:  56    FEB     2/25/2023
+ Beginning calculations for day:  57    FEB     2/26/2023
+ Beginning calculations for day:  58    FEB     2/27/2023
+ Beginning calculations for day:  59    FEB     2/28/2023
+finished monthly calculations for:  2/2023
+ Beginning calculations for day:  60    MAR     3/ 1/2023
+ Beginning calculations for day:  61    MAR     3/ 2/2023
+ Beginning calculations for day:  62    MAR     3/ 3/2023
+ Beginning calculations for day:  63    MAR     3/ 4/2023
+ Beginning calculations for day:  64    MAR     3/ 5/2023
+ Beginning calculations for day:  65    MAR     3/ 6/2023
+ Beginning calculations for day:  66    MAR     3/ 7/2023
+ Beginning calculations for day:  67    MAR     3/ 8/2023
+ Beginning calculations for day:  68    MAR     3/ 9/2023
+ Beginning calculations for day:  69    MAR     3/10/2023
+ Beginning calculations for day:  70    MAR     3/11/2023
+ Beginning calculations for day:  71    MAR     3/12/2023
+ Beginning calculations for day:  72    MAR     3/13/2023
+ Beginning calculations for day:  73    MAR     3/14/2023
+ Beginning calculations for day:  74    MAR     3/15/2023
+ Beginning calculations for day:  75    MAR     3/16/2023
+ Beginning calculations for day:  76    MAR     3/17/2023
+ Beginning calculations for day:  77    MAR     3/18/2023
+ Beginning calculations for day:  78    MAR     3/19/2023
+ Beginning calculations for day:  79    MAR     3/20/2023
+ Beginning calculations for day:  80    MAR     3/21/2023
+ Beginning calculations for day:  81    MAR     3/22/2023
+ Beginning calculations for day:  82    MAR     3/23/2023
+ Beginning calculations for day:  83    MAR     3/24/2023
+ Beginning calculations for day:  84    MAR     3/25/2023
+ Beginning calculations for day:  85    MAR     3/26/2023
+ Beginning calculations for day:  86    MAR     3/27/2023
+ Beginning calculations for day:  87    MAR     3/28/2023
+ Beginning calculations for day:  88    MAR     3/29/2023
+ Beginning calculations for day:  89    MAR     3/30/2023
+ Beginning calculations for day:  90    MAR     3/31/2023
+finished monthly calculations for:  3/2023
+ Beginning calculations for day:  91    APR     4/ 1/2023
+ Beginning calculations for day:  92    APR     4/ 2/2023
+ Beginning calculations for day:  93    APR     4/ 3/2023
+ Beginning calculations for day:  94    APR     4/ 4/2023
+ Beginning calculations for day:  95    APR     4/ 5/2023
+ Beginning calculations for day:  96    APR     4/ 6/2023
+ Beginning calculations for day:  97    APR     4/ 7/2023
+ Beginning calculations for day:  98    APR     4/ 8/2023
+ Beginning calculations for day:  99    APR     4/ 9/2023
+ Beginning calculations for day: 100    APR     4/10/2023
+ Beginning calculations for day: 101    APR     4/11/2023
+ Beginning calculations for day: 102    APR     4/12/2023
+ Beginning calculations for day: 103    APR     4/13/2023
+ Beginning calculations for day: 104    APR     4/14/2023
+ Beginning calculations for day: 105    APR     4/15/2023
+ Beginning calculations for day: 106    APR     4/16/2023
+ Beginning calculations for day: 107    APR     4/17/2023
+ Beginning calculations for day: 108    APR     4/18/2023
+ Beginning calculations for day: 109    APR     4/19/2023
+ Beginning calculations for day: 110    APR     4/20/2023
+ Beginning calculations for day: 111    APR     4/21/2023
+ Beginning calculations for day: 112    APR     4/22/2023
+ Beginning calculations for day: 113    APR     4/23/2023
+ Beginning calculations for day: 114    APR     4/24/2023
+ Beginning calculations for day: 115    APR     4/25/2023
+ Beginning calculations for day: 116    APR     4/26/2023
+ Beginning calculations for day: 117    APR     4/27/2023
+ Beginning calculations for day: 118    APR     4/28/2023
+ Beginning calculations for day: 119    APR     4/29/2023
+ Beginning calculations for day: 120    APR     4/30/2023
+finished monthly calculations for:  4/2023
+ Beginning calculations for day: 121    MAY     5/ 1/2023
+ Beginning calculations for day: 122    MAY     5/ 2/2023
+ Beginning calculations for day: 123    MAY     5/ 3/2023
+ Beginning calculations for day: 124    MAY     5/ 4/2023
+ Beginning calculations for day: 125    MAY     5/ 5/2023
+ Beginning calculations for day: 126    MAY     5/ 6/2023
+ Beginning calculations for day: 127    MAY     5/ 7/2023
+ Beginning calculations for day: 128    MAY     5/ 8/2023
+ Beginning calculations for day: 129    MAY     5/ 9/2023
+ Beginning calculations for day: 130    MAY     5/10/2023
+ Beginning calculations for day: 131    MAY     5/11/2023
+ Beginning calculations for day: 132    MAY     5/12/2023
+ Beginning calculations for day: 133    MAY     5/13/2023
+ Beginning calculations for day: 134    MAY     5/14/2023
+ Beginning calculations for day: 135    MAY     5/15/2023
+ Beginning calculations for day: 136    MAY     5/16/2023
+ Beginning calculations for day: 137    MAY     5/17/2023
+ Beginning calculations for day: 138    MAY     5/18/2023
+ Beginning calculations for day: 139    MAY     5/19/2023
+ Beginning calculations for day: 140    MAY     5/20/2023
+ Beginning calculations for day: 141    MAY     5/21/2023
+ Beginning calculations for day: 142    MAY     5/22/2023
+ Beginning calculations for day: 143    MAY     5/23/2023
+ Beginning calculations for day: 144    MAY     5/24/2023
+ Beginning calculations for day: 145    MAY     5/25/2023
+ Beginning calculations for day: 146    MAY     5/26/2023
+ Beginning calculations for day: 147    MAY     5/27/2023
+ Beginning calculations for day: 148    MAY     5/28/2023
+ Beginning calculations for day: 149    MAY     5/29/2023
+ Beginning calculations for day: 150    MAY     5/30/2023
+ Beginning calculations for day: 151    MAY     5/31/2023
+finished monthly calculations for:  5/2023
+ Beginning calculations for day: 152    JUN     6/ 1/2023
+ Beginning calculations for day: 153    JUN     6/ 2/2023
+ Beginning calculations for day: 154    JUN     6/ 3/2023
+ Beginning calculations for day: 155    JUN     6/ 4/2023
+ Beginning calculations for day: 156    JUN     6/ 5/2023
+ Beginning calculations for day: 157    JUN     6/ 6/2023
+ Beginning calculations for day: 158    JUN     6/ 7/2023
+ Beginning calculations for day: 159    JUN     6/ 8/2023
+ Beginning calculations for day: 160    JUN     6/ 9/2023
+ Beginning calculations for day: 161    JUN     6/10/2023
+ Beginning calculations for day: 162    JUN     6/11/2023
+ Beginning calculations for day: 163    JUN     6/12/2023
+ Beginning calculations for day: 164    JUN     6/13/2023
+ Beginning calculations for day: 165    JUN     6/14/2023
+ Beginning calculations for day: 166    JUN     6/15/2023
+ Beginning calculations for day: 167    JUN     6/16/2023
+ Beginning calculations for day: 168    JUN     6/17/2023
+ Beginning calculations for day: 169    JUN     6/18/2023
+ Beginning calculations for day: 170    JUN     6/19/2023
+ Beginning calculations for day: 171    JUN     6/20/2023
+ Beginning calculations for day: 172    JUN     6/21/2023
+ Beginning calculations for day: 173    JUN     6/22/2023
+ Beginning calculations for day: 174    JUN     6/23/2023
+ Beginning calculations for day: 175    JUN     6/24/2023
+ Beginning calculations for day: 176    JUN     6/25/2023
+ Beginning calculations for day: 177    JUN     6/26/2023
+ Beginning calculations for day: 178    JUN     6/27/2023
+ Beginning calculations for day: 179    JUN     6/28/2023
+ Beginning calculations for day: 180    JUN     6/29/2023
+ Beginning calculations for day: 181    JUN     6/30/2023
+finished monthly calculations for:  6/2023
+ Beginning calculations for day: 182    JUL     7/ 1/2023
+ Beginning calculations for day: 183    JUL     7/ 2/2023
+ Beginning calculations for day: 184    JUL     7/ 3/2023
+ Beginning calculations for day: 185    JUL     7/ 4/2023
+ Beginning calculations for day: 186    JUL     7/ 5/2023
+ Beginning calculations for day: 187    JUL     7/ 6/2023
+ Beginning calculations for day: 188    JUL     7/ 7/2023
+ Beginning calculations for day: 189    JUL     7/ 8/2023
+ Beginning calculations for day: 190    JUL     7/ 9/2023
+ Beginning calculations for day: 191    JUL     7/10/2023
+ Beginning calculations for day: 192    JUL     7/11/2023
+ Beginning calculations for day: 193    JUL     7/12/2023
+ Beginning calculations for day: 194    JUL     7/13/2023
+ Beginning calculations for day: 195    JUL     7/14/2023
+ Beginning calculations for day: 196    JUL     7/15/2023
+ Beginning calculations for day: 197    JUL     7/16/2023
+ Beginning calculations for day: 198    JUL     7/17/2023
+ Beginning calculations for day: 199    JUL     7/18/2023
+ Beginning calculations for day: 200    JUL     7/19/2023
+ Beginning calculations for day: 201    JUL     7/20/2023
+ Beginning calculations for day: 202    JUL     7/21/2023
+ Beginning calculations for day: 203    JUL     7/22/2023
+ Beginning calculations for day: 204    JUL     7/23/2023
+ Beginning calculations for day: 205    JUL     7/24/2023
+ Beginning calculations for day: 206    JUL     7/25/2023
+ Beginning calculations for day: 207    JUL     7/26/2023
+ Beginning calculations for day: 208    JUL     7/27/2023
+ Beginning calculations for day: 209    JUL     7/28/2023
+ Beginning calculations for day: 210    JUL     7/29/2023
+ Beginning calculations for day: 211    JUL     7/30/2023
+ Beginning calculations for day: 212    JUL     7/31/2023
+finished monthly calculations for:  7/2023
+ Beginning calculations for day: 213    AUG     8/ 1/2023
+ Beginning calculations for day: 214    AUG     8/ 2/2023
+ Beginning calculations for day: 215    AUG     8/ 3/2023
+ Beginning calculations for day: 216    AUG     8/ 4/2023
+ Beginning calculations for day: 217    AUG     8/ 5/2023
+ Beginning calculations for day: 218    AUG     8/ 6/2023
+ Beginning calculations for day: 219    AUG     8/ 7/2023
+ Beginning calculations for day: 220    AUG     8/ 8/2023
+ Beginning calculations for day: 221    AUG     8/ 9/2023
+ Beginning calculations for day: 222    AUG     8/10/2023
+ Beginning calculations for day: 223    AUG     8/11/2023
+ Beginning calculations for day: 224    AUG     8/12/2023
+ Beginning calculations for day: 225    AUG     8/13/2023
+ Beginning calculations for day: 226    AUG     8/14/2023
+ Beginning calculations for day: 227    AUG     8/15/2023
+ Beginning calculations for day: 228    AUG     8/16/2023
+ Beginning calculations for day: 229    AUG     8/17/2023
+ Beginning calculations for day: 230    AUG     8/18/2023
+ Beginning calculations for day: 231    AUG     8/19/2023
+ Beginning calculations for day: 232    AUG     8/20/2023
+ Beginning calculations for day: 233    AUG     8/21/2023
+ Beginning calculations for day: 234    AUG     8/22/2023
+ Beginning calculations for day: 235    AUG     8/23/2023
+ Beginning calculations for day: 236    AUG     8/24/2023
+ Beginning calculations for day: 237    AUG     8/25/2023
+ Beginning calculations for day: 238    AUG     8/26/2023
+ Beginning calculations for day: 239    AUG     8/27/2023
+ Beginning calculations for day: 240    AUG     8/28/2023
+ Beginning calculations for day: 241    AUG     8/29/2023
+ Beginning calculations for day: 242    AUG     8/30/2023
+ Beginning calculations for day: 243    AUG     8/31/2023
+finished monthly calculations for:  8/2023
+ Beginning calculations for day: 244    SEP     9/ 1/2023
+ Beginning calculations for day: 245    SEP     9/ 2/2023
+ Beginning calculations for day: 246    SEP     9/ 3/2023
+ Beginning calculations for day: 247    SEP     9/ 4/2023
+ Beginning calculations for day: 248    SEP     9/ 5/2023
+ Beginning calculations for day: 249    SEP     9/ 6/2023
+ Beginning calculations for day: 250    SEP     9/ 7/2023
+ Beginning calculations for day: 251    SEP     9/ 8/2023
+ Beginning calculations for day: 252    SEP     9/ 9/2023
+ Beginning calculations for day: 253    SEP     9/10/2023
+ Beginning calculations for day: 254    SEP     9/11/2023
+ Beginning calculations for day: 255    SEP     9/12/2023
+ Beginning calculations for day: 256    SEP     9/13/2023
+ Beginning calculations for day: 257    SEP     9/14/2023
+ Beginning calculations for day: 258    SEP     9/15/2023
+ Beginning calculations for day: 259    SEP     9/16/2023
+ Beginning calculations for day: 260    SEP     9/17/2023
+ Beginning calculations for day: 261    SEP     9/18/2023
+ Beginning calculations for day: 262    SEP     9/19/2023
+ Beginning calculations for day: 263    SEP     9/20/2023
+ Beginning calculations for day: 264    SEP     9/21/2023
+ Beginning calculations for day: 265    SEP     9/22/2023
+ Beginning calculations for day: 266    SEP     9/23/2023
+ Beginning calculations for day: 267    SEP     9/24/2023
+ Beginning calculations for day: 268    SEP     9/25/2023
+ Beginning calculations for day: 269    SEP     9/26/2023
+ Beginning calculations for day: 270    SEP     9/27/2023
+ Beginning calculations for day: 271    SEP     9/28/2023
+ Beginning calculations for day: 272    SEP     9/29/2023
+ Beginning calculations for day: 273    SEP     9/30/2023
+finished monthly calculations for:  9/2023
+ Beginning calculations for day: 274    OCT    10/ 1/2023
+ Beginning calculations for day: 275    OCT    10/ 2/2023
+ Beginning calculations for day: 276    OCT    10/ 3/2023
+ Beginning calculations for day: 277    OCT    10/ 4/2023
+ Beginning calculations for day: 278    OCT    10/ 5/2023
+ Beginning calculations for day: 279    OCT    10/ 6/2023
+ Beginning calculations for day: 280    OCT    10/ 7/2023
+ Beginning calculations for day: 281    OCT    10/ 8/2023
+ Beginning calculations for day: 282    OCT    10/ 9/2023
+ Beginning calculations for day: 283    OCT    10/10/2023
+ Beginning calculations for day: 284    OCT    10/11/2023
+ Beginning calculations for day: 285    OCT    10/12/2023
+ Beginning calculations for day: 286    OCT    10/13/2023
+ Beginning calculations for day: 287    OCT    10/14/2023
+ Beginning calculations for day: 288    OCT    10/15/2023
+ Beginning calculations for day: 289    OCT    10/16/2023
+ Beginning calculations for day: 290    OCT    10/17/2023
+ Beginning calculations for day: 291    OCT    10/18/2023
+ Beginning calculations for day: 292    OCT    10/19/2023
+ Beginning calculations for day: 293    OCT    10/20/2023
+ Beginning calculations for day: 294    OCT    10/21/2023
+ Beginning calculations for day: 295    OCT    10/22/2023
+ Beginning calculations for day: 296    OCT    10/23/2023
+ Beginning calculations for day: 297    OCT    10/24/2023
+ Beginning calculations for day: 298    OCT    10/25/2023
+ Beginning calculations for day: 299    OCT    10/26/2023
+ Beginning calculations for day: 300    OCT    10/27/2023
+ Beginning calculations for day: 301    OCT    10/28/2023
+ Beginning calculations for day: 302    OCT    10/29/2023
+ Beginning calculations for day: 303    OCT    10/30/2023
+ Beginning calculations for day: 304    OCT    10/31/2023
+finished monthly calculations for: 10/2023
+ Beginning calculations for day: 305    NOV    11/ 1/2023
+ Beginning calculations for day: 306    NOV    11/ 2/2023
+ Beginning calculations for day: 307    NOV    11/ 3/2023
+ Beginning calculations for day: 308    NOV    11/ 4/2023
+ Beginning calculations for day: 309    NOV    11/ 5/2023
+ Beginning calculations for day: 310    NOV    11/ 6/2023
+ Beginning calculations for day: 311    NOV    11/ 7/2023
+ Beginning calculations for day: 312    NOV    11/ 8/2023
+ Beginning calculations for day: 313    NOV    11/ 9/2023
+ Beginning calculations for day: 314    NOV    11/10/2023
+ Beginning calculations for day: 315    NOV    11/11/2023
+ Beginning calculations for day: 316    NOV    11/12/2023
+ Beginning calculations for day: 317    NOV    11/13/2023
+ Beginning calculations for day: 318    NOV    11/14/2023
+ Beginning calculations for day: 319    NOV    11/15/2023
+ Beginning calculations for day: 320    NOV    11/16/2023
+ Beginning calculations for day: 321    NOV    11/17/2023
+ Beginning calculations for day: 322    NOV    11/18/2023
+ Beginning calculations for day: 323    NOV    11/19/2023
+ Beginning calculations for day: 324    NOV    11/20/2023
+ Beginning calculations for day: 325    NOV    11/21/2023
+ Beginning calculations for day: 326    NOV    11/22/2023
+ Beginning calculations for day: 327    NOV    11/23/2023
+ Beginning calculations for day: 328    NOV    11/24/2023
+ Beginning calculations for day: 329    NOV    11/25/2023
+ Beginning calculations for day: 330    NOV    11/26/2023
+ Beginning calculations for day: 331    NOV    11/27/2023
+ Beginning calculations for day: 332    NOV    11/28/2023
+ Beginning calculations for day: 333    NOV    11/29/2023
+ Beginning calculations for day: 334    NOV    11/30/2023
+finished monthly calculations for: 11/2023
+ Beginning calculations for day: 335    DEC    12/ 1/2023
+ Beginning calculations for day: 336    DEC    12/ 2/2023
+ Beginning calculations for day: 337    DEC    12/ 3/2023
+ Beginning calculations for day: 338    DEC    12/ 4/2023
+ Beginning calculations for day: 339    DEC    12/ 5/2023
+ Beginning calculations for day: 340    DEC    12/ 6/2023
+ Beginning calculations for day: 341    DEC    12/ 7/2023
+ Beginning calculations for day: 342    DEC    12/ 8/2023
+ Beginning calculations for day: 343    DEC    12/ 9/2023
+ Beginning calculations for day: 344    DEC    12/10/2023
+ Beginning calculations for day: 345    DEC    12/11/2023
+ Beginning calculations for day: 346    DEC    12/12/2023
+ Beginning calculations for day: 347    DEC    12/13/2023
+ Beginning calculations for day: 348    DEC    12/14/2023
+ Beginning calculations for day: 349    DEC    12/15/2023
+ Beginning calculations for day: 350    DEC    12/16/2023
+ Beginning calculations for day: 351    DEC    12/17/2023
+ Beginning calculations for day: 352    DEC    12/18/2023
+ Beginning calculations for day: 353    DEC    12/19/2023
+ Beginning calculations for day: 354    DEC    12/20/2023
+ Beginning calculations for day: 355    DEC    12/21/2023
+ Beginning calculations for day: 356    DEC    12/22/2023
+ Beginning calculations for day: 357    DEC    12/23/2023
+ Beginning calculations for day: 358    DEC    12/24/2023
+ Beginning calculations for day: 359    DEC    12/25/2023
+ Beginning calculations for day: 360    DEC    12/26/2023
+ Beginning calculations for day: 361    DEC    12/27/2023
+ Beginning calculations for day: 362    DEC    12/28/2023
+ Beginning calculations for day: 363    DEC    12/29/2023
+ Beginning calculations for day: 364    DEC    12/30/2023
+ Beginning calculations for day: 365    DEC    12/31/2023
+finished monthly calculations for: 12/2023
+ >> SOLVE climate\MSN_1990.txt
+ Solving the model
+ Opening time series file: climate\MSN_1990.txt
+ Skipping: Month Day Year TAVG (F) Precipitation (in) Avg Rel Hum (%) TMAX (F) TMIN (F) WINDVEL (m/sec) Min Rel Hum (%) Sunshine
+
+ Beginning calculations for day:   1    JAN     1/ 1/2024
+ Beginning calculations for day:   2    JAN     1/ 2/2024
+ Beginning calculations for day:   3    JAN     1/ 3/2024
+ Beginning calculations for day:   4    JAN     1/ 4/2024
+ Beginning calculations for day:   5    JAN     1/ 5/2024
+ Beginning calculations for day:   6    JAN     1/ 6/2024
+ Beginning calculations for day:   7    JAN     1/ 7/2024
+ Beginning calculations for day:   8    JAN     1/ 8/2024
+ Beginning calculations for day:   9    JAN     1/ 9/2024
+ Beginning calculations for day:  10    JAN     1/10/2024
+ Beginning calculations for day:  11    JAN     1/11/2024
+ Beginning calculations for day:  12    JAN     1/12/2024
+ Beginning calculations for day:  13    JAN     1/13/2024
+ Beginning calculations for day:  14    JAN     1/14/2024
+ Beginning calculations for day:  15    JAN     1/15/2024
+ Beginning calculations for day:  16    JAN     1/16/2024
+ Beginning calculations for day:  17    JAN     1/17/2024
+ Beginning calculations for day:  18    JAN     1/18/2024
+ Beginning calculations for day:  19    JAN     1/19/2024
+ Beginning calculations for day:  20    JAN     1/20/2024
+ Beginning calculations for day:  21    JAN     1/21/2024
+ Beginning calculations for day:  22    JAN     1/22/2024
+ Beginning calculations for day:  23    JAN     1/23/2024
+ Beginning calculations for day:  24    JAN     1/24/2024
+ Beginning calculations for day:  25    JAN     1/25/2024
+ Beginning calculations for day:  26    JAN     1/26/2024
+ Beginning calculations for day:  27    JAN     1/27/2024
+ Beginning calculations for day:  28    JAN     1/28/2024
+ Beginning calculations for day:  29    JAN     1/29/2024
+ Beginning calculations for day:  30    JAN     1/30/2024
+ Beginning calculations for day:  31    JAN     1/31/2024
+finished monthly calculations for:  1/2024
+ Beginning calculations for day:  32    FEB     2/ 1/2024
+ Beginning calculations for day:  33    FEB     2/ 2/2024
+ Beginning calculations for day:  34    FEB     2/ 3/2024
+ Beginning calculations for day:  35    FEB     2/ 4/2024
+ Beginning calculations for day:  36    FEB     2/ 5/2024
+ Beginning calculations for day:  37    FEB     2/ 6/2024
+ Beginning calculations for day:  38    FEB     2/ 7/2024
+ Beginning calculations for day:  39    FEB     2/ 8/2024
+ Beginning calculations for day:  40    FEB     2/ 9/2024
+ Beginning calculations for day:  41    FEB     2/10/2024
+ Beginning calculations for day:  42    FEB     2/11/2024
+ Beginning calculations for day:  43    FEB     2/12/2024
+ Beginning calculations for day:  44    FEB     2/13/2024
+ Beginning calculations for day:  45    FEB     2/14/2024
+ Beginning calculations for day:  46    FEB     2/15/2024
+ Beginning calculations for day:  47    FEB     2/16/2024
+ Beginning calculations for day:  48    FEB     2/17/2024
+ Beginning calculations for day:  49    FEB     2/18/2024
+ Beginning calculations for day:  50    FEB     2/19/2024
+ Beginning calculations for day:  51    FEB     2/20/2024
+ Beginning calculations for day:  52    FEB     2/21/2024
+ Beginning calculations for day:  53    FEB     2/22/2024
+ Beginning calculations for day:  54    FEB     2/23/2024
+ Beginning calculations for day:  55    FEB     2/24/2024
+ Beginning calculations for day:  56    FEB     2/25/2024
+ Beginning calculations for day:  57    FEB     2/26/2024
+ Beginning calculations for day:  58    FEB     2/27/2024
+ Beginning calculations for day:  59    FEB     2/28/2024
+ Missing or out-of-order data in time-series file:
+   date (TS file)= 3/1/2024
+   date (SWB)= 2/29/2024
+ Beginning calculations for day:  61    MAR     3/ 1/2024
+ Beginning calculations for day:  62    MAR     3/ 2/2024
+ Beginning calculations for day:  63    MAR     3/ 3/2024
+ Beginning calculations for day:  64    MAR     3/ 4/2024
+ Beginning calculations for day:  65    MAR     3/ 5/2024
+ Beginning calculations for day:  66    MAR     3/ 6/2024
+ Beginning calculations for day:  67    MAR     3/ 7/2024
+ Beginning calculations for day:  68    MAR     3/ 8/2024
+ Beginning calculations for day:  69    MAR     3/ 9/2024
+ Beginning calculations for day:  70    MAR     3/10/2024
+ Beginning calculations for day:  71    MAR     3/11/2024
+ Beginning calculations for day:  72    MAR     3/12/2024
+ Beginning calculations for day:  73    MAR     3/13/2024
+ Beginning calculations for day:  74    MAR     3/14/2024
+ Beginning calculations for day:  75    MAR     3/15/2024
+ Beginning calculations for day:  76    MAR     3/16/2024
+ Beginning calculations for day:  77    MAR     3/17/2024
+ Beginning calculations for day:  78    MAR     3/18/2024
+ Beginning calculations for day:  79    MAR     3/19/2024
+ Beginning calculations for day:  80    MAR     3/20/2024
+ Beginning calculations for day:  81    MAR     3/21/2024
+ Beginning calculations for day:  82    MAR     3/22/2024
+ Beginning calculations for day:  83    MAR     3/23/2024
+ Beginning calculations for day:  84    MAR     3/24/2024
+ Beginning calculations for day:  85    MAR     3/25/2024
+ Beginning calculations for day:  86    MAR     3/26/2024
+ Beginning calculations for day:  87    MAR     3/27/2024
+ Beginning calculations for day:  88    MAR     3/28/2024
+ Beginning calculations for day:  89    MAR     3/29/2024
+ Beginning calculations for day:  90    MAR     3/30/2024
+ Beginning calculations for day:  91    MAR     3/31/2024
+finished monthly calculations for:  3/2024
+ Beginning calculations for day:  92    APR     4/ 1/2024
+ Beginning calculations for day:  93    APR     4/ 2/2024
+ Beginning calculations for day:  94    APR     4/ 3/2024
+ Beginning calculations for day:  95    APR     4/ 4/2024
+ Beginning calculations for day:  96    APR     4/ 5/2024
+ Beginning calculations for day:  97    APR     4/ 6/2024
+ Beginning calculations for day:  98    APR     4/ 7/2024
+ Beginning calculations for day:  99    APR     4/ 8/2024
+ Beginning calculations for day: 100    APR     4/ 9/2024
+ Beginning calculations for day: 101    APR     4/10/2024
+ Beginning calculations for day: 102    APR     4/11/2024
+ Beginning calculations for day: 103    APR     4/12/2024
+ Beginning calculations for day: 104    APR     4/13/2024
+ Beginning calculations for day: 105    APR     4/14/2024
+ Beginning calculations for day: 106    APR     4/15/2024
+ Beginning calculations for day: 107    APR     4/16/2024
+ Beginning calculations for day: 108    APR     4/17/2024
+ Beginning calculations for day: 109    APR     4/18/2024
+ Beginning calculations for day: 110    APR     4/19/2024
+ Beginning calculations for day: 111    APR     4/20/2024
+ Beginning calculations for day: 112    APR     4/21/2024
+ Beginning calculations for day: 113    APR     4/22/2024
+ Beginning calculations for day: 114    APR     4/23/2024
+ Beginning calculations for day: 115    APR     4/24/2024
+ Beginning calculations for day: 116    APR     4/25/2024
+ Beginning calculations for day: 117    APR     4/26/2024
+ Beginning calculations for day: 118    APR     4/27/2024
+ Beginning calculations for day: 119    APR     4/28/2024
+ Beginning calculations for day: 120    APR     4/29/2024
+ Beginning calculations for day: 121    APR     4/30/2024
+finished monthly calculations for:  4/2024
+ Beginning calculations for day: 122    MAY     5/ 1/2024
+ Beginning calculations for day: 123    MAY     5/ 2/2024
+ Beginning calculations for day: 124    MAY     5/ 3/2024
+ Beginning calculations for day: 125    MAY     5/ 4/2024
+ Beginning calculations for day: 126    MAY     5/ 5/2024
+ Beginning calculations for day: 127    MAY     5/ 6/2024
+ Beginning calculations for day: 128    MAY     5/ 7/2024
+ Beginning calculations for day: 129    MAY     5/ 8/2024
+ Beginning calculations for day: 130    MAY     5/ 9/2024
+ Beginning calculations for day: 131    MAY     5/10/2024
+ Beginning calculations for day: 132    MAY     5/11/2024
+ Beginning calculations for day: 133    MAY     5/12/2024
+ Beginning calculations for day: 134    MAY     5/13/2024
+ Beginning calculations for day: 135    MAY     5/14/2024
+ Beginning calculations for day: 136    MAY     5/15/2024
+ Beginning calculations for day: 137    MAY     5/16/2024
+ Beginning calculations for day: 138    MAY     5/17/2024
+ Beginning calculations for day: 139    MAY     5/18/2024
+ Beginning calculations for day: 140    MAY     5/19/2024
+ Beginning calculations for day: 141    MAY     5/20/2024
+ Beginning calculations for day: 142    MAY     5/21/2024
+ Beginning calculations for day: 143    MAY     5/22/2024
+ Beginning calculations for day: 144    MAY     5/23/2024
+ Beginning calculations for day: 145    MAY     5/24/2024
+ Beginning calculations for day: 146    MAY     5/25/2024
+ Beginning calculations for day: 147    MAY     5/26/2024
+ Beginning calculations for day: 148    MAY     5/27/2024
+ Beginning calculations for day: 149    MAY     5/28/2024
+ Beginning calculations for day: 150    MAY     5/29/2024
+ Beginning calculations for day: 151    MAY     5/30/2024
+ Beginning calculations for day: 152    MAY     5/31/2024
+finished monthly calculations for:  5/2024
+ Beginning calculations for day: 153    JUN     6/ 1/2024
+ Beginning calculations for day: 154    JUN     6/ 2/2024
+ Beginning calculations for day: 155    JUN     6/ 3/2024
+ Beginning calculations for day: 156    JUN     6/ 4/2024
+ Beginning calculations for day: 157    JUN     6/ 5/2024
+ Beginning calculations for day: 158    JUN     6/ 6/2024
+ Beginning calculations for day: 159    JUN     6/ 7/2024
+ Beginning calculations for day: 160    JUN     6/ 8/2024
+ Beginning calculations for day: 161    JUN     6/ 9/2024
+ Beginning calculations for day: 162    JUN     6/10/2024
+ Beginning calculations for day: 163    JUN     6/11/2024
+ Beginning calculations for day: 164    JUN     6/12/2024
+ Beginning calculations for day: 165    JUN     6/13/2024
+ Beginning calculations for day: 166    JUN     6/14/2024
+ Beginning calculations for day: 167    JUN     6/15/2024
+ Beginning calculations for day: 168    JUN     6/16/2024
+ Beginning calculations for day: 169    JUN     6/17/2024
+ Beginning calculations for day: 170    JUN     6/18/2024
+ Beginning calculations for day: 171    JUN     6/19/2024
+ Beginning calculations for day: 172    JUN     6/20/2024
+ Beginning calculations for day: 173    JUN     6/21/2024
+ Beginning calculations for day: 174    JUN     6/22/2024
+ Beginning calculations for day: 175    JUN     6/23/2024
+ Beginning calculations for day: 176    JUN     6/24/2024
+ Beginning calculations for day: 177    JUN     6/25/2024
+ Beginning calculations for day: 178    JUN     6/26/2024
+ Beginning calculations for day: 179    JUN     6/27/2024
+ Beginning calculations for day: 180    JUN     6/28/2024
+ Beginning calculations for day: 181    JUN     6/29/2024
+ Beginning calculations for day: 182    JUN     6/30/2024
+finished monthly calculations for:  6/2024
+ Beginning calculations for day: 183    JUL     7/ 1/2024
+ Beginning calculations for day: 184    JUL     7/ 2/2024
+ Beginning calculations for day: 185    JUL     7/ 3/2024
+ Beginning calculations for day: 186    JUL     7/ 4/2024
+ Beginning calculations for day: 187    JUL     7/ 5/2024
+ Beginning calculations for day: 188    JUL     7/ 6/2024
+ Beginning calculations for day: 189    JUL     7/ 7/2024
+ Beginning calculations for day: 190    JUL     7/ 8/2024
+ Beginning calculations for day: 191    JUL     7/ 9/2024
+ Beginning calculations for day: 192    JUL     7/10/2024
+ Beginning calculations for day: 193    JUL     7/11/2024
+ Beginning calculations for day: 194    JUL     7/12/2024
+ Beginning calculations for day: 195    JUL     7/13/2024
+ Beginning calculations for day: 196    JUL     7/14/2024
+ Beginning calculations for day: 197    JUL     7/15/2024
+ Beginning calculations for day: 198    JUL     7/16/2024
+ Beginning calculations for day: 199    JUL     7/17/2024
+ Beginning calculations for day: 200    JUL     7/18/2024
+ Beginning calculations for day: 201    JUL     7/19/2024
+ Beginning calculations for day: 202    JUL     7/20/2024
+ Beginning calculations for day: 203    JUL     7/21/2024
+ Beginning calculations for day: 204    JUL     7/22/2024
+ Beginning calculations for day: 205    JUL     7/23/2024
+ Beginning calculations for day: 206    JUL     7/24/2024
+ Beginning calculations for day: 207    JUL     7/25/2024
+ Beginning calculations for day: 208    JUL     7/26/2024
+ Beginning calculations for day: 209    JUL     7/27/2024
+ Beginning calculations for day: 210    JUL     7/28/2024
+ Beginning calculations for day: 211    JUL     7/29/2024
+ Beginning calculations for day: 212    JUL     7/30/2024
+ Beginning calculations for day: 213    JUL     7/31/2024
+finished monthly calculations for:  7/2024
+ Beginning calculations for day: 214    AUG     8/ 1/2024
+ Beginning calculations for day: 215    AUG     8/ 2/2024
+ Beginning calculations for day: 216    AUG     8/ 3/2024
+ Beginning calculations for day: 217    AUG     8/ 4/2024
+ Beginning calculations for day: 218    AUG     8/ 5/2024
+ Beginning calculations for day: 219    AUG     8/ 6/2024
+ Beginning calculations for day: 220    AUG     8/ 7/2024
+ Beginning calculations for day: 221    AUG     8/ 8/2024
+ Beginning calculations for day: 222    AUG     8/ 9/2024
+ Beginning calculations for day: 223    AUG     8/10/2024
+ Beginning calculations for day: 224    AUG     8/11/2024
+ Beginning calculations for day: 225    AUG     8/12/2024
+ Beginning calculations for day: 226    AUG     8/13/2024
+ Beginning calculations for day: 227    AUG     8/14/2024
+ Beginning calculations for day: 228    AUG     8/15/2024
+ Beginning calculations for day: 229    AUG     8/16/2024
+ Beginning calculations for day: 230    AUG     8/17/2024
+ Beginning calculations for day: 231    AUG     8/18/2024
+ Beginning calculations for day: 232    AUG     8/19/2024
+ Beginning calculations for day: 233    AUG     8/20/2024
+ Beginning calculations for day: 234    AUG     8/21/2024
+ Beginning calculations for day: 235    AUG     8/22/2024
+ Beginning calculations for day: 236    AUG     8/23/2024
+ Beginning calculations for day: 237    AUG     8/24/2024
+ Beginning calculations for day: 238    AUG     8/25/2024
+ Beginning calculations for day: 239    AUG     8/26/2024
+ Beginning calculations for day: 240    AUG     8/27/2024
+ Beginning calculations for day: 241    AUG     8/28/2024
+ Beginning calculations for day: 242    AUG     8/29/2024
+ Beginning calculations for day: 243    AUG     8/30/2024
+ Beginning calculations for day: 244    AUG     8/31/2024
+finished monthly calculations for:  8/2024
+ Beginning calculations for day: 245    SEP     9/ 1/2024
+ Beginning calculations for day: 246    SEP     9/ 2/2024
+ Beginning calculations for day: 247    SEP     9/ 3/2024
+ Beginning calculations for day: 248    SEP     9/ 4/2024
+ Beginning calculations for day: 249    SEP     9/ 5/2024
+ Beginning calculations for day: 250    SEP     9/ 6/2024
+ Beginning calculations for day: 251    SEP     9/ 7/2024
+ Beginning calculations for day: 252    SEP     9/ 8/2024
+ Beginning calculations for day: 253    SEP     9/ 9/2024
+ Beginning calculations for day: 254    SEP     9/10/2024
+ Beginning calculations for day: 255    SEP     9/11/2024
+ Beginning calculations for day: 256    SEP     9/12/2024
+ Beginning calculations for day: 257    SEP     9/13/2024
+ Beginning calculations for day: 258    SEP     9/14/2024
+ Beginning calculations for day: 259    SEP     9/15/2024
+ Beginning calculations for day: 260    SEP     9/16/2024
+ Beginning calculations for day: 261    SEP     9/17/2024
+ Beginning calculations for day: 262    SEP     9/18/2024
+ Beginning calculations for day: 263    SEP     9/19/2024
+ Beginning calculations for day: 264    SEP     9/20/2024
+ Beginning calculations for day: 265    SEP     9/21/2024
+ Beginning calculations for day: 266    SEP     9/22/2024
+ Beginning calculations for day: 267    SEP     9/23/2024
+ Beginning calculations for day: 268    SEP     9/24/2024
+ Beginning calculations for day: 269    SEP     9/25/2024
+ Beginning calculations for day: 270    SEP     9/26/2024
+ Beginning calculations for day: 271    SEP     9/27/2024
+ Beginning calculations for day: 272    SEP     9/28/2024
+ Beginning calculations for day: 273    SEP     9/29/2024
+ Beginning calculations for day: 274    SEP     9/30/2024
+finished monthly calculations for:  9/2024
+ Beginning calculations for day: 275    OCT    10/ 1/2024
+ Beginning calculations for day: 276    OCT    10/ 2/2024
+ Beginning calculations for day: 277    OCT    10/ 3/2024
+ Beginning calculations for day: 278    OCT    10/ 4/2024
+ Beginning calculations for day: 279    OCT    10/ 5/2024
+ Beginning calculations for day: 280    OCT    10/ 6/2024
+ Beginning calculations for day: 281    OCT    10/ 7/2024
+ Beginning calculations for day: 282    OCT    10/ 8/2024
+ Beginning calculations for day: 283    OCT    10/ 9/2024
+ Beginning calculations for day: 284    OCT    10/10/2024
+ Beginning calculations for day: 285    OCT    10/11/2024
+ Beginning calculations for day: 286    OCT    10/12/2024
+ Beginning calculations for day: 287    OCT    10/13/2024
+ Beginning calculations for day: 288    OCT    10/14/2024
+ Beginning calculations for day: 289    OCT    10/15/2024
+ Beginning calculations for day: 290    OCT    10/16/2024
+ Beginning calculations for day: 291    OCT    10/17/2024
+ Beginning calculations for day: 292    OCT    10/18/2024
+ Beginning calculations for day: 293    OCT    10/19/2024
+ Beginning calculations for day: 294    OCT    10/20/2024
+ Beginning calculations for day: 295    OCT    10/21/2024
+ Beginning calculations for day: 296    OCT    10/22/2024
+ Beginning calculations for day: 297    OCT    10/23/2024
+ Beginning calculations for day: 298    OCT    10/24/2024
+ Beginning calculations for day: 299    OCT    10/25/2024
+ Beginning calculations for day: 300    OCT    10/26/2024
+ Beginning calculations for day: 301    OCT    10/27/2024
+ Beginning calculations for day: 302    OCT    10/28/2024
+ Beginning calculations for day: 303    OCT    10/29/2024
+ Beginning calculations for day: 304    OCT    10/30/2024
+ Beginning calculations for day: 305    OCT    10/31/2024
+finished monthly calculations for: 10/2024
+ Beginning calculations for day: 306    NOV    11/ 1/2024
+ Beginning calculations for day: 307    NOV    11/ 2/2024
+ Beginning calculations for day: 308    NOV    11/ 3/2024
+ Beginning calculations for day: 309    NOV    11/ 4/2024
+ Beginning calculations for day: 310    NOV    11/ 5/2024
+ Beginning calculations for day: 311    NOV    11/ 6/2024
+ Beginning calculations for day: 312    NOV    11/ 7/2024
+ Beginning calculations for day: 313    NOV    11/ 8/2024
+ Beginning calculations for day: 314    NOV    11/ 9/2024
+ Beginning calculations for day: 315    NOV    11/10/2024
+ Beginning calculations for day: 316    NOV    11/11/2024
+ Beginning calculations for day: 317    NOV    11/12/2024
+ Beginning calculations for day: 318    NOV    11/13/2024
+ Beginning calculations for day: 319    NOV    11/14/2024
+ Beginning calculations for day: 320    NOV    11/15/2024
+ Beginning calculations for day: 321    NOV    11/16/2024
+ Beginning calculations for day: 322    NOV    11/17/2024
+ Beginning calculations for day: 323    NOV    11/18/2024
+ Beginning calculations for day: 324    NOV    11/19/2024
+ Beginning calculations for day: 325    NOV    11/20/2024
+ Beginning calculations for day: 326    NOV    11/21/2024
+ Beginning calculations for day: 327    NOV    11/22/2024
+ Beginning calculations for day: 328    NOV    11/23/2024
+ Beginning calculations for day: 329    NOV    11/24/2024
+ Beginning calculations for day: 330    NOV    11/25/2024
+ Beginning calculations for day: 331    NOV    11/26/2024
+ Beginning calculations for day: 332    NOV    11/27/2024
+ Beginning calculations for day: 333    NOV    11/28/2024
+ Beginning calculations for day: 334    NOV    11/29/2024
+ Beginning calculations for day: 335    NOV    11/30/2024
+finished monthly calculations for: 11/2024
+ Beginning calculations for day: 336    DEC    12/ 1/2024
+ Beginning calculations for day: 337    DEC    12/ 2/2024
+ Beginning calculations for day: 338    DEC    12/ 3/2024
+ Beginning calculations for day: 339    DEC    12/ 4/2024
+ Beginning calculations for day: 340    DEC    12/ 5/2024
+ Beginning calculations for day: 341    DEC    12/ 6/2024
+ Beginning calculations for day: 342    DEC    12/ 7/2024
+ Beginning calculations for day: 343    DEC    12/ 8/2024
+ Beginning calculations for day: 344    DEC    12/ 9/2024
+ Beginning calculations for day: 345    DEC    12/10/2024
+ Beginning calculations for day: 346    DEC    12/11/2024
+ Beginning calculations for day: 347    DEC    12/12/2024
+ Beginning calculations for day: 348    DEC    12/13/2024
+ Beginning calculations for day: 349    DEC    12/14/2024
+ Beginning calculations for day: 350    DEC    12/15/2024
+ Beginning calculations for day: 351    DEC    12/16/2024
+ Beginning calculations for day: 352    DEC    12/17/2024
+ Beginning calculations for day: 353    DEC    12/18/2024
+ Beginning calculations for day: 354    DEC    12/19/2024
+ Beginning calculations for day: 355    DEC    12/20/2024
+ Beginning calculations for day: 356    DEC    12/21/2024
+ Beginning calculations for day: 357    DEC    12/22/2024
+ Beginning calculations for day: 358    DEC    12/23/2024
+ Beginning calculations for day: 359    DEC    12/24/2024
+ Beginning calculations for day: 360    DEC    12/25/2024
+ Beginning calculations for day: 361    DEC    12/26/2024
+ Beginning calculations for day: 362    DEC    12/27/2024
+ Beginning calculations for day: 363    DEC    12/28/2024
+ Beginning calculations for day: 364    DEC    12/29/2024
+ Beginning calculations for day: 365    DEC    12/30/2024
+ Beginning calculations for day: 366    DEC    12/31/2024
+finished monthly calculations for: 12/2024
+ >> SOLVE climate\MSN_1991.txt
+ Solving the model
+ Opening time series file: climate\MSN_1991.txt
+ Skipping: Month Day Year TAVG (F) Precipitation (in) Avg Rel Hum (%) TMAX (F) TMIN (F) WINDVEL (m/sec) Min Rel Hum (%) Sunshine
+
+ Beginning calculations for day:   1    JAN     1/ 1/2025
+ Beginning calculations for day:   2    JAN     1/ 2/2025
+ Beginning calculations for day:   3    JAN     1/ 3/2025
+ Beginning calculations for day:   4    JAN     1/ 4/2025
+ Beginning calculations for day:   5    JAN     1/ 5/2025
+ Beginning calculations for day:   6    JAN     1/ 6/2025
+ Beginning calculations for day:   7    JAN     1/ 7/2025
+ Beginning calculations for day:   8    JAN     1/ 8/2025
+ Beginning calculations for day:   9    JAN     1/ 9/2025
+ Beginning calculations for day:  10    JAN     1/10/2025
+ Beginning calculations for day:  11    JAN     1/11/2025
+ Beginning calculations for day:  12    JAN     1/12/2025
+ Beginning calculations for day:  13    JAN     1/13/2025
+ Beginning calculations for day:  14    JAN     1/14/2025
+ Beginning calculations for day:  15    JAN     1/15/2025
+ Beginning calculations for day:  16    JAN     1/16/2025
+ Beginning calculations for day:  17    JAN     1/17/2025
+ Beginning calculations for day:  18    JAN     1/18/2025
+ Beginning calculations for day:  19    JAN     1/19/2025
+ Beginning calculations for day:  20    JAN     1/20/2025
+ Beginning calculations for day:  21    JAN     1/21/2025
+ Beginning calculations for day:  22    JAN     1/22/2025
+ Beginning calculations for day:  23    JAN     1/23/2025
+ Beginning calculations for day:  24    JAN     1/24/2025
+ Beginning calculations for day:  25    JAN     1/25/2025
+ Beginning calculations for day:  26    JAN     1/26/2025
+ Beginning calculations for day:  27    JAN     1/27/2025
+ Beginning calculations for day:  28    JAN     1/28/2025
+ Beginning calculations for day:  29    JAN     1/29/2025
+ Beginning calculations for day:  30    JAN     1/30/2025
+ Beginning calculations for day:  31    JAN     1/31/2025
+finished monthly calculations for:  1/2025
+ Beginning calculations for day:  32    FEB     2/ 1/2025
+ Beginning calculations for day:  33    FEB     2/ 2/2025
+ Beginning calculations for day:  34    FEB     2/ 3/2025
+ Beginning calculations for day:  35    FEB     2/ 4/2025
+ Beginning calculations for day:  36    FEB     2/ 5/2025
+ Beginning calculations for day:  37    FEB     2/ 6/2025
+ Beginning calculations for day:  38    FEB     2/ 7/2025
+ Beginning calculations for day:  39    FEB     2/ 8/2025
+ Beginning calculations for day:  40    FEB     2/ 9/2025
+ Beginning calculations for day:  41    FEB     2/10/2025
+ Beginning calculations for day:  42    FEB     2/11/2025
+ Beginning calculations for day:  43    FEB     2/12/2025
+ Beginning calculations for day:  44    FEB     2/13/2025
+ Beginning calculations for day:  45    FEB     2/14/2025
+ Beginning calculations for day:  46    FEB     2/15/2025
+ Beginning calculations for day:  47    FEB     2/16/2025
+ Beginning calculations for day:  48    FEB     2/17/2025
+ Beginning calculations for day:  49    FEB     2/18/2025
+ Beginning calculations for day:  50    FEB     2/19/2025
+ Beginning calculations for day:  51    FEB     2/20/2025
+ Beginning calculations for day:  52    FEB     2/21/2025
+ Beginning calculations for day:  53    FEB     2/22/2025
+ Beginning calculations for day:  54    FEB     2/23/2025
+ Beginning calculations for day:  55    FEB     2/24/2025
+ Beginning calculations for day:  56    FEB     2/25/2025
+ Beginning calculations for day:  57    FEB     2/26/2025
+ Beginning calculations for day:  58    FEB     2/27/2025
+ Beginning calculations for day:  59    FEB     2/28/2025
+finished monthly calculations for:  2/2025
+ Beginning calculations for day:  60    MAR     3/ 1/2025
+ Beginning calculations for day:  61    MAR     3/ 2/2025
+ Beginning calculations for day:  62    MAR     3/ 3/2025
+ Beginning calculations for day:  63    MAR     3/ 4/2025
+ Beginning calculations for day:  64    MAR     3/ 5/2025
+ Beginning calculations for day:  65    MAR     3/ 6/2025
+ Beginning calculations for day:  66    MAR     3/ 7/2025
+ Beginning calculations for day:  67    MAR     3/ 8/2025
+ Beginning calculations for day:  68    MAR     3/ 9/2025
+ Beginning calculations for day:  69    MAR     3/10/2025
+ Beginning calculations for day:  70    MAR     3/11/2025
+ Beginning calculations for day:  71    MAR     3/12/2025
+ Beginning calculations for day:  72    MAR     3/13/2025
+ Beginning calculations for day:  73    MAR     3/14/2025
+ Beginning calculations for day:  74    MAR     3/15/2025
+ Beginning calculations for day:  75    MAR     3/16/2025
+ Beginning calculations for day:  76    MAR     3/17/2025
+ Beginning calculations for day:  77    MAR     3/18/2025
+ Beginning calculations for day:  78    MAR     3/19/2025
+ Beginning calculations for day:  79    MAR     3/20/2025
+ Beginning calculations for day:  80    MAR     3/21/2025
+ Beginning calculations for day:  81    MAR     3/22/2025
+ Beginning calculations for day:  82    MAR     3/23/2025
+ Beginning calculations for day:  83    MAR     3/24/2025
+ Beginning calculations for day:  84    MAR     3/25/2025
+ Beginning calculations for day:  85    MAR     3/26/2025
+ Beginning calculations for day:  86    MAR     3/27/2025
+ Beginning calculations for day:  87    MAR     3/28/2025
+ Beginning calculations for day:  88    MAR     3/29/2025
+ Beginning calculations for day:  89    MAR     3/30/2025
+ Beginning calculations for day:  90    MAR     3/31/2025
+finished monthly calculations for:  3/2025
+ Beginning calculations for day:  91    APR     4/ 1/2025
+ Beginning calculations for day:  92    APR     4/ 2/2025
+ Beginning calculations for day:  93    APR     4/ 3/2025
+ Beginning calculations for day:  94    APR     4/ 4/2025
+ Beginning calculations for day:  95    APR     4/ 5/2025
+ Beginning calculations for day:  96    APR     4/ 6/2025
+ Beginning calculations for day:  97    APR     4/ 7/2025
+ Beginning calculations for day:  98    APR     4/ 8/2025
+ Beginning calculations for day:  99    APR     4/ 9/2025
+ Beginning calculations for day: 100    APR     4/10/2025
+ Beginning calculations for day: 101    APR     4/11/2025
+ Beginning calculations for day: 102    APR     4/12/2025
+ Beginning calculations for day: 103    APR     4/13/2025
+ Beginning calculations for day: 104    APR     4/14/2025
+ Beginning calculations for day: 105    APR     4/15/2025
+ Beginning calculations for day: 106    APR     4/16/2025
+ Beginning calculations for day: 107    APR     4/17/2025
+ Beginning calculations for day: 108    APR     4/18/2025
+ Beginning calculations for day: 109    APR     4/19/2025
+ Beginning calculations for day: 110    APR     4/20/2025
+ Beginning calculations for day: 111    APR     4/21/2025
+ Beginning calculations for day: 112    APR     4/22/2025
+ Beginning calculations for day: 113    APR     4/23/2025
+ Beginning calculations for day: 114    APR     4/24/2025
+ Beginning calculations for day: 115    APR     4/25/2025
+ Beginning calculations for day: 116    APR     4/26/2025
+ Beginning calculations for day: 117    APR     4/27/2025
+ Beginning calculations for day: 118    APR     4/28/2025
+ Beginning calculations for day: 119    APR     4/29/2025
+ Beginning calculations for day: 120    APR     4/30/2025
+finished monthly calculations for:  4/2025
+ Beginning calculations for day: 121    MAY     5/ 1/2025
+ Beginning calculations for day: 122    MAY     5/ 2/2025
+ Beginning calculations for day: 123    MAY     5/ 3/2025
+ Beginning calculations for day: 124    MAY     5/ 4/2025
+ Beginning calculations for day: 125    MAY     5/ 5/2025
+ Beginning calculations for day: 126    MAY     5/ 6/2025
+ Beginning calculations for day: 127    MAY     5/ 7/2025
+ Beginning calculations for day: 128    MAY     5/ 8/2025
+ Beginning calculations for day: 129    MAY     5/ 9/2025
+ Beginning calculations for day: 130    MAY     5/10/2025
+ Beginning calculations for day: 131    MAY     5/11/2025
+ Beginning calculations for day: 132    MAY     5/12/2025
+ Beginning calculations for day: 133    MAY     5/13/2025
+ Beginning calculations for day: 134    MAY     5/14/2025
+ Beginning calculations for day: 135    MAY     5/15/2025
+ Beginning calculations for day: 136    MAY     5/16/2025
+ Beginning calculations for day: 137    MAY     5/17/2025
+ Beginning calculations for day: 138    MAY     5/18/2025
+ Beginning calculations for day: 139    MAY     5/19/2025
+ Beginning calculations for day: 140    MAY     5/20/2025
+ Beginning calculations for day: 141    MAY     5/21/2025
+ Beginning calculations for day: 142    MAY     5/22/2025
+ Beginning calculations for day: 143    MAY     5/23/2025
+ Beginning calculations for day: 144    MAY     5/24/2025
+ Beginning calculations for day: 145    MAY     5/25/2025
+ Beginning calculations for day: 146    MAY     5/26/2025
+ Beginning calculations for day: 147    MAY     5/27/2025
+ Beginning calculations for day: 148    MAY     5/28/2025
+ Beginning calculations for day: 149    MAY     5/29/2025
+ Beginning calculations for day: 150    MAY     5/30/2025
+ Beginning calculations for day: 151    MAY     5/31/2025
+finished monthly calculations for:  5/2025
+ Beginning calculations for day: 152    JUN     6/ 1/2025
+ Beginning calculations for day: 153    JUN     6/ 2/2025
+ Beginning calculations for day: 154    JUN     6/ 3/2025
+ Beginning calculations for day: 155    JUN     6/ 4/2025
+ Beginning calculations for day: 156    JUN     6/ 5/2025
+ Beginning calculations for day: 157    JUN     6/ 6/2025
+ Beginning calculations for day: 158    JUN     6/ 7/2025
+ Beginning calculations for day: 159    JUN     6/ 8/2025
+ Beginning calculations for day: 160    JUN     6/ 9/2025
+ Beginning calculations for day: 161    JUN     6/10/2025
+ Beginning calculations for day: 162    JUN     6/11/2025
+ Beginning calculations for day: 163    JUN     6/12/2025
+ Beginning calculations for day: 164    JUN     6/13/2025
+ Beginning calculations for day: 165    JUN     6/14/2025
+ Beginning calculations for day: 166    JUN     6/15/2025
+ Beginning calculations for day: 167    JUN     6/16/2025
+ Beginning calculations for day: 168    JUN     6/17/2025
+ Beginning calculations for day: 169    JUN     6/18/2025
+ Beginning calculations for day: 170    JUN     6/19/2025
+ Beginning calculations for day: 171    JUN     6/20/2025
+ Beginning calculations for day: 172    JUN     6/21/2025
+ Beginning calculations for day: 173    JUN     6/22/2025
+ Beginning calculations for day: 174    JUN     6/23/2025
+ Beginning calculations for day: 175    JUN     6/24/2025
+ Beginning calculations for day: 176    JUN     6/25/2025
+ Beginning calculations for day: 177    JUN     6/26/2025
+ Beginning calculations for day: 178    JUN     6/27/2025
+ Beginning calculations for day: 179    JUN     6/28/2025
+ Beginning calculations for day: 180    JUN     6/29/2025
+ Beginning calculations for day: 181    JUN     6/30/2025
+finished monthly calculations for:  6/2025
+ Beginning calculations for day: 182    JUL     7/ 1/2025
+ Beginning calculations for day: 183    JUL     7/ 2/2025
+ Beginning calculations for day: 184    JUL     7/ 3/2025
+ Beginning calculations for day: 185    JUL     7/ 4/2025
+ Beginning calculations for day: 186    JUL     7/ 5/2025
+ Beginning calculations for day: 187    JUL     7/ 6/2025
+ Beginning calculations for day: 188    JUL     7/ 7/2025
+ Beginning calculations for day: 189    JUL     7/ 8/2025
+ Beginning calculations for day: 190    JUL     7/ 9/2025
+ Beginning calculations for day: 191    JUL     7/10/2025
+ Beginning calculations for day: 192    JUL     7/11/2025
+ Beginning calculations for day: 193    JUL     7/12/2025
+ Beginning calculations for day: 194    JUL     7/13/2025
+ Beginning calculations for day: 195    JUL     7/14/2025
+ Beginning calculations for day: 196    JUL     7/15/2025
+ Beginning calculations for day: 197    JUL     7/16/2025
+ Beginning calculations for day: 198    JUL     7/17/2025
+ Beginning calculations for day: 199    JUL     7/18/2025
+ Beginning calculations for day: 200    JUL     7/19/2025
+ Beginning calculations for day: 201    JUL     7/20/2025
+ Beginning calculations for day: 202    JUL     7/21/2025
+ Beginning calculations for day: 203    JUL     7/22/2025
+ Beginning calculations for day: 204    JUL     7/23/2025
+ Beginning calculations for day: 205    JUL     7/24/2025
+ Beginning calculations for day: 206    JUL     7/25/2025
+ Beginning calculations for day: 207    JUL     7/26/2025
+ Beginning calculations for day: 208    JUL     7/27/2025
+ Beginning calculations for day: 209    JUL     7/28/2025
+ Beginning calculations for day: 210    JUL     7/29/2025
+ Beginning calculations for day: 211    JUL     7/30/2025
+ Beginning calculations for day: 212    JUL     7/31/2025
+finished monthly calculations for:  7/2025
+ Beginning calculations for day: 213    AUG     8/ 1/2025
+ Beginning calculations for day: 214    AUG     8/ 2/2025
+ Beginning calculations for day: 215    AUG     8/ 3/2025
+ Beginning calculations for day: 216    AUG     8/ 4/2025
+ Beginning calculations for day: 217    AUG     8/ 5/2025
+ Beginning calculations for day: 218    AUG     8/ 6/2025
+ Beginning calculations for day: 219    AUG     8/ 7/2025
+ Beginning calculations for day: 220    AUG     8/ 8/2025
+ Beginning calculations for day: 221    AUG     8/ 9/2025
+ Beginning calculations for day: 222    AUG     8/10/2025
+ Beginning calculations for day: 223    AUG     8/11/2025
+ Beginning calculations for day: 224    AUG     8/12/2025
+ Beginning calculations for day: 225    AUG     8/13/2025
+ Beginning calculations for day: 226    AUG     8/14/2025
+ Beginning calculations for day: 227    AUG     8/15/2025
+ Beginning calculations for day: 228    AUG     8/16/2025
+ Beginning calculations for day: 229    AUG     8/17/2025
+ Beginning calculations for day: 230    AUG     8/18/2025
+ Beginning calculations for day: 231    AUG     8/19/2025
+ Beginning calculations for day: 232    AUG     8/20/2025
+ Beginning calculations for day: 233    AUG     8/21/2025
+ Beginning calculations for day: 234    AUG     8/22/2025
+ Beginning calculations for day: 235    AUG     8/23/2025
+ Beginning calculations for day: 236    AUG     8/24/2025
+ Beginning calculations for day: 237    AUG     8/25/2025
+ Beginning calculations for day: 238    AUG     8/26/2025
+ Beginning calculations for day: 239    AUG     8/27/2025
+ Beginning calculations for day: 240    AUG     8/28/2025
+ Beginning calculations for day: 241    AUG     8/29/2025
+ Beginning calculations for day: 242    AUG     8/30/2025
+ Beginning calculations for day: 243    AUG     8/31/2025
+finished monthly calculations for:  8/2025
+ Beginning calculations for day: 244    SEP     9/ 1/2025
+ Beginning calculations for day: 245    SEP     9/ 2/2025
+ Beginning calculations for day: 246    SEP     9/ 3/2025
+ Beginning calculations for day: 247    SEP     9/ 4/2025
+ Beginning calculations for day: 248    SEP     9/ 5/2025
+ Beginning calculations for day: 249    SEP     9/ 6/2025
+ Beginning calculations for day: 250    SEP     9/ 7/2025
+ Beginning calculations for day: 251    SEP     9/ 8/2025
+ Beginning calculations for day: 252    SEP     9/ 9/2025
+ Beginning calculations for day: 253    SEP     9/10/2025
+ Beginning calculations for day: 254    SEP     9/11/2025
+ Beginning calculations for day: 255    SEP     9/12/2025
+ Beginning calculations for day: 256    SEP     9/13/2025
+ Beginning calculations for day: 257    SEP     9/14/2025
+ Beginning calculations for day: 258    SEP     9/15/2025
+ Beginning calculations for day: 259    SEP     9/16/2025
+ Beginning calculations for day: 260    SEP     9/17/2025
+ Beginning calculations for day: 261    SEP     9/18/2025
+ Beginning calculations for day: 262    SEP     9/19/2025
+ Beginning calculations for day: 263    SEP     9/20/2025
+ Beginning calculations for day: 264    SEP     9/21/2025
+ Beginning calculations for day: 265    SEP     9/22/2025
+ Beginning calculations for day: 266    SEP     9/23/2025
+ Beginning calculations for day: 267    SEP     9/24/2025
+ Beginning calculations for day: 268    SEP     9/25/2025
+ Beginning calculations for day: 269    SEP     9/26/2025
+ Beginning calculations for day: 270    SEP     9/27/2025
+ Beginning calculations for day: 271    SEP     9/28/2025
+ Beginning calculations for day: 272    SEP     9/29/2025
+ Beginning calculations for day: 273    SEP     9/30/2025
+finished monthly calculations for:  9/2025
+ Beginning calculations for day: 274    OCT    10/ 1/2025
+ Beginning calculations for day: 275    OCT    10/ 2/2025
+ Beginning calculations for day: 276    OCT    10/ 3/2025
+ Beginning calculations for day: 277    OCT    10/ 4/2025
+ Beginning calculations for day: 278    OCT    10/ 5/2025
+ Beginning calculations for day: 279    OCT    10/ 6/2025
+ Beginning calculations for day: 280    OCT    10/ 7/2025
+ Beginning calculations for day: 281    OCT    10/ 8/2025
+ Beginning calculations for day: 282    OCT    10/ 9/2025
+ Beginning calculations for day: 283    OCT    10/10/2025
+ Beginning calculations for day: 284    OCT    10/11/2025
+ Beginning calculations for day: 285    OCT    10/12/2025
+ Beginning calculations for day: 286    OCT    10/13/2025
+ Beginning calculations for day: 287    OCT    10/14/2025
+ Beginning calculations for day: 288    OCT    10/15/2025
+ Beginning calculations for day: 289    OCT    10/16/2025
+ Beginning calculations for day: 290    OCT    10/17/2025
+ Beginning calculations for day: 291    OCT    10/18/2025
+ Beginning calculations for day: 292    OCT    10/19/2025
+ Beginning calculations for day: 293    OCT    10/20/2025
+ Beginning calculations for day: 294    OCT    10/21/2025
+ Beginning calculations for day: 295    OCT    10/22/2025
+ Beginning calculations for day: 296    OCT    10/23/2025
+ Beginning calculations for day: 297    OCT    10/24/2025
+ Beginning calculations for day: 298    OCT    10/25/2025
+ Beginning calculations for day: 299    OCT    10/26/2025
+ Beginning calculations for day: 300    OCT    10/27/2025
+ Beginning calculations for day: 301    OCT    10/28/2025
+ Beginning calculations for day: 302    OCT    10/29/2025
+ Beginning calculations for day: 303    OCT    10/30/2025
+ Beginning calculations for day: 304    OCT    10/31/2025
+finished monthly calculations for: 10/2025
+ Beginning calculations for day: 305    NOV    11/ 1/2025
+ Beginning calculations for day: 306    NOV    11/ 2/2025
+ Beginning calculations for day: 307    NOV    11/ 3/2025
+ Beginning calculations for day: 308    NOV    11/ 4/2025
+ Beginning calculations for day: 309    NOV    11/ 5/2025
+ Beginning calculations for day: 310    NOV    11/ 6/2025
+ Beginning calculations for day: 311    NOV    11/ 7/2025
+ Beginning calculations for day: 312    NOV    11/ 8/2025
+ Beginning calculations for day: 313    NOV    11/ 9/2025
+ Beginning calculations for day: 314    NOV    11/10/2025
+ Beginning calculations for day: 315    NOV    11/11/2025
+ Beginning calculations for day: 316    NOV    11/12/2025
+ Beginning calculations for day: 317    NOV    11/13/2025
+ Beginning calculations for day: 318    NOV    11/14/2025
+ Beginning calculations for day: 319    NOV    11/15/2025
+ Beginning calculations for day: 320    NOV    11/16/2025
+ Beginning calculations for day: 321    NOV    11/17/2025
+ Beginning calculations for day: 322    NOV    11/18/2025
+ Beginning calculations for day: 323    NOV    11/19/2025
+ Beginning calculations for day: 324    NOV    11/20/2025
+ Beginning calculations for day: 325    NOV    11/21/2025
+ Beginning calculations for day: 326    NOV    11/22/2025
+ Beginning calculations for day: 327    NOV    11/23/2025
+ Beginning calculations for day: 328    NOV    11/24/2025
+ Beginning calculations for day: 329    NOV    11/25/2025
+ Beginning calculations for day: 330    NOV    11/26/2025
+ Beginning calculations for day: 331    NOV    11/27/2025
+ Beginning calculations for day: 332    NOV    11/28/2025
+ Beginning calculations for day: 333    NOV    11/29/2025
+ Beginning calculations for day: 334    NOV    11/30/2025
+finished monthly calculations for: 11/2025
+ Beginning calculations for day: 335    DEC    12/ 1/2025
+ Beginning calculations for day: 336    DEC    12/ 2/2025
+ Beginning calculations for day: 337    DEC    12/ 3/2025
+ Beginning calculations for day: 338    DEC    12/ 4/2025
+ Beginning calculations for day: 339    DEC    12/ 5/2025
+ Beginning calculations for day: 340    DEC    12/ 6/2025
+ Beginning calculations for day: 341    DEC    12/ 7/2025
+ Beginning calculations for day: 342    DEC    12/ 8/2025
+ Beginning calculations for day: 343    DEC    12/ 9/2025
+ Beginning calculations for day: 344    DEC    12/10/2025
+ Beginning calculations for day: 345    DEC    12/11/2025
+ Beginning calculations for day: 346    DEC    12/12/2025
+ Beginning calculations for day: 347    DEC    12/13/2025
+ Beginning calculations for day: 348    DEC    12/14/2025
+ Beginning calculations for day: 349    DEC    12/15/2025
+ Beginning calculations for day: 350    DEC    12/16/2025
+ Beginning calculations for day: 351    DEC    12/17/2025
+ Beginning calculations for day: 352    DEC    12/18/2025
+ Beginning calculations for day: 353    DEC    12/19/2025
+ Beginning calculations for day: 354    DEC    12/20/2025
+ Beginning calculations for day: 355    DEC    12/21/2025
+ Beginning calculations for day: 356    DEC    12/22/2025
+ Beginning calculations for day: 357    DEC    12/23/2025
+ Beginning calculations for day: 358    DEC    12/24/2025
+ Beginning calculations for day: 359    DEC    12/25/2025
+ Beginning calculations for day: 360    DEC    12/26/2025
+ Beginning calculations for day: 361    DEC    12/27/2025
+ Beginning calculations for day: 362    DEC    12/28/2025
+ Beginning calculations for day: 363    DEC    12/29/2025
+ Beginning calculations for day: 364    DEC    12/30/2025
+ Beginning calculations for day: 365    DEC    12/31/2025
+finished monthly calculations for: 12/2025
+ >> EOJ
+Average recharge over period 2023-2025:
+ MEAN RECHARGE                        5.57           7.47          15.89
+MEAN RECHARGE, EXCLUDING OPEN WATER CELLS:         7.471
+ --------------------------------------------------------------------------------
+Average recharge over period 2023-2025:
+1.1   High Intensity (commercial and business        5.57          6.77         15.89
+2 AGRICULTURE                                        7.30          8.00         14.59
+ 
+Average recharge by landuse and soil type over period 2023-2025:
+                      Land Use Soil Type     Min (in)     Mean (in)      Max (in)         Count
+1.1   High Intensity (commercial and business Soil: 1| 
+1.1   High Intensity (commercial and business Soil: 2|         5.57          6.77         15.89         95008
+2 AGRICULTURE                                 Soil: 1| 
+2 AGRICULTURE                                 Soil: 2|         7.30          8.00         14.59        128072
+ --------------------------------------------------------------------------------
+ Job complete.
+ Closed binary file for INTERCEPTION on unit 201
+ Closed binary file for RUNOFF_OUTSIDE on unit 202
+ Closed binary file for RECHARGE on unit 203
+ Closed binary file for POT_ET on unit 204
+ Opened binary file for INTERCEPTION on unit 201
+ start date offset: 65
+ end date offset: 77
+ Opened binary file for RUNOFF_OUTSIDE on unit 202
+ start date offset: 65
+ end date offset: 77
+ Opened binary file for RECHARGE on unit 203
+ start date offset: 65
+ end date offset: 77
+ Opened binary file for POT_ET on unit 204
+ start date offset: 65
+ end date offset: 77
+CALCULATING ANNUAL SUMS for INTERCEPTION
+ INTERCEPTION                         0.00           0.00           0.00
+ INTERCEPTION                         0.00           0.00           0.00
+ INTERCEPTION                         0.00           0.00           0.00
+CALCULATING ANNUAL SUMS for RUNOFF_OUTSIDE
+ RUNOFF_OUTSIDE                       0.00           1.49       81822.78
+ RUNOFF_OUTSIDE                       0.00           0.21       13597.05
+ RUNOFF_OUTSIDE                       0.00           0.08        8206.87
+CALCULATING MONTHLY SUMS for: RECHARGE
+CALCULATING ANNUAL SUMS for RECHARGE
+ RECHARGE                             9.94          12.24          23.76
+ RECHARGE                             5.03           7.01          15.68
+ RECHARGE                             1.73           3.18           8.23
+CALCULATING MONTHLY SUMS for: POT_ET
+CALCULATING ANNUAL SUMS for POT_ET
+ POT_ET                              15.85          15.82          15.85
+ POT_ET                              16.95          16.98          16.95
+ POT_ET                              16.44          16.48          16.44
+
+
+ SWB run completed in:     122.17 minutes

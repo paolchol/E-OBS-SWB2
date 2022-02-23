@@ -1,0 +1,64 @@
+<PAMDataset>
+  <PAMRasterBand band="1">
+    <Histograms>
+      <HistItem>
+        <HistMin>0</HistMin>
+        <HistMax>0</HistMax>
+        <BucketCount>72</BucketCount>
+        <IncludeOutOfRange>0</IncludeOutOfRange>
+        <Approximate>0</Approximate>
+        <HistCounts>72|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0</HistCounts>
+      </HistItem>
+    </Histograms>
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">0</MDI>
+      <MDI key="STATISTICS_MEAN">0</MDI>
+      <MDI key="STATISTICS_MINIMUM">0</MDI>
+      <MDI key="STATISTICS_STDDEV">0</MDI>
+    </Metadata>
+  </PAMRasterBand>
+  <PAMRasterBand band="2">
+    <Histograms>
+      <HistItem>
+        <HistMin>-0.06875000397364299</HistMin>
+        <HistMax>9.968750576178232</HistMax>
+        <BucketCount>72</BucketCount>
+        <IncludeOutOfRange>0</IncludeOutOfRange>
+        <Approximate>0</Approximate>
+        <HistCounts>2|0|0|0|0|0|0|0|0|0|0|0|0|0|0|2|0|2|0|2|0|2|1|2|3|1|0|3|1|1|2|0|2|2|1|1|1|2|1|1|1|2|3|1|4|1|1|1|0|3|2|2|1|1|1|1|0|4|2|1|1|1|1|1|0|0|0|0|0|0|0|1</HistCounts>
+      </HistItem>
+    </Histograms>
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">9.9000005722046</MDI>
+      <MDI key="STATISTICS_MEAN">5.3902778691716</MDI>
+      <MDI key="STATISTICS_MINIMUM">0</MDI>
+      <MDI key="STATISTICS_STDDEV">2.1278680090478</MDI>
+    </Metadata>
+  </PAMRasterBand>
+  <PAMRasterBand band="3">
+    <Histograms>
+      <HistItem>
+        <HistMin>-0.02916666865348816</HistMin>
+        <HistMax>4.229166954755783</HistMax>
+        <BucketCount>72</BucketCount>
+        <IncludeOutOfRange>0</IncludeOutOfRange>
+        <Approximate>0</Approximate>
+        <HistCounts>22|0|0|0|0|0|0|0|0|0|1|0|0|0|0|1|0|3|0|1|1|0|2|0|2|0|0|1|0|0|1|0|2|0|1|0|2|0|0|2|0|2|1|0|1|0|1|1|0|3|0|4|2|0|3|0|3|5|0|0|0|1|0|1|1|0|0|0|0|0|0|1</HistCounts>
+      </HistItem>
+    </Histograms>
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">4.2000002861023</MDI>
+      <MDI key="STATISTICS_MEAN">1.7263889205125</MDI>
+      <MDI key="STATISTICS_MINIMUM">0</MDI>
+      <MDI key="STATISTICS_STDDEV">1.3742668064582</MDI>
+    </Metadata>
+  </PAMRasterBand>
+  <PAMRasterBand band="4">
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">32.5</MDI>
+      <MDI key="STATISTICS_MEAN">23.6513892942</MDI>
+      <MDI key="STATISTICS_MINIMUM">14.400000572205</MDI>
+      <MDI key="STATISTICS_STDDEV">4.827150979361</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>
