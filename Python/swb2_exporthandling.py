@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 
 # %% Project's directory
-os.chdir('C:/Users/paolo/Desktop/progetto E-OBS')
+os.chdir('C:/E-OBS-SWB2')
 
 # %% Custom functions
 
@@ -68,6 +68,8 @@ save_ArcGRID(df, fname, xll, yll, size, -9999)
 
 # %% Get the sum over the 4 stress periods
 
+outpath = "./Export/ASCII/RMeteo_SP_inch"
+
 #Stress period definition
 SP1 = 90   #days, 01/01 - 30/03
 SP2 = 76   #days, 01/04 - 12/06
@@ -101,9 +103,11 @@ for y in period:
         base = SP
         #Sum the infiltration across the stress period
         #Transform into m/s
-        sp = np.sum(sp, axis = 0)*0.0254/(60*60*sp.shape[0])
+        #sp = np.sum(sp, axis = 0)*0.0254/(60*60*sp.shape[0])
+        #Keep in inches
+        #sp = np.sum(sp, axis = 0)
         #Save as Arc GRID ASCII file
-        fname = f'RMeteo_{y}_SP{i}.asc'
+        fname = f'{outpath}/RMeteo_{y}_SP{i}_inch.asc'
         sp = pd.DataFrame(sp)
         save_ArcGRID(sp, fname, xll, yll, size, -9.9e-20)
         #-9.9e-20 got from _FillValue of 'net_infiltration' in the netCDF file
