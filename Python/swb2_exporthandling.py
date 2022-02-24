@@ -52,6 +52,26 @@ print(f['net_infiltration'])
 
 net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
 
+# Create the sum for different tests
+# outpath = "./Export/ASCII/RMeteo_tot"
+# fls = glob.glob('./Data/SWB2_output/*.nc')
+
+# for i, fl in enumerate(fls, start = 1):
+#     f = nc.Dataset(fl)
+#     net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
+    
+#     df = np.sum(net_infiltration, axis = 0)*0.0254 #meters
+#     df = pd.DataFrame(df)
+#     fname = f"{outpath}/p{i}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
+#     df.to_csv(fname, sep = ' ', header = False, index = False)
+#     xll = round(np.ma.getdata(f['x'][0]).item())
+#     yll = round(np.ma.getdata(f['y'][-1]).item())
+#     size = 100
+#     save_ArcGRID(df, fname, xll, yll, size, -9999)
+    
+#     f.close()
+
+
 # %% Get a sum over the 5 years to compare with the results of SWB1
 
 df = np.sum(net_infiltration, axis = 0)*0.0254 #meters
@@ -82,12 +102,13 @@ print(f['time'])
 #units: days since 2014-01-01
 #it includes the leap year in 2016! It has to be considered
 
+#Could be retrieved from netCDF metadata?
 starty = 2014 #Start year
 endy = 2018   #End year
 
 xll = round(np.ma.getdata(f['x'][0]).item())
 yll = round(np.ma.getdata(f['y'][-1]).item())
-size = 100
+size = round(np.ma.getdata(f['x'][1]).item()) - xll
 #Extract a single year
 period = range(starty, endy+1)
 s = 0
@@ -104,8 +125,8 @@ for y in period:
         #Sum the infiltration across the stress period
         #Transform into m/s
         #sp = np.sum(sp, axis = 0)*0.0254/(60*60*sp.shape[0])
-        #Keep in inches
-        #sp = np.sum(sp, axis = 0)
+        #Keep in inches (make the transformation later). Useful because otherwise ArcGIS can't read the values (too small)
+        sp = np.sum(sp, axis = 0)
         #Save as Arc GRID ASCII file
         fname = f'{outpath}/RMeteo_{y}_SP{i}_inch.asc'
         sp = pd.DataFrame(sp)

@@ -14,5 +14,7 @@ swbout = "./swb2_MODELMI/output/"
 #List the netCDF files inside the folder
 ls = list.files(path = swbout, pattern = "*.nc")
 
+#Guarda qui per la gestione di file netCDF
+#https://rpubs.com/markpayne/358146
 
 
