@@ -6,7 +6,7 @@ Functions are divided in four sections:
 2. ArcASCII GRID creation (general)
 3. netCDF input creation (SWB2 specific)
 
-author: paolo
+@author: paolo
 """
 
 # %% 0. Generic functions
@@ -45,8 +45,8 @@ def transf(lat_t, lon_t, zoneN, zoneL, var = 'xy'):
     y = []
     for i in lat_t:
         for j in lon_t:
-                #The syntax is utm.from_latlon(LATITUDE, LONGITUDE)
-                #The return has the form (EASTING, NORTHING, ZONE_NUMBER, ZONE_LETTER)
+            #The syntax is utm.from_latlon(LATITUDE, LONGITUDE)
+            #The return has the form (EASTING, NORTHING, ZONE_NUMBER, ZONE_LETTER)
             xj, yi, _, _ = utm.from_latlon(i, j,
                             force_zone_number = zoneN,
                             force_zone_letter = zoneL)
@@ -77,7 +77,6 @@ def save_ArcGRID(df, fname, xll, yll, size, nodata):
     df.to_csv(fname, sep = ' ', header = False, index = False)
     header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
     line_prepender(fname, header)
-
 
 # %% 3. netCDF input creation (SWB2 specific)
 
