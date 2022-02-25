@@ -16,4 +16,4 @@ It will be explained once it is done
 ## Useful links
 SWB2 manual: https://pubs.er.usgs.gov/publication/tm6A59 \
 E-OBS user guide: https://surfobs.climate.copernicus.eu/userguidance/use_ensembles.php \
-E-OBS downloap page: https://surfobs.climate.copernicus.eu/dataaccess/access_eobs.php \
+E-OBS downloap page: https://surfobs.climate.copernicus.eu/dataaccess/access_eobs.php
