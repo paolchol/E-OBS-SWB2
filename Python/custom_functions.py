@@ -34,8 +34,10 @@ def eobs_todate(x, number = False):
     #If x is a plain number (not a variable), "number" must be set to True
     from datetime import date, timedelta
     start = date(1950,1,1)
-    if (number): end = start + timedelta(days = x.item())
-    else: end = start + timedelta(days = x)
+    if (number):
+        end = start + timedelta(days = x.item())
+    else:
+        end = start + timedelta(days = x)
     return end.year, end.strftime('%m'), end.strftime('%d')
 
 def transf(lat_t, lon_t, zoneN, zoneL, var = 'xy'):

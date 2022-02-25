@@ -70,7 +70,7 @@ maxlon = max(model_extremes.lon) + 0.1 + 0.1
 maxlat = max(model_extremes.lat) + 0.1 + 0.1
 
 #Ancillary points of SWB directly loaded and considered as starting point to cut
-# f = pd.read_csv("./Dati/ancillary_grid_extentions_SWB.txt", index_col = 0, sep = "\t")
+# f = pd.read_csv("./Data/ancillary_grid_extentions_SWB.txt", index_col = 0, sep = "\t")
 # minlat = f['y'][0] - 0.1
 # minlon = f['x'][0] - 0.1
 # maxlat = f['y'][1] + 0.1

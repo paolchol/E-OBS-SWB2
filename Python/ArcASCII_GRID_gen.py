@@ -40,10 +40,13 @@ def eobs_todate(x, number = False):
     #If x is a plain number (not a variable), "number" must be set to True
     from datetime import date, timedelta
     start = date(1950,1,1)
-    if (number): end = start + timedelta(days = x.item())
-    else: end = start + timedelta(days = x)
+    if (number):
+        end = start + timedelta(days = x.item())
+    else:
+        end = start + timedelta(days = x)
     return end.year, end.strftime('%m'), end.strftime('%d')
 
+#Change to do: remove this function
 def line_prepender(filename, line):
     with open(filename, 'r+') as f:
         content = f.read()
@@ -73,29 +76,51 @@ def transfcoord(lat, lon, zoneN, zoneL):
             north += [coord[1]]
     return east, north
 
-
+def save_ArcGRID(df, fname, xll, yll, size, nodata):
+    #df has to be a Pandas DataFrame
+    #xll: x coordinate of the left bottom corner (lon)
+    #yll: y coordinate of the left bottom corner (lat)
+    #size: cell size (m)
+    #nodata: value assigned to nodata
+    def line_prepender(filename, line):
+        with open(filename, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(line + '\n' + content)
+            #line.rstrip('\r\n') if you want ot remove something from line
+    df.to_csv(fname, sep = ' ', header = False, index = False)
+    header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
+    line_prepender(fname, header)
 
 
 # %% Define area of the project
-starttime = time.time()
 
 #Points obtained from the project's perimeter*
 points = {'lon': [8.691, 8.929, 9.524, 9.537],
           'lat': [45.611, 45.308, 45.610, 45.306]}
 model_extremes = pd.DataFrame(points)
 #*this can be updated to read directly the point shapefile
+#Or even directly the area shapefile, then search for the maximum and minimum points
 
 #Take min and max of the coordinates to define the angles of the desired rectangle
 #0.1 (degrees) is added to the maxs and subtracted to the mins to take a cell
 #more to interpolate later without border effects
-minlon = min(model_extremes.lon) - 0.1
-maxlon = max(model_extremes.lon) + 0.1
-minlat = min(model_extremes.lat) - 0.1
-maxlat = max(model_extremes.lat) + 0.1
+#an additional 0.1 (degrees) are used to cover the "ancillary" points in SWB
+minlon = min(model_extremes.lon) - 0.1 - 0.1
+minlat = min(model_extremes.lat) - 0.1 - 0.1
+maxlon = max(model_extremes.lon) + 0.1 + 0.1
+maxlat = max(model_extremes.lat) + 0.1 + 0.1
+
+#Ancillary points of SWB directly loaded and considered as starting point to cut
+# f = pd.read_csv("./Data/ancillary_grid_extentions_SWB.txt", index_col = 0, sep = "\t")
+# minlat = f['y'][0] - 0.1
+# minlon = f['x'][0] - 0.1
+# maxlat = f['y'][1] + 0.1
+# maxlon = f['x'][1] + 0.1
 
 # %% Create the folders to save the exported files
 
-os.chdir('C:/Users/paolo/Desktop/progetto E-OBS')
+#os.chdir('C:/E-OBS-SWB2')
 namefolder = ['precip','tmin','tmax']
 exp = r'.\Export\ASCII'
 if not os.path.exists(exp):
@@ -108,7 +133,7 @@ for name in namefolder:
 # %% Generate daily .asc files
 
 #Set the paths to the files
-ncdf = glob.glob('C:/Users/paolo/Desktop/progetto E-OBS/Dati/E-OBS/*.nc')
+ncdf = glob.glob('./Data/E-OBS/*.nc')
 
 #Select the needed files
 # tn: minimum temperature
@@ -117,7 +142,7 @@ ncdf = glob.glob('C:/Users/paolo/Desktop/progetto E-OBS/Dati/E-OBS/*.nc')
 
 # rr = nc.Dataset(ncf[4])
 # tn = nc.Dataset(ncf[6])
-# tx = nc.Dataset(ncf[7])
+# tx = nc.Dataset(ncf[8])
 idxs = [4, 7, 8]
 tag = ['rr','tn', 'tx']
 outname = ['PRCP', 'TMIN', 'TMAX']
@@ -142,6 +167,9 @@ for i, idx in enumerate(idxs, start = 0):
     #+1 to actually consider 2018-12-31
     
     for tt in range(start, end):
+
+        #Change this procedure below, as in netCDF_gen
+
         val = ds[tag[i]][tt, :, :]
         #Create a pd.DataFrame with the variable
         #Place lat and lon as column and row names
@@ -164,6 +192,8 @@ for i, idx in enumerate(idxs, start = 0):
         #int
         #df.astype(int).to_csv(fname, sep = ' ', header = False, index = False)
         #Insert the header
+        #Change
+        #be sure that df.index[-1] is the lat of left bottom corner
         coord = utm.from_latlon(df.index[-1], df.columns[0], 32, 'N')
         #x: East, y: North
         header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {round(coord[0])}\nyllcorner     {round(coord[1])}\ncellsize      8300\nNODATA_value  -9999'
