@@ -44,32 +44,32 @@ def save_ArcGRID(df, fname, xll, yll, size, nodata):
 
 # %% Open and get net infiltration
 
-swbout = "./swb2_MODELMI/output"
-f = nc.Dataset(f'{swbout}/ModelMI_net_infiltration__2014-01-01_2018-12-31__338_by_660.nc')
+# swbout = "./swb2_MODELMI/output"
+# f = nc.Dataset(f'{swbout}/ModelMI_net_infiltration__2014-01-01_2018-12-31__338_by_660.nc')
 
-print(f)
-print(f['net_infiltration'])
+# print(f)
+# print(f['net_infiltration'])
 
-net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
+# net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
 
 # Create the sum for different tests
-# outpath = "./Export/ASCII/RMeteo_tot"
-# fls = glob.glob('./Data/SWB2_output/*.nc')
+outpath = "./Export/ASCII/RMeteo_tot"
+fls = glob.glob('./Data/SWB2_output/*.nc')
 
-# for i, fl in enumerate(fls, start = 1):
-#     f = nc.Dataset(fl)
-#     net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
+for i, fl in enumerate(fls, start = 1):
+    f = nc.Dataset(fl)
+    net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
     
-#     df = np.sum(net_infiltration, axis = 0)*0.0254 #meters
-#     df = pd.DataFrame(df)
-#     fname = f"{outpath}/p{i}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
-#     df.to_csv(fname, sep = ' ', header = False, index = False)
-#     xll = round(np.ma.getdata(f['x'][0]).item())
-#     yll = round(np.ma.getdata(f['y'][-1]).item())
-#     size = 100
-#     save_ArcGRID(df, fname, xll, yll, size, -9999)
+    df = np.sum(net_infiltration, axis = 0)*0.0254 #meters
+    df = pd.DataFrame(df)
+    fname = f"{outpath}/p{i}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
+    df.to_csv(fname, sep = ' ', header = False, index = False)
+    xll = round(np.ma.getdata(f['x'][0]).item())
+    yll = round(np.ma.getdata(f['y'][-1]).item())
+    size = 100
+    save_ArcGRID(df, fname, xll, yll, size, -9999)
     
-#     f.close()
+    f.close()
 
 
 # %% Get a sum over the 5 years to compare with the results of SWB1

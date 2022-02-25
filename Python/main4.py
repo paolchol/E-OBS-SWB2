@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 
 # %% Project's directory
-os.chdir('C:/Users/paolo/Desktop/progetto E-OBS')
+os.chdir('C:/E-OBS-SWB2')
 
 # %% Custom functions
 
@@ -105,10 +105,10 @@ tyR = t.year
 #Get the path to the files
 #outpath = r'./Dati/Ritagli_netCDF'
 outpath = r'./Export/netCDF/calco_Daymet'
-outpathswb2 = r'C:/Users/paolo/Desktop/progetto E-OBS/swb2_MODELMIclimate_ncfile'
-fls = glob.glob('./Dati/E-OBS/*.nc')
+outpathswb2 = r'./swb2_MODELMI/climate_ncfile'
+fls = glob.glob('./Data/E-OBS/*.nc')
 
-# n = 8
+# n = 4
 # year = 2014
 # i = 2
 

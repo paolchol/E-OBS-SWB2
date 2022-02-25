@@ -7,16 +7,19 @@ Created on Wed Feb 16 15:05:08 2022
 
 import netCDF4 as nc
 import numpy as np
+import os
 
-sample = nc.Dataset(r"C:\Users\paolo\Desktop\progetto E-OBS\Dati\tmax_Daymet_v3_2013.nc")
-prova = nc.Dataset(r"C:\Users\paolo\Desktop\progetto E-OBS\Export\netCDF\calco_Daymet\prove\prova_v7_lambert.nc")
+os.chdir('C:/E-OBS-SWB2')
+
+
+eobs = nc.Dataset("./Data/E-OBS/rr_ens_mean_0.1deg_reg_2011-2021_v24.0e.nc")
+sample = nc.Dataset(r".\Data\tmax_Daymet_v3_2013.nc")
+prova = nc.Dataset(r".\Export\netCDF\calco_Daymet\prove\prova_v7_lambert.nc")
 
 print(sample)
 print(prova)
 
 print(sample['time'])
-prova.close()
-sample.close()
 
 samplevar = sample['prcp'][0:3, :, :]
 samplevar = np.ma.getdata(samplevar)
@@ -26,6 +29,14 @@ y = sample['y'][:]
 
 yp = prova['y'][:]
 var = np.ma.getdata(prova['rr'][0:3, :, :])
+
+print(eobs)
+print(eobs['rr'])
+
+prova.close()
+sample.close()
+eobs.close()
+
 
 #%% Confronto tra tmax
 
