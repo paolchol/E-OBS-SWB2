@@ -66,11 +66,10 @@ for i, fl in enumerate(fls, start = 1):
     df.to_csv(fname, sep = ' ', header = False, index = False)
     xll = round(np.ma.getdata(f['x'][0]).item())
     yll = round(np.ma.getdata(f['y'][-1]).item())
-    size = 100
+    size = round(np.ma.getdata(f['x'][1]).item()) - xll #controlla che sia 100
     save_ArcGRID(df, fname, xll, yll, size, -9999)
     
     f.close()
-
 
 # %% Get a sum over the 5 years to compare with the results of SWB1
 
@@ -81,7 +80,7 @@ df.to_csv(fname, sep = ' ', header = False, index = False)
 
 xll = round(np.ma.getdata(f['x'][0]).item())
 yll = round(np.ma.getdata(f['y'][-1]).item())
-size = 100
+size = size = round(np.ma.getdata(f['x'][1]).item()) - xll
 # header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  -9999'
 # line_prepender(fname, header)
 save_ArcGRID(df, fname, xll, yll, size, -9999)

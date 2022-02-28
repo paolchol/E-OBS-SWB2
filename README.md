@@ -1,5 +1,5 @@
 # E-OBS - SWB2
-**Goal**: Management of E-OBS data to import them inside SWB2. Handling of SWB2 outputs afterwards.\
+**Goal**: Management of E-OBS data to import them inside SWB2. Handling of SWB2 outputs.\
 **Author**: Paolo Colombo - Politecnico di Milano\
 **Contact**: paolocolombo1996@gmail.com
 

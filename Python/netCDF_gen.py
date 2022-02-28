@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Creation of netCDF files compatible with SWB2 software
+
 - Starting point: E-OBS data
 - netCDF building based on the Daymet netCDF provided by SWB2 manual
 
@@ -147,7 +148,7 @@ for i, n in enumerate(index, start = 0):
         #fname = f'{outpath}/prove/prova_v7_lambert.nc'
         ds = nc.Dataset(fname, 'w', format = "NETCDF3_CLASSIC")
         
-        ##General metadata
+        ## General metadata
         ds.description = f"E-OBS dataset over the Ticino-Adda groundwater basin, year {year}"
         ds.source = "E-OBS v24.0"
         ds.start_day = f"01/01/{year}"
