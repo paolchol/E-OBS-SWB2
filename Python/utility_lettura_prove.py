@@ -21,7 +21,7 @@ print(prova)
 
 print(sample['time'])
 
-samplevar = sample['prcp'][0:3, :, :]
+samplevar = sample['tmax'][0:3, :, :]
 samplevar = np.ma.getdata(samplevar)
 
 lat = sample['lat'][:]
@@ -41,12 +41,12 @@ eobs.close()
 #%% Confronto tra tmax
 
 #Samples
-prec = nc.Dataset(r"C:\Users\paolo\Desktop\progetto E-OBS\Dati\prcp_Daymet_v3_2012.nc")
-tmin = nc.Dataset(r"C:\Users\paolo\Desktop\progetto E-OBS\Dati\tmin_Daymet_v3_2012.nc")
-tmax = nc.Dataset(r"C:\Users\paolo\Desktop\progetto E-OBS\Dati\tmax_Daymet_v3_2013.nc")
+prec = nc.Dataset(r".\Data\prcp_Daymet_v3_2012.nc")
+tmin = nc.Dataset(r".\Data\tmin_Daymet_v3_2012.nc")
+tmax = nc.Dataset(r".\Data\tmax_Daymet_v3_2013.nc")
 #Prove
-ptmin = nc.Dataset(r"C:\Users\paolo\Desktop\progetto E-OBS\Export\netCDF\calco_Daymet\tmin_EOBS_2014.nc")
-ptmax = nc.Dataset(r"C:\Users\paolo\Desktop\progetto E-OBS\Export\netCDF\calco_Daymet\tmax_EOBS_2014.nc")
+ptmin = nc.Dataset(r".\Export\netCDF\calco_Daymet\tmin_EOBS_2014.nc")
+ptmax = nc.Dataset(r".\Export\netCDF\calco_Daymet\tmax_EOBS_2014.nc")
 
 print('prec comparison')
 print(prec)
@@ -63,7 +63,7 @@ print(ptmax['tx'])
 sp = np.ma.getdata(prec['prcp'][:,:,:])
 stn = np.ma.getdata(tmin['tmin'][:,:,:])
 stx = np.ma.getdata(tmax['tmax'][:,:,:])
-ptx = np.ma.getdata(ptmax['tx'][:,:,:])
+ptx = np.ma.getdata(ptmax['tmax'][:,:,:])
 
 time = tmax['time'][:]
 ptime = ptmax['time'][:]

@@ -144,12 +144,14 @@ for i, idx in enumerate(idxs, start = 0):
     idx_lon = np.intersect1d(np.where(lon > minlon), np.where(lon < maxlon))
     #Extract the values in the time and space range
     val = ncf[tag[i]][range(start, end), idx_lat, idx_lon]
+    #Flip the variable matrix around the horizontal axis
+    val = np.flip(val, axis = 1)
     
     xll = lat[idx_lat][0]
     yll = lon[idx_lon][0]
     
     xll, yll, _, _ = utm.from_latlon(lat[idx_lat][0], lon[idx_lon][0], 32, 'N')
-    x, y, _, _ =utm.from_latlon(lat[idx_lat][1], lon[idx_lon][1], 32, 'N')
+    x, y, _, _ = utm.from_latlon(lat[idx_lat][1], lon[idx_lon][1], 32, 'N')
     size = round(math.sqrt((x-xll)*(y-yll))) #side of a square with the same area as the rectangle
     
     #Cycle through the days
