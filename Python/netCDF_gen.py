@@ -110,7 +110,7 @@ fls = glob.glob('./Data/E-OBS/*.nc')
 
 # n = 4
 # year = 2014
-# i = 2
+# i = 0
 
 for i, n in enumerate(index, start = 0):
     ncf = nc.Dataset(fls[n])

@@ -45,6 +45,7 @@ prec = nc.Dataset(r".\Data\prcp_Daymet_v3_2012.nc")
 tmin = nc.Dataset(r".\Data\tmin_Daymet_v3_2012.nc")
 tmax = nc.Dataset(r".\Data\tmax_Daymet_v3_2013.nc")
 #Prove
+pprec = nc.Dataset(r".\Export\netCDF\calco_Daymet\prcp_EOBS_2014.nc")
 ptmin = nc.Dataset(r".\Export\netCDF\calco_Daymet\tmin_EOBS_2014.nc")
 ptmax = nc.Dataset(r".\Export\netCDF\calco_Daymet\tmax_EOBS_2014.nc")
 
@@ -68,11 +69,14 @@ ptx = np.ma.getdata(ptmax['tmax'][:,:,:])
 time = tmax['time'][:]
 ptime = ptmax['time'][:]
 
+ppr = np.ma.getdata(pprec['prcp'][:,:,:])
+
 ptmin['y'][:]
 
 prec.close()
 tmin.close()
 tmax.close()
+pprec.close()
 ptmin.close()
 ptmax.close()
 
