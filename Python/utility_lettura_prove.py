@@ -92,4 +92,9 @@ x_todate(ptmin['time'][0] - 0.5)
 x_todate(tmin['time'][0] - 0.5)
 
 
+lat = np.ma.getdata(pprec['lat'][:])
 
+llat = np.ma.getdata(prec['lat'][:])
+llon = np.ma.getdata(prec['lon'][:])
+
+prec['x'][:]

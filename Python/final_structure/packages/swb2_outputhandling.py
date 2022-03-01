@@ -63,11 +63,9 @@ for i, fl in enumerate(fls, start = 1):
     df = pd.DataFrame(df)
     fname = f"{outpath}/p{i}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
     df.to_csv(fname, sep = ' ', header = False, index = False)
-    
-    size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item()) #controlla che sia 100
-    xll = round(np.ma.getdata(f['x'][0]).item()) - size/2
-    yll = round(np.ma.getdata(f['y'][-1]).item()) - size/2
-    
+    xll = round(np.ma.getdata(f['x'][0]).item())
+    yll = round(np.ma.getdata(f['y'][-1]).item())
+    size = round(np.ma.getdata(f['x'][1]).item()) - xll #controlla che sia 100
     save_ArcGRID(df, fname, xll, yll, size, -9999)
     
     f.close()
@@ -88,13 +86,6 @@ save_ArcGRID(df, fname, xll, yll, size, -9999)
 
 # %% Get the sum over the 4 stress periods
 
-# swbout = "./swb2_MODELMI/output"
-# f = nc.Dataset(f'{swbout}/ModelMI_net_infiltration__2014-01-01_2018-12-31__338_by_660.nc')
-
-fls = glob.glob('./Data/SWB2_output/*.nc')
-f = nc.Dataset(fls[0]) #here update searching for "net_infiltration" in the filename
-net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
-
 outpath = "./Export/ASCII/RMeteo_SP_inch"
 
 #Stress period definition
@@ -105,20 +96,17 @@ SP4 = 107  #days, - 31/12
 SPs = [SP1, SP2, SP3, SP4]
 SPs = np.cumsum(SPs)
 
-#print(f['time'])
+print(f['time'])
 #units: days since 2014-01-01
 #it includes the leap year in 2016! It has to be considered
 
-#Could the start and end years be retrieved from netCDF metadata?
+#Could be retrieved from netCDF metadata?
 starty = 2014 #Start year
 endy = 2018   #End year
 
-#To save as ArcASCII, xll and yll have to be the extreme left bottom point,
-#not the center of the left-bottom cell, so remove size/2
-size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item())
-xll = round(np.ma.getdata(f['x'][0]).item()) - size/2
-yll = round(np.ma.getdata(f['y'][-1]).item()) - size/2
-
+xll = round(np.ma.getdata(f['x'][0]).item())
+yll = round(np.ma.getdata(f['y'][-1]).item())
+size = round(np.ma.getdata(f['x'][1]).item()) - xll
 #Extract a single year
 period = range(starty, endy+1)
 s = 0

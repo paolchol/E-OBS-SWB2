@@ -101,7 +101,6 @@ t = pd.date_range(start = '1950-01-01', end = '2021-06-30')
 tyR = t.year
 
 #np.where(t == '2016-02-29')
-
 # %% Generate the new files
 
 #Get the path to the files

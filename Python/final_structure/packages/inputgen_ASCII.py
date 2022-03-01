@@ -120,7 +120,7 @@ outname = ['PRCP', 'TMIN', 'TMAX']
 #find the idx correspondant in the file list (fls)
 
 #Just to test the code
-#i, idx, tt, j = 0, 4, 1096, 1
+#i, idx, tt, j = 0, 4, 1096, 0
 
 # %% Generate daily .asc files
 
@@ -147,13 +147,12 @@ for i, idx in enumerate(idxs, start = 0):
     #Flip the variable matrix around the horizontal axis
     val = np.flip(val, axis = 1)
     
-    size = round(lat[idx_lat][1] - lat[idx_lat][0], 1)
-    xll = lon[idx_lon][0] - size/2
-    yll = lat[idx_lat][0] - size/2
+    xll = lat[idx_lat][0]
+    yll = lon[idx_lon][0]
     
-    # xll, yll, _, _ = utm.from_latlon(lat[idx_lat][0], lon[idx_lon][0], 32, 'N')
-    # x, y, _, _ = utm.from_latlon(lat[idx_lat][1], lon[idx_lon][1], 32, 'N')
-    # size = round(math.sqrt((x-xll)*(y-yll))) #side of a square with the same area as the rectangle
+    xll, yll, _, _ = utm.from_latlon(lat[idx_lat][0], lon[idx_lon][0], 32, 'N')
+    x, y, _, _ = utm.from_latlon(lat[idx_lat][1], lon[idx_lon][1], 32, 'N')
+    size = round(math.sqrt((x-xll)*(y-yll))) #side of a square with the same area as the rectangle
     
     #Cycle through the days
     for j, tt in enumerate(range(start, end)):
@@ -165,7 +164,7 @@ for i, idx in enumerate(idxs, start = 0):
         #Delimiter: space
         y, m, d = eobs_todate(t[tt], number = True)
         fname = f'.\Export\ASCII\{namefolder[i]}\{outname[i]}_{y}_{m}_{d}.asc'
-        save_ArcGRID(round(df, 1), fname, xll, yll, size, -9999)
+        save_ArcGRID(round(df, 1), fname, round(xll), round(yll), size, -9999)
         
     ncf.close()
 
