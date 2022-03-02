@@ -34,25 +34,6 @@ save_ArcGRID <- function(df, fname, xll, yll, size, nodata){
               col.names = FALSE, quote = FALSE)
 }
 
-my.write <- function(x, file, header, f, sepset=TRUE, nafill=FALSE){
-  #sepset = TRUE: sep = "\t", FALSE: sep = " "
-  #create and open the file connection
-  datafile <- file(file, open = 'wt')
-  #close on exit
-  on.exit(close(datafile))
-  #if a header is defined, write it to the file
-  if(!missing(header)) writeLines(header,con=datafile)
-  #write the file using the defined function and required addition arguments  
-  s<-ifelse(sepset,"\t"," ")
-  if(nafill){
-    f(x, datafile, sep = s, row.names = FALSE,
-      col.names = FALSE, quote = FALSE, na = "")
-  }else{
-    f(x, datafile, sep = s, row.names = FALSE,
-      col.names = FALSE, quote = FALSE)
-  }
-}
-
 # Sum over the whole time period ------------------------------------------
 
 fls = list.files(inpath, pattern = '*.nc')
@@ -75,4 +56,3 @@ for (i in 1:length(fls)){
   
   nc_close(f)
 }
-
