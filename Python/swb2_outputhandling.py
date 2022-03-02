@@ -41,50 +41,27 @@ def save_ArcGRID(df, fname, xll, yll, size, nodata):
     header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
     line_prepender(fname, header)
 
-# %% Open and get net infiltration
+# %% Create the sum over 5 years for different tests
 
-# swbout = "./swb2_MODELMI/output"
-# f = nc.Dataset(f'{swbout}/ModelMI_net_infiltration__2014-01-01_2018-12-31__338_by_660.nc')
+outpath = "./Export/ASCII/RMeteo_tot" #not include /
+inpath = "./Data/SWB2_output/" #include /
+fls = glob.glob(f'{inpath}*.nc')
 
-# print(f)
-# print(f['net_infiltration'])
-
-# net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
-
-# Create the sum for different tests
-outpath = "./Export/ASCII/RMeteo_tot"
-fls = glob.glob('./Data/SWB2_output/*.nc')
-
-for i, fl in enumerate(fls, start = 1):
+for i, fl in enumerate(fls, start = 1):    
     f = nc.Dataset(fl)
-    net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
+    #net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
     
-    df = np.sum(net_infiltration, axis = 0)*0.0254 #meters
+    df = np.sum(np.ma.getdata(f['net_infiltration'][:,:,:]), axis = 0)*0.0254 #meters
     df = pd.DataFrame(df)
-    fname = f"{outpath}/p{i}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
-    df.to_csv(fname, sep = ' ', header = False, index = False)
     
     size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item()) #controlla che sia 100
     xll = round(np.ma.getdata(f['x'][0]).item()) - size/2
     yll = round(np.ma.getdata(f['y'][-1]).item()) - size/2
     
+    fname = f"{outpath}/{fl[len(inpath):].split('_', 1)[0]}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
     save_ArcGRID(df, fname, xll, yll, size, -9999)
     
     f.close()
-
-# %% Get a sum over the 5 years to compare with the results of SWB1
-
-df = np.sum(net_infiltration, axis = 0)*0.0254 #meters
-df = pd.DataFrame(df)
-fname = "somma_5anni.asc" #To obtain a CSV just change to .csv and run this and the below line
-df.to_csv(fname, sep = ' ', header = False, index = False)
-
-xll = round(np.ma.getdata(f['x'][0]).item())
-yll = round(np.ma.getdata(f['y'][-1]).item())
-size = size = round(np.ma.getdata(f['x'][1]).item()) - xll
-# header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  -9999'
-# line_prepender(fname, header)
-save_ArcGRID(df, fname, xll, yll, size, -9999)
 
 # %% Get the sum over the 4 stress periods
 
@@ -147,16 +124,3 @@ for y in period:
     s = e #It will get the subsequent day
 
 f.close()
-
-#%% Trials
-def eobs_todate(x):
-    from datetime import date, timedelta
-    start = date(2014,1,1)
-    #end = start + timedelta(days = x.item())
-    end = start + timedelta(days = x)
-    return end.year, end.strftime('%m'), end.strftime('%d')
-
-eobs_todate(1461)
-
-
-
