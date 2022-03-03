@@ -30,24 +30,25 @@ def save_ArcGRID(df, fname, xll, yll, size, nodata):
     line_prepender(fname, header)
 
 outpath = "./Export/ASCII/Sums"
-fls = glob.glob('./Data/SWB2_output/meteo/*.nc')
+inpath = "./Data/SWB2_output/gross_precipitation/" #include /
+fls = glob.glob(f'{inpath}*.nc')
 
 for i, fl in enumerate(fls, start = 1):
     f = nc.Dataset(fl)
-    rainfall = np.ma.getdata(f['rainfall'][:,:,:])
+    #rainfall = np.ma.getdata(f['gross_precipitation'][:,:,:])
     
-    df = np.sum(rainfall, axis = 0)*0.0254 #meters
+    df = np.sum(np.ma.getdata(f['gross_precipitation'][:,:,:]), axis = 0)*0.0254 #meters
     df = pd.DataFrame(df)
-    fname = f"{outpath}/SWB2_prec_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
-    df.to_csv(fname, sep = ' ', header = False, index = False)
-    xll = round(np.ma.getdata(f['x'][0]).item())
-    yll = round(np.ma.getdata(f['y'][-1]).item())
-    size = round(np.ma.getdata(f['x'][1]).item()) - xll #controlla che sia 100
+    fname = f"{outpath}/{fl[len(inpath):].split('_', 1)[0]}_gross_precipitation_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
+    
+    size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item()) #controlla che sia 100
+    xll = round(np.ma.getdata(f['x'][0]).item()) - size/2
+    yll = round(np.ma.getdata(f['y'][-1]).item()) - size/2
+    
     save_ArcGRID(df, fname, xll, yll, size, -9999)
     
     f.close()
 
-#rain = np.ma.getdata(f['rainfall'][:, :, :])
 
 # %% Sum the E-OBS precipitation over the 5 years
 
@@ -60,15 +61,21 @@ for i, fl in enumerate(fls[0:5], start = 1):
     prcp = np.ma.getdata(f['prcp'][:,:,:]) #millimeters
     
     df = np.sum(prcp, axis = 0)/1000 #meters
-    xll = round(np.ma.getdata(f['x'][0]).item())
-    yll = round(np.ma.getdata(f['y'][-1]).item())
-    size = round(((np.ma.getdata(f['x'][1]).item() - xll + np.ma.getdata(f['y'][-2]).item() - yll))/2)
+    
+    # size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item()) #controlla che sia 100
+    # xll = round(np.ma.getdata(f['x'][0]).item()) - size/2
+    # yll = round(np.ma.getdata(f['y'][-1]).item()) - size/2
+    
     sumtot = np.add(sumtot, df)
     f.close()
 
 sumtot = pd.DataFrame(sumtot)
+
+xll = 8.499860356784787
+yll = 45.09985989977512
+size = 0.1
+
 fname = f"{outpath}/EOBS_prec_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
-sumtot.to_csv(fname, sep = ' ', header = False, index = False)
 save_ArcGRID(sumtot, fname, xll, yll, size, -9999)
 
 
