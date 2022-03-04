@@ -47,18 +47,20 @@ outpath = "./Export/ASCII/RMeteo_tot" #not include /
 inpath = "./Data/SWB2_output/" #include /
 fls = glob.glob(f'{inpath}*.nc')
 
+variable = 'net_infiltration'
+
 for i, fl in enumerate(fls, start = 1):    
     f = nc.Dataset(fl)
     #net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
     
-    df = np.sum(np.ma.getdata(f['net_infiltration'][:,:,:]), axis = 0)*0.0254 #meters
+    df = np.sum(np.ma.getdata(f[variable][:,:,:]), axis = 0)*0.0254 #meters
     df = pd.DataFrame(df)
     
     size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item()) #controlla che sia 100
     xll = round(np.ma.getdata(f['x'][0]).item()) - size/2
     yll = round(np.ma.getdata(f['y'][-1]).item()) - size/2
     
-    fname = f"{outpath}/{fl[len(inpath):].split('_', 1)[0]}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
+    fname = f"{outpath}/{fl[len(inpath):].split('_', 1)[0]}_{variable}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
     save_ArcGRID(df, fname, xll, yll, size, -9999)
     
     f.close()

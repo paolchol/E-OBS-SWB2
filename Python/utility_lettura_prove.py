@@ -98,3 +98,19 @@ llat = np.ma.getdata(prec['lat'][:])
 llon = np.ma.getdata(prec['lon'][:])
 
 prec['x'][:]
+
+# %% prove con wGS84
+
+pWGS84 = nc.Dataset(r".\Model\swb2_MODELMI\climate_ncfile\prcp_EOBS_2014.nc")
+
+print(pWGS84['x'])
+
+p = np.ma.getdata(pWGS84['prcp'][1:10, :, :])
+
+
+
+pWGS84.close()
+
+
+
+

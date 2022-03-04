@@ -45,7 +45,7 @@ save_ArcGRID <- function(df, fname, xll, yll, size, nodata){
 
 fls = list.files(inpath, pattern = '*.nc')
 
-for (i in 1:length(fls)){
+for (i in seq_len(fls)){
   
   f = nc_open(paste0(inpath, fls[i]))
   varsize <- f[["var"]][[variable]][["size"]]

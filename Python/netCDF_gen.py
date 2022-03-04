@@ -105,8 +105,9 @@ tyR = t.year
 # %% Generate the new files
 
 #Get the path to the files
-outpath = r'./Export/netCDF/calco_Daymet'
-#outpathswb2 = r'./swb2_MODELMI/climate_ncfile'
+# outpath = r'./Export/netCDF/calco_Daymet'
+# outpath = r'./Export/netCDF/netcdf_WGS84'
+outpath = r'./Model/swb2_MODELMI/climate_ncfile'
 fls = glob.glob('./Data/E-OBS/*.nc')
 
 # n = 4
@@ -120,9 +121,9 @@ for i, n in enumerate(index, start = 0):
     
     idx_lat = np.intersect1d(np.where(la > minlat), np.where(la < maxlat))
     idx_lon = np.intersect1d(np.where(lo > minlon), np.where(lo < maxlon))
-        
-    lox = transf(la[idx_lat], lo[idx_lon], 32, 'N', 'x')
-    lay = transf(la[idx_lat], lo[idx_lon], 32, 'N', 'y')
+    
+    # lox = transf(la[idx_lat], lo[idx_lon], 32, 'N', 'x')
+    # lay = transf(la[idx_lat], lo[idx_lon], 32, 'N', 'y')
     
     #Sort latitude descending
     Mlat = pd.DataFrame(la[idx_lat]).sort_values(0, ascending = False)
@@ -131,6 +132,10 @@ for i, n in enumerate(index, start = 0):
     Mlon = pd.DataFrame(columns = list(range(0,len(idx_lon))))
     Mlon.loc[0] = lo[idx_lon]
     Mlon = pd.concat([Mlon]*len(idx_lat), axis = 0, ignore_index = True)
+    
+    la = la[idx_lat]
+    lo = lo[idx_lon]
+    #se funziona, spostare questo sopra e sostituire la[idx_lat] ecc dentro Mlat
     
     for year in yU[np.where((yU >= 2014) & (yU <= 2018))]:
         
@@ -143,7 +148,8 @@ for i, n in enumerate(index, start = 0):
         #Flip the variable matrix around the horizontal axis
         val = np.flip(val, axis = 1)
         #Sort the y coordinate in descending order
-        lay.sort(reverse = True)
+        # lay.sort(reverse = True)
+        la[::-1].sort()
         
         fname = f'{outpath}/{outname[i]}_EOBS_{year}.nc'
         #fname = f'{outpath}/prove/prova_v7_lambert.nc'
@@ -163,22 +169,22 @@ for i, n in enumerate(index, start = 0):
         
         ## Variables
         #lambert_conformal_conic()
-        lcc = ds.createVariable('lambert_conformal_conic', 'h')
-        lcc.description = 'fake variable just to try a point, this data was not obtained with a lambert conformal conic'
+        # lcc = ds.createVariable('lambert_conformal_conic', 'h')
+        # lcc.description = 'fake variable just to try a point, this data was not obtained with a lambert conformal conic'
         #x(x)
         x = ds.createVariable('x', 'd', ('x'))
-        x.units = 'm'
+        x.units = 'degrees' #m
         x.long_name = 'x coordinate of projection'
         x.standard_name = 'projection_x_coordinate'
         #y(y)
         y = ds.createVariable('y', 'd', ('y'))
-        y.units = 'm'
+        y.units = 'degrees'#m
         y.long_name = 'y coordinate of projection'
         y.standard_name = 'projection_y_coordinate'
         #Time
         time = ds.createVariable('time', 'd', ('time'))
         time.units = 'days since 1980-01-01 00:00:00 UTC'
-        time.calendar = '2016 leap day removed'
+        # time.units = 'days since 01-01-1980'
         time.bounds = 'time_bnds'
         #Latitude
         lat = ds.createVariable('lat', 'd', ('y','x'))
@@ -201,8 +207,8 @@ for i, n in enumerate(index, start = 0):
         time_bnds = ds.createVariable('time_bnds', 'd', ('time','nv'))
         
         ## Fill the variables
-        x[:] = lox
-        y[:] = lay
+        x[:] = lo #lox
+        y[:] = la #lay
         lat[:] = Mlat
         lon[:] = Mlon
         tout = eobs_todaymet(np.where(tyR == year)[0])
@@ -215,6 +221,7 @@ for i, n in enumerate(index, start = 0):
         ds.close()
     print(f'Variable: {tag[i]} (E-OBS), {outname[i]} (Daymet)')
     print(f'Number of rows: {len(idx_lat)}\nNumber of columns: {len(idx_lon)}')
-    print(f'Latitude (Y) and Longitude (X) of extention:\nX0: {lo[idx_lon][0]}\nY0: {la[idx_lat][0]}\nX1: {lo[idx_lon][-1]}\nY1: {la[idx_lat][-1]}')
+    #print(f'Latitude (Y) and Longitude (X) of extention:\nX0: {lo[idx_lon][0]}\nY0: {la[idx_lat][0]}\nX1: {lo[idx_lon][-1]}\nY1: {la[idx_lat][-1]}')
+    print(f'Latitude (Y) and Longitude (X) of extention:\nX0: {lo[0]}\nY0: {la[0]}\nX1: {lo[-1]}\nY1: {la[-1]}')
     
     ncf.close()
