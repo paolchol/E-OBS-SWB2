@@ -79,12 +79,16 @@ maxlat = max(model_extremes.lat) + 0.1 + 0.1
 
 # %% Set the parameters
 
+#This has to be changed/optimized
+
 index = [4, 7, 8] # referred to the index of the files in fls = glob.glob('./Dati/E-OBS/*.nc')
 tag = ['rr','tn', 'tx'] #names in the E-OBS files
 outname = ['prcp', 'tmin', 'tmax'] #names in the output files (Daymet copies)
 units = ['mm/day', 'degrees C', 'degrees C']
 
 # %% Get time indexes
+
+#Make the user choose the dates at the start of the script
 
 #Insert start and end dates of E-OBS
 #In the files we have, the E-OBS datasets were cut between 2011 and 2021
@@ -105,9 +109,12 @@ tyR = t.year
 # %% Generate the new files
 
 #Get the path to the files
-# outpath = r'./Export/netCDF/calco_Daymet'
+#Path to a custom folder
 # outpath = r'./Export/netCDF/netcdf_WGS84'
+#Direct path to the model folder
 outpath = r'./Model/swb2_MODELMI/climate_ncfile'
+
+#Create a list of the files contained in the selected folder
 fls = glob.glob('./Data/E-OBS/*.nc')
 
 # n = 4
@@ -122,37 +129,31 @@ for i, n in enumerate(index, start = 0):
     idx_lat = np.intersect1d(np.where(la > minlat), np.where(la < maxlat))
     idx_lon = np.intersect1d(np.where(lo > minlon), np.where(lo < maxlon))
     
-    # lox = transf(la[idx_lat], lo[idx_lon], 32, 'N', 'x')
-    # lay = transf(la[idx_lat], lo[idx_lon], 32, 'N', 'y')
-    
-    #Sort latitude descending
-    Mlat = pd.DataFrame(la[idx_lat]).sort_values(0, ascending = False)
-    Mlat = pd.concat([Mlat]*len(idx_lon), axis = 1, ignore_index = True)
-    Mlat.index = range(0,len(idx_lat))
-    Mlon = pd.DataFrame(columns = list(range(0,len(idx_lon))))
-    Mlon.loc[0] = lo[idx_lon]
-    Mlon = pd.concat([Mlon]*len(idx_lat), axis = 0, ignore_index = True)
-    
     la = la[idx_lat]
     lo = lo[idx_lon]
-    #se funziona, spostare questo sopra e sostituire la[idx_lat] ecc dentro Mlat
-    
+
+    #To be coherent with the convention used in SWB for data sorting,
+    #sort the y coordinate (latitude) in descending order
+    la[::-1].sort()
+
+    Mlat = pd.DataFrame(la)
+    Mlat = pd.concat([Mlat]*len(lo), axis = 1, ignore_index = True)
+    Mlat.index = range(0, len(la))
+    Mlon = pd.DataFrame(columns = list(range(0, len(lo))))
+    Mlon.loc[0] = lo
+    Mlon = pd.concat([Mlon]*len(la), axis = 0, ignore_index = True)
+
     for year in yU[np.where((yU >= 2014) & (yU <= 2018))]:
         
-        #idx = np.where((yR == year) & (dt != '2016-02-29'))
         idx = np.where(yR == year)
         val = ncf[tag[i]][idx[0], idx_lat, idx_lon]
         val = np.ma.getdata(val)
         
-        #To be coherent with the convention used in SWB for data sorting
-        #Flip the variable matrix around the horizontal axis
+        #To be coherent with the convention used in SWB for data sorting,
+        #flip the variable matrix around the horizontal axis
         val = np.flip(val, axis = 1)
-        #Sort the y coordinate in descending order
-        # lay.sort(reverse = True)
-        la[::-1].sort()
         
         fname = f'{outpath}/{outname[i]}_EOBS_{year}.nc'
-        #fname = f'{outpath}/prove/prova_v7_lambert.nc'
         ds = nc.Dataset(fname, 'w', format = "NETCDF3_CLASSIC")
         
         ## General metadata
@@ -173,29 +174,17 @@ for i, n in enumerate(index, start = 0):
         # lcc.description = 'fake variable just to try a point, this data was not obtained with a lambert conformal conic'
         #x(x)
         x = ds.createVariable('x', 'd', ('x'))
-        x.units = 'degrees' #m
-        x.long_name = 'x coordinate of projection'
-        x.standard_name = 'projection_x_coordinate'
+        x.units = 'degrees'
+        x.long_name = 'x geographic coordinate - WGS84'
+        x.standard_name = 'geographic_x_coordinate'
         #y(y)
         y = ds.createVariable('y', 'd', ('y'))
-        y.units = 'degrees'#m
-        y.long_name = 'y coordinate of projection'
-        y.standard_name = 'projection_y_coordinate'
+        y.units = 'degrees'
+        y.long_name = 'y geographic coordinate - WGS84'
+        y.standard_name = 'geographic_y_coordinate'
         #Time
         time = ds.createVariable('time', 'd', ('time'))
-        time.units = 'days since 1980-01-01 00:00:00 UTC'
-        # time.units = 'days since 01-01-1980'
-        time.bounds = 'time_bnds'
-        #Latitude
-        lat = ds.createVariable('lat', 'd', ('y','x'))
-        lat.units = 'degrees_north'
-        lat.long_name = 'latitutde coordinate'
-        lat.standard_name = 'latitude'
-        #Longitude
-        lon = ds.createVariable('lon', 'd', ('y','x'))
-        lon.units = 'degrees_east'
-        lon.long_name = 'longitude coordinate'
-        lon.standard_name = 'longitude'
+        time.units = 'days since 1980-01-01 00:00:00 UTC' #try to keep the same numeration as E-OBS
         #Day of the year
         yearday = ds.createVariable('yearday', 'h', ('time'))
         #Value
@@ -203,25 +192,20 @@ for i, n in enumerate(index, start = 0):
         value.units = units[i]
         value.missing_value = -9999.0
         value.coordinates = 'lat lon'
-        #Time bounds
-        time_bnds = ds.createVariable('time_bnds', 'd', ('time','nv'))
         
         ## Fill the variables
-        x[:] = lo #lox
-        y[:] = la #lay
-        lat[:] = Mlat
-        lon[:] = Mlon
+        x[:] = lo
+        y[:] = la
         tout = eobs_todaymet(np.where(tyR == year)[0])
         time[:] = tout
         yearday[:] = range(0,365)
-        time_bnds[:] = pd.DataFrame({'0':tout-0.5, '1':tout+0.5})
         value[:] = np.around(val, 1)
         
         #Close the file
         ds.close()
+    
     print(f'Variable: {tag[i]} (E-OBS), {outname[i]} (Daymet)')
     print(f'Number of rows: {len(idx_lat)}\nNumber of columns: {len(idx_lon)}')
-    #print(f'Latitude (Y) and Longitude (X) of extention:\nX0: {lo[idx_lon][0]}\nY0: {la[idx_lat][0]}\nX1: {lo[idx_lon][-1]}\nY1: {la[idx_lat][-1]}')
     print(f'Latitude (Y) and Longitude (X) of extention:\nX0: {lo[0]}\nY0: {la[0]}\nX1: {lo[-1]}\nY1: {la[-1]}')
     
     ncf.close()
