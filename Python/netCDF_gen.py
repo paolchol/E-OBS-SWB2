@@ -136,13 +136,6 @@ for i, n in enumerate(index, start = 0):
     #sort the y coordinate (latitude) in descending order
     la[::-1].sort()
 
-    Mlat = pd.DataFrame(la)
-    Mlat = pd.concat([Mlat]*len(lo), axis = 1, ignore_index = True)
-    Mlat.index = range(0, len(la))
-    Mlon = pd.DataFrame(columns = list(range(0, len(lo))))
-    Mlon.loc[0] = lo
-    Mlon = pd.concat([Mlon]*len(la), axis = 0, ignore_index = True)
-
     for year in yU[np.where((yU >= 2014) & (yU <= 2018))]:
         
         idx = np.where(yR == year)
@@ -161,6 +154,8 @@ for i, n in enumerate(index, start = 0):
         ds.source = "E-OBS v24.0"
         ds.start_day = f"01/01/{year}"
         ds.author = "paolocolombo1996@gmail.com"
+        ds.reference_system = "WGS84"
+        ds.proj4_string = "+proj=lonlat +datum=WGS84 +no_defs"
         
         ## Dimensions
         ds.createDimension('x', len(idx_lon))
@@ -169,9 +164,6 @@ for i, n in enumerate(index, start = 0):
         ds.createDimension('nv', 2)
         
         ## Variables
-        #lambert_conformal_conic()
-        # lcc = ds.createVariable('lambert_conformal_conic', 'h')
-        # lcc.description = 'fake variable just to try a point, this data was not obtained with a lambert conformal conic'
         #x(x)
         x = ds.createVariable('x', 'd', ('x'))
         x.units = 'degrees'
