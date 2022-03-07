@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-SWB2 output handling
+Operations on input and output data to make tests and trials
+
+List of operations available here:
+    1. Create the sum over the years for different tests
+    2. Get the sum over the 4 stress periods
+    3. Sum the E-OBS observations over the years
 
 @author: paolo
 """
@@ -41,26 +46,28 @@ def save_ArcGRID(df, fname, xll, yll, size, nodata):
     header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
     line_prepender(fname, header)
 
-# %% Create the sum over 5 years for different tests
+# %% Create the sum over the years for different tests
 
-outpath = "./Export/ASCII/RMeteo_tot" #not include /
+#Set the path where the SWB2 output files to be loaded are stored
 inpath = "./Data/SWB2_output/" #include /
+#Set the path where the sums will be stored
+outpath = "./Export/ASCII/RMeteo_tot" #not include /
+#Generate the list of files in the "inpath" folder
 fls = glob.glob(f'{inpath}*.nc')
 
 variable = 'net_infiltration'
 
 for i, fl in enumerate(fls, start = 1):    
     f = nc.Dataset(fl)
-    #net_infiltration = np.ma.getdata(f['net_infiltration'][:,:,:])
     
     df = np.sum(np.ma.getdata(f[variable][:,:,:]), axis = 0)*0.0254 #meters
     df = pd.DataFrame(df)
     
-    size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item()) #controlla che sia 100
+    size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item())
     xll = round(np.ma.getdata(f['x'][0]).item()) - size/2
     yll = round(np.ma.getdata(f['y'][-1]).item()) - size/2
     
-    fname = f"{outpath}/{fl[len(inpath):].split('_', 1)[0]}_{variable}_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
+    fname = f"{outpath}/{fl[len(inpath):].split('_', 1)[0]}_{variable}_sum_tot.asc"
     save_ArcGRID(df, fname, xll, yll, size, -9999)
     
     f.close()
@@ -126,3 +133,26 @@ for y in period:
     s = e #It will get the subsequent day
 
 f.close()
+
+# %% Sum the E-OBS observations over the years
+
+outpath = "./Export/ASCII/Sums"
+fls = glob.glob('./Export/netCDF/calco_Daymet/*.nc')
+
+sumtot = 0
+for i, fl in enumerate(fls[0:5], start = 1):
+    f = nc.Dataset(fl)
+    prcp = np.ma.getdata(f['prcp'][:,:,:]) #millimeters
+    if(i == 0):
+        size = round(np.ma.getdata(f['x'][1]).item() - np.ma.getdata(f['x'][0]).item()) #controlla che sia 100
+        xll = round(np.ma.getdata(f['x'][0]).item()) - size/2
+        yll = round(np.ma.getdata(f['y'][-1]).item()) - size/2
+    
+    df = np.sum(prcp, axis = 0)/1000 #meters   
+    sumtot = np.add(sumtot, df)
+    f.close()
+
+sumtot = pd.DataFrame(sumtot)
+
+fname = f"{outpath}/EOBS_prec_sum_tot.asc" #To obtain a CSV just change to .csv and run this and the below line
+save_ArcGRID(sumtot, fname, xll, yll, size, -9999)

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb 28 15:51:34 2022
+Operations on input and output data to make tests and trials
+
+- Sum the E-OBS observations over the years
 
 @author: paolo
 """

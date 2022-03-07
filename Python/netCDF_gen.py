@@ -167,12 +167,12 @@ for i, n in enumerate(index, start = 0):
         #x(x)
         x = ds.createVariable('x', 'd', ('x'))
         x.units = 'degrees'
-        x.long_name = 'x geographic coordinate - WGS84'
+        x.long_name = 'x geographic coordinate (lon) - WGS84'
         x.standard_name = 'geographic_x_coordinate'
         #y(y)
         y = ds.createVariable('y', 'd', ('y'))
         y.units = 'degrees'
-        y.long_name = 'y geographic coordinate - WGS84'
+        y.long_name = 'y geographic coordinate (lat) - WGS84'
         y.standard_name = 'geographic_y_coordinate'
         #Time
         time = ds.createVariable('time', 'd', ('time'))
@@ -190,7 +190,7 @@ for i, n in enumerate(index, start = 0):
         y[:] = la
         tout = eobs_todaymet(np.where(tyR == year)[0])
         time[:] = tout
-        yearday[:] = range(0,365)
+        yearday[:] = range(0, 365)
         value[:] = np.around(val, 1)
         
         #Close the file
