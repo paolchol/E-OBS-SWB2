@@ -104,7 +104,7 @@ prec['x'][:]
 pWGS84 = nc.Dataset(r".\Model\swb2_MODELMI\climate_ncfile\prcp_EOBS_2014.nc")
 
 print(pWGS84['x'])
-
+print(pWGS84)
 p = np.ma.getdata(pWGS84['prcp'][1:10, :, :])
 
 

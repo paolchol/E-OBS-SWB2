@@ -4,7 +4,7 @@ Operations on input and output data to make tests and trials
 
 List of operations available here:
     1. Create the sum over the years for different tests
-    2. Get the sum over the 4 stress periods
+    2. Get the sum over the 4 stress periods for each year
     3. Sum the E-OBS observations over the years
 
 @author: paolo
@@ -57,7 +57,7 @@ fls = glob.glob(f'{inpath}*.nc')
 
 variable = 'net_infiltration'
 
-for i, fl in enumerate(fls, start = 1):    
+for fl in fls:
     f = nc.Dataset(fl)
     
     df = np.sum(np.ma.getdata(f[variable][:,:,:]), axis = 0)*0.0254 #meters
