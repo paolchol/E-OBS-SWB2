@@ -19,6 +19,14 @@ def leap(y):
     else:
         return 365
 
+def getkeys(dict):
+    #Returns the dictionary keys of a dictonary as a list
+    # got from:
+    # https://www.geeksforgeeks.org/python-get-dictionary-keys-as-a-list/
+    #Other method
+    # return list(dict.keys())
+    return [*dict]
+
 # %% 1. E-OBS data handling
 
 def date_toeobs(y,m,d):
@@ -90,3 +98,16 @@ def eobs_todaymet(y):
     k = dstart - estart
     y1 = y - k.days + 0.5
     return y1
+
+# %% 4. SWB2 netCDF output handling
+
+def getdates(string, n):
+    #Get the starting and ending dates of an SWB2 netCDF output file 
+    from datetime import date, timedelta
+    datestr = string.split(' ')[2]
+    y, m, d = datestr.split('-')
+    start = date(int(y), int(m), int(d))
+    end = start + timedelta(days = n-1)
+    return start, end
+
+
