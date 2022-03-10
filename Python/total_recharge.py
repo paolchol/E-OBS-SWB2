@@ -24,6 +24,7 @@ import pandas as pd
 
 os.chdir('C:/E-OBS-SWB2')
 
+#The directory has to be set in ./E-OBS-SWB2 for this to work
 from Python.SWB2output import SWB2output
 
 # %% Setup

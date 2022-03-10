@@ -4,6 +4,8 @@ Class "SWB2output" for SWB2 netCDF output handling
 It can be called using:
 from Python.SWB2output import SWB2output
 
+The working directory has to be set in ./E-OBS-SWB2 for this to work
+
 @author: paolo
 """
 
@@ -12,7 +14,7 @@ import netCDF4 as nc
 import numpy as np
 import pandas as pd
 
-os.chdir('C:/E-OBS-SWB2')
+# os.chdir('C:/E-OBS-SWB2')
 from Python.custom_functions import save_ArcGRID
 from Python.custom_functions import leap
 from Python.custom_functions import getdates
