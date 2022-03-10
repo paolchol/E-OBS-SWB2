@@ -39,6 +39,11 @@ class SWB2output():
             "nodata_value": self.netCDF[getkeys(self.netCDF.variables)[3]]._FillValue
             }
     
+    def extract(self):
+        #Returns the main variable of the output as a numpy array
+        variable = self.metadata['main_variable']
+        return np.ma.getdata(self.netCDF[variable][:, :, :])
+
     def sumtot(self, outpath = 'none', name = 'name'):
         #Returns the sum over the whole time period
         #If a path is provided as outpath, an ArcASCII GRID file is produced
