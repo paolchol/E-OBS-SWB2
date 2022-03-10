@@ -28,41 +28,9 @@ os.chdir('C:/E-OBS-SWB2')
 
 # %% Custom functions
 
-def date_toeobs(y,m,d):
-    #Returns how many days have passed from 1950-01-01 (starting counting day for E-OBS data)
-    from datetime import date
-    start = date(1950,1,1)
-    d = date(y,m,d)
-    count = d - start #how many days have passed since start
-    return count.days
-
-def eobs_todate(x, number = False):
-    #Returns the year, month and day corresponding to the number given
-    #If x is a plain number (not a variable), "number" must be set to True
-    from datetime import date, timedelta
-    start = date(1950,1,1)
-    if (number):
-        end = start + timedelta(days = x.item())
-    else:
-        end = start + timedelta(days = x)
-    return end.year, end.strftime('%m'), end.strftime('%d')
-
-def save_ArcGRID(df, fname, xll, yll, size, nodata):
-    #df has to be a Pandas DataFrame
-    #xll: x coordinate of the left bottom corner (lon)
-    #yll: y coordinate of the left bottom corner (lat)
-    #size: cell size (m)
-    #nodata: value assigned to nodata
-    def line_prepender(filename, line):
-        with open(filename, 'r+') as f:
-            content = f.read()
-            f.seek(0, 0)
-            f.write(line + '\n' + content)
-            #line.rstrip('\r\n') if you want ot remove something from line
-    df.to_csv(fname, sep = ' ', header = False, index = False)
-    header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
-    line_prepender(fname, header)
-
+from Python.custom_functions import date_toeobs
+from Python.custom_functions import eobs_todate
+from Python.custom_functions import save_ArcGRID
 
 # %% Define area of the project
 

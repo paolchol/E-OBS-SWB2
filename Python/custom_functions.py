@@ -5,6 +5,7 @@ Functions are divided in four sections:
 1. E-OBS data handling
 2. ArcASCII GRID creation (general)
 3. netCDF input creation (SWB2 specific)
+4. SWB2 netCDF output handling
 
 @author: paolo
 """
@@ -109,5 +110,3 @@ def getdates(string, n):
     start = date(int(y), int(m), int(d))
     end = start + timedelta(days = n-1)
     return start, end
-
-

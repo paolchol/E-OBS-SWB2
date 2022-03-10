@@ -21,36 +21,8 @@ os.chdir('C:/E-OBS-SWB2')
 
 # %% Custom functions
 
-def transf(lat_t, lon_t, zoneN, zoneL, var = 'xy'):
-    #Transforms the lat/lon data provided in x/y projected UTM coordinates
-    import utm
-    x = []
-    y = []
-    for i in lat_t:
-        for j in lon_t:
-            #The syntax is utm.from_latlon(LATITUDE, LONGITUDE)
-            #The return has the form (EASTING, NORTHING, ZONE_NUMBER, ZONE_LETTER)
-            xj, yi, _, _ = utm.from_latlon(i, j,
-                            force_zone_number = zoneN,
-                            force_zone_letter = zoneL)
-            x += [xj]
-        y += [yi]
-    x = x[0:len(lon_t)]
-    if(var == 'xy'):
-        return x, y
-    elif(var == 'x'):
-        return x
-    elif(var == 'y'):
-        return y
-
-def eobs_todaymet(y):
-    #redefine: starting from 1980, adding 0.5
-    from datetime import date
-    dstart = date(1980, 1, 1)
-    estart = date(1950, 1, 1)
-    k = dstart - estart
-    y1 = y - k.days + 0.5
-    return y1
+from Python.custom_functions import transf
+from Python.custom_functions import eobs_todaymet
 
 # %% Define area of the project
 
