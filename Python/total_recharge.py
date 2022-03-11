@@ -29,28 +29,43 @@ from Python.SWB2output import SWB2output
 
 # %% Setup
 
+#Variables needed
+startyear = 2014
+endyear = 2018
+
 #Paths
 #1. Path to the SWB2 output
 swb2path = "./Data/SWB2_output/1Speranza_netinfiltration.nc"
 
-# %% Obtain the stress periods sums
+# %% 1. Meteoric recharge
 
 #Stress period definition
 SP1 = 90   #days, 01/01 - 30/03
 SP2 = 76   #days, 01/04 - 12/06
-SP3 = 92   #days, 13/06 - 
-SP4 = 107  #days, - 31/12
+SP3 = 92   #days, 13/06 - 15/09
+SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
 SPs = np.cumsum(SPs)
 
 f = SWB2output(swb2path)
-SPsum = f.SP_sum(SPs)
+f.metadata['units'] #inches
+#Return the SP sum directly in m/s
+rmeteo = f.SP_sum(SPs, units = 'ms')
 f.close()
 
-# %% Load and organize the needed datasets
+# %% 2. Irrigation recharge
+
+#Percentage of irrigation in each stress period
+I1 = 0
+I2 = 62 #%
+I3 = 88 #%
+I4 = 0
+Is = [I1, I2, I3, I4]
+
+# rirr = 
+
+# %% 3. Urban recharge
 
 
-
-# %% Compute the total recharge
-
+# %% 4. Total recharge
 
