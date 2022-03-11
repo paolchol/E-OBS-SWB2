@@ -62,10 +62,39 @@ I3 = 88 #%
 I4 = 0
 Is = [I1, I2, I3, I4]
 
-# rirr = 
+#Calculate the correct PC
+
+#place 'distretto' = 0 as 'null'
+
+#Nuovo metodo senza ciclo, fatto alla fine!
+
+# for SP in Is:
+#     for i in rows:
+#         for j in columns:
+#             ID = int(f'{i}0{j}')
+#             cond = ind['distretto'][where 'indicatore' == ID]
+#             if cond != 'null':
+#                 rirr[SP, i, j] = 
+#                 PC['Distretto' == cond, 'portata_concessa']*Is[SP]*0.7*0.5
+#                  if ind['Zona_irrigua'] == 1
+#                  else 0
+
+ #mettere a punto il ciclo
+ #fare un prova e vedere bene quanto ci mette a ottenere rirr completo
 
 # %% 3. Urban recharge
 
 
 # %% 4. Total recharge
 
+
+# %% 5. Export the results
+
+#Total recharge
+
+#Partial recharges
+# - Meteoric recharge
+
+# - Irrigation recharge
+
+# - Urban recharge
