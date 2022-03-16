@@ -28,6 +28,15 @@ def getkeys(dict):
     # return list(dict.keys())
     return [*dict]
 
+def repeat_list(l, nrep, array = False):
+    #Inspired from: https://stackoverflow.com/a/54483540
+    import numpy as np
+    rep = []
+    for i in range(nrep):
+        rep = rep + l
+    rep = np.array(rep) if array else rep
+    return rep
+
 # %% 1. E-OBS data handling
 
 def date_toeobs(y,m,d):

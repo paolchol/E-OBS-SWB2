@@ -39,6 +39,10 @@ class SWB2output():
             "nodata_value": self.netCDF[getkeys(self.netCDF.variables)[3]]._FillValue
             }
     
+    def print_md(self):
+        #Prints the metadata
+        print(self.netCDF)
+    
     def extract(self):
         #Returns the main variable of the output as a numpy array
         variable = self.metadata['main_variable']
@@ -116,6 +120,8 @@ class SWB2output():
             s = e #It will get the subsequent day
         # self.SPsum = var3d
         # return self.SPsum
+        print('End of the procedure')
+        if outpath != 'none': print(f'The ASCII files are saved in {outpath}')
         return var3d
     
     def close(self):
