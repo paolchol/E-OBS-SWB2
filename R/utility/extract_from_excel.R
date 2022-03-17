@@ -25,6 +25,3 @@ write.csv(rurb, "./Data/Calcolo_ricarica_totale/ricarica_urbana.csv")
 #Copia foglio "Lam" di Ricarica_TesiPiccioli
 lam <- read_excel('./Data/Calcolo_ricarica_totale/Ricarica_TesiPiccioli.xlsx', sheet = 7)
 write.csv(lam, "./Data/Calcolo_ricarica_totale/lam.csv")
-
-
-
