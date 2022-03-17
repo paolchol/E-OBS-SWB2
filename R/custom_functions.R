@@ -29,6 +29,7 @@ SPsum <- function(path, SPs, var,
                   outpath = 'none'){
   #path: path to the netCDF file to be imported
   #SPs: stress periods lengths. Defined as cumulative sums
+  library(ncdf4)
   
   print(paste0('Performing the sum of ', var, ' over the stress periods provided'))
   f = nc_open(path)
@@ -59,5 +60,6 @@ SPsum <- function(path, SPs, var,
     s = s + leap(y)
   }
   if (outpath != 'none') print(paste0('The ASCII files are saved in ', outpath))
+  nc_close(f)
   return(var3d)
 }
