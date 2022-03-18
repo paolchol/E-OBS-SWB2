@@ -6,8 +6,7 @@ Compute the total recharge
 - Divide the meteorological recharge in stress periods (SP). Sum the recharge
     inside the SP and save the sums in a 3D variable: rmeteo(i, nrow, ncol),
     where i is the SP number
-- Load databases on land cover, irrigation recharge, municipalities of the
-    area and urban recharge for each municipality
+- Load the data needed to compute irrigation and urban recharge
 - Compute the total recharge summing the databases
 
 @author: paolo
