@@ -75,9 +75,30 @@ f = SWB2output(swb2path)
 #Check the units (should be in inches)
 f.metadata['units'] #inches
 #Return the SP sum directly in m/s
-rmeteo = f.SP_sum(SPs, units = 'ms')
+rmeteo3d = f.SP_sum(SPs, units = 'ms')
 #Close the netCDF file to save memory
 f.close()
+
+rmeteo = pd.DataFrame(rmeteo3d[0, :, :])
+rmeteo.insert(0, 'nrow', rmeteo.index.values)
+rmeteo = pd.melt(rmeteo, id_vars = 'nrow', var_name = 'ncol',
+                value_name = 'SP1')
+r = list(map(str, rmeteo['nrow']+1))
+c = list(map(str, rmeteo['ncol']+1))
+newc = []
+for i in range(len(r)):
+    newc += [int(f'{r[i]}0{c[i]}')]
+rmeteo.insert(0, 'indicatore', newc)
+
+for i in range(1, rmeteo3d.shape[0]):
+    df = pd.DataFrame(rmeteo3d[i, :, :])
+    df.insert(0, 'nrow', df.index.values)
+    df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol',
+                    value_name = f'SP{i+1}')
+    if f'SP{i+1}' not in rmeteo.columns:
+        rmeteo.insert(len(rmeteo.columns), f'SP{i+1}', df[f'SP{i+1}'])
+
+del rmeteo3d, df, i, r, c, newc, f
 
 # %% 2. Irrigation recharge
 
@@ -101,12 +122,12 @@ in_rirr.insert(len(in_rirr.columns),'area', 0)
 for i, distr in enumerate(in_rirr['distretto'], 0):
     area = sum((ind_df['distretto'] == distr) & (ind_df['zona_agricola'] == 1))*cell_area
     in_rirr.loc[i, 'area'] = area
-del area
+
 #Calculate the discharge Q in m/s
 in_rirr.insert(len(in_rirr.columns),'Q_ms', 0)
 in_rirr['Q_ms'] = in_rirr['portata_concessa_ls'] * 0.001 / in_rirr['area']
 
-#Calculate the dataframe of irrigation recharge
+#Calculate the irrigation recharge and assign it to each cell
 #rirr will be in m/s
 rirr = ind_df.loc[:,('indicatore', 'distretto', 'zona_agricola')]
 for i, I in enumerate(Is, 0):
@@ -114,10 +135,11 @@ for i, I in enumerate(Is, 0):
     sp = in_rirr.loc[j, 'speciale'] #'special' code
     if(sp != 1):
         Q = in_rirr['Q_ms'][j]
-        cond = (rirr.loc['distretto'] == distr) & (rirr['zona_agricola'] == 1)
+        cond = (rirr['distretto'] == distr) & (rirr['zona_agricola'] == 1)
         if f'SP{i+1}' not in rirr.columns:
             rirr.insert(len(rirr.columns), f'SP{i+1}', 0)        
         rirr.loc[cond, f'SP{i+1}'] = Q * I * coeff1 * coeff2 if sp != 2 else Q * I * coeff1 * coeff2 * coeff3
+
 #Assign the provided "special" recharge to the "special" districts
 special = in_rirr.loc[in_rirr['speciale'] == 1, 'distretto']
 for s in special:
@@ -126,13 +148,55 @@ for s in special:
     spcol = sp_rirr.columns[1:]
     rirr.loc[cond, rirrcol] = sp_rirr.loc[sp_rirr['distretto'] == s, spcol].values
 
-#To clean up unnecessary values after this section
-del Q, cond, sp, i, j, distr, spcol, rirrcol
+#Clean up unnecessary values after this section
+del area, Q, cond, sp, i, j, distr, spcol, rirrcol
 
 # %% 3. Urban recharge
 
+coeff_urb = 0.15
+cell_area = 100*100 #m2
+
+#Calculate the urban area
+in_rurb.insert(1,'area', 0)
+for i, com in enumerate(in_rurb['nome_com'], 0):
+    area = sum((ind_df['nome_com'] == com) & (ind_df['zona_urbana'] == 1))*cell_area
+    in_rurb.loc[i, 'area'] = area
+
+#Calculate the urban recharge and assign it to each cell
+rurb = ind_df.loc[:, ('indicatore', 'nome_com', 'zona_urbana')]
+for i, colname in enumerate(in_rurb.columns[2:], 0):
+    for com in in_rurb['nome_com']:
+        if f'SP{i+1}' not in rurb.columns:
+            rurb.insert(len(rurb.columns), f'SP{i+1}', 0)
+        Q = in_rurb.loc[in_rurb['nome_com'] == com, colname].values.item()
+        A = in_rurb.loc[in_rurb['nome_com'] == com, 'area'].values.item()
+        cond = (rurb['nome_com'] == com) & (rurb['zona_urbana'] == 1)
+        rurb.loc[cond, f'SP{i+1}'] = (Q / A) * coeff_urb
+
+#Clean up unnecessary values
+del area, Q, A, cond, i, colname, com
 
 # %% 4. Total recharge
+
+#rtot
+#sum the cells with the same 'indicatore'
+
+#condition: check if rurb is needed or it is already considered in rmeteo
+
+rtot = ind_df.loc[:, ('row', 'column', 'indicatore')]
+
+#oppure posso fare un merge in questo modo:
+rr = pd.merge(rtot, rmeteo, how='left', on='indicatore')
+
+
+#ordinare i df per indicatore crescente
+#porre le condizioni 
+
+cond1 = rirr['indicatore'] == rtot['indicatore']
+
+rmeteo['indicatore'] in rirr['indicatore']
+
+#sumrec = rirr.loc[]
 
 
 # %% 5. Export the results
