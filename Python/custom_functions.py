@@ -29,6 +29,7 @@ def getkeys(dict):
     return [*dict]
 
 def repeat_list(l, nrep, array = False):
+    #Returns l repeated nrep times
     #Inspired from: https://stackoverflow.com/a/54483540
     import numpy as np
     rep = []

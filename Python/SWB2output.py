@@ -14,7 +14,7 @@ import netCDF4 as nc
 import numpy as np
 import pandas as pd
 
-# os.chdir('C:/E-OBS-SWB2')
+#The directory has to be set in ./E-OBS-SWB2 for this to work
 from Python.custom_functions import save_ArcGRID
 from Python.custom_functions import leap
 from Python.custom_functions import getdates

@@ -177,30 +177,33 @@ del area, Q, A, cond, i, colname, com
 
 # %% 4. Total recharge
 
-#rtot
-#sum the cells with the same 'indicatore'
+def findSPcol(col, ind = 'indicatore'):
+    names = [ind]
+    for name in col:
+        if name.find('SP') != -1:
+            names += [name]
+    return names
 
-#condition: check if rurb is needed or it is already considered in rmeteo
+tool = ind_df.loc[:, 'indicatore']
+loc = findSPcol(rmeteo.columns)
+toolm = pd.merge(tool, rmeteo.loc[:, loc], how = 'left', on = 'indicatore')
+loc = findSPcol(rirr.columns)
+tooli = pd.merge(tool, rmeteo.loc[:, loc], how = 'left', on = 'indicatore')
+loc = findSPcol(rurb.columns)
+toolu = pd.merge(tool, rmeteo.loc[:, loc], how = 'left', on = 'indicatore')
+
+tsum = toolm.iloc[:, 1:] + tooli.iloc[:, 1:] + toolu.iloc[:, 1:]
+tsum['indicatore'] = tool
 
 rtot = ind_df.loc[:, ('row', 'column', 'indicatore')]
+rtot = pd.merge(rtot, tsum, how = 'left', on = 'indicatore')
 
-#oppure posso fare un merge in questo modo:
-rr = pd.merge(rtot, rmeteo, how='left', on='indicatore')
-
-
-#ordinare i df per indicatore crescente
-#porre le condizioni 
-
-cond1 = rirr['indicatore'] == rtot['indicatore']
-
-rmeteo['indicatore'] in rirr['indicatore']
-
-#sumrec = rirr.loc[]
-
+del tool, toolm, tooli, toolu, loc
 
 # %% 5. Export the results
 
 #Total recharge
+#save as .csv
 
 #Partial recharges
 # - Meteoric recharge
