@@ -19,7 +19,6 @@ import time
 #The directory has to be set in ./E-OBS-SWB2 for this to work
 from Python.SWB2output import SWB2output
 from Python.custom_functions import repeat_list
-# from Python.custom_functions import getkeys
 
 class RechargeCalc():
 
@@ -100,8 +99,8 @@ class RechargeCalc():
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export:
-            inpath = self.paths['input_folder']
-            rmeteo.to_csv(f'{inpath}/rmeteo.csv')
+            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
+            rmeteo.to_csv(f'{outpath}/rmeteo.csv')
 
     def irrigationR(self, Is, coeffs, specialpath = 'none', export = False):
         #Compute the irrigation recharge dataframe
@@ -156,8 +155,8 @@ class RechargeCalc():
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export:
-            inpath = self.paths['input_folder']
-            rirr.to_csv(f'{inpath}/rirr.csv')
+            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
+            rirr.to_csv(f'{outpath}/rirr.csv')
 
     def urbanR(self, coeff_urb, export = False):
         #Compute the urban recharge dataframe
@@ -189,15 +188,11 @@ class RechargeCalc():
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export:
-            inpath = self.paths['input_folder']
-            rurb.to_csv(f'{inpath}/rurb.csv')
+            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
+            rurb.to_csv(f'{outpath}/rurb.csv')
 
-    def totalR(self, meteopar = None, irrpar = None, urbpar = None):
-        #somma le ricariche
-        #scrivere in modo che le componenti da solmmare possano essere scelte
-        #autonomamente
-        #se gli attributi son o già presenti nella classe, prendere quelli,
-        #altrimenti chiamate le funzioni
+    def totalR(self, meteopar = None, irrpar = None, urbpar = None, export = False):
+        #Sum the recharge components
         print('Total recharge dataframe creation')
         start = time.time()
         #Check if the partial recharges are already computed
@@ -230,6 +225,9 @@ class RechargeCalc():
         self.recharges['rtot'] = rtot
         end = time.time()
         print(f'Elapsed time: {round(end - start, 2)} s')
+        if export:
+            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
+            rtot.to_csv(f'{outpath}/rtot.csv')
     
     def findSPcol(self, col, ind):
         names = [ind]
@@ -246,7 +244,6 @@ class RechargeCalc():
         newc = []
         for i in range(len(r)):
             newc += [f'{r[i]}X{c[i]}']
-        
         if (name not in df.columns):
             df.insert(pos, name, newc)
         else:

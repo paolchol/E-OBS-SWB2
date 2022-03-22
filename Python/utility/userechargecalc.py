@@ -6,7 +6,6 @@ Guide to the use of class "RechargeCalc"
 """
 
 import os
-# import netCDF4 as nc
 import numpy as np
 import pandas as pd
 import glob
@@ -95,32 +94,3 @@ urbpar = {
 r.totalR(meteopar, irrpar, urbpar)
 
 # Export
-
-
-# %% Drafts
-
-#getkeys(r.recharges)
-
-r.info['id']
-r.recharges['rmeteo'].columns
-
-
-def findSPcol(col, ind):
-    print(ind)
-    names = [ind]
-    for name in col:
-        if name.find('SP') != -1:
-            names += [name]
-    return names
-
-
-findSPcol(r.recharges['rmeteo'].columns, r.info['id'])
-
-r.input['ind'].dtypes
-
-cc = r.input['ind'].astype({'indicatore': str})
-cc.dtypes
-
-max(r.input['ind']['column'])
-
-
