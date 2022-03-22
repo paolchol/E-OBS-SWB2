@@ -249,7 +249,6 @@ class RechargeCalc():
         else:
             df[name] = newc
         return df
-    
 
 # 	def export(..., data = '', fileformat = '.csv'):
 # 		#esportare le ricariche prodotte
