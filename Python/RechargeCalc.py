@@ -42,6 +42,7 @@ class RechargeCalc():
             "id": uniqueid
             }
         self.recharges = {}
+        self.conditions = {}
     
     def loadinputfiles(self, irr = True, urb = True):
         #Load the files needed
@@ -55,15 +56,17 @@ class RechargeCalc():
                 if(fls[i].find(name) != -1):
                     print(f'{name} file found')
                     k += [i]
+        #Get the main indicator file and insert the indicator column
+        ind = pd.read_csv(fls[k[0]])
+        ind = self.insertind(ind, ind['row'], ind['column'])
         #Store the input files inside the object
         self.input = {
-            'ind': pd.read_csv(fls[k[0]])
+            'ind': ind
             }
         if (irr): self.input['irr'] = pd.read_csv(fls[k[1]])
         if (urb): self.input['urb'] = pd.read_csv(fls[k[2]])
-        
-    def addoutpath(self, outpath):
-        self.paths['oupath'] = outpath
+        self.conditions['irr'] = irr
+        self.conditions['urb'] = urb
     
     def meteoricR(self, SPs, export = False):
         #Compute the meteoric recharge dataframe
@@ -78,12 +81,9 @@ class RechargeCalc():
         rmeteo.insert(0, 'nrow', rmeteo.index.values)
         rmeteo = pd.melt(rmeteo, id_vars = 'nrow', var_name = 'ncol',
          value_name = 'SP1')
-        r = list(map(str, rmeteo['nrow']+1))
-        c = list(map(str, rmeteo['ncol']+1))
-        newc = []
-        for i in range(len(r)):
-            newc += [int(f'{r[i]}0{c[i]}')]
-        rmeteo.insert(0, self.info['id'], newc)
+        rmeteo['nrow'] = rmeteo['nrow'] + 1
+        rmeteo['ncol'] = rmeteo['ncol'] + 1
+        rmeteo = self.insertind(rmeteo, rmeteo['nrow'], rmeteo['ncol'])
         
         for i in range(1, rmeteo3d.shape[0]):
             df = pd.DataFrame(rmeteo3d[i, :, :])
@@ -92,7 +92,7 @@ class RechargeCalc():
              value_name = f'SP{i+1}')
             if f'SP{i+1}' not in rmeteo.columns:
                 rmeteo.insert(len(rmeteo.columns), f'SP{i+1}', df[f'SP{i+1}'])
-            
+        
         #Save the variables
         self.info['SPs'] = SPs
         self.info['nSP'] = rmeteo3d.shape[0] #number of stress periods
@@ -153,7 +153,7 @@ class RechargeCalc():
         #Save the variables
         self.recharges['rirr'] = rirr
         self.paths['special_irr'] = specialpath
-        ens = time.time()
+        end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export:
             inpath = self.paths['input_folder']
@@ -192,7 +192,7 @@ class RechargeCalc():
             inpath = self.paths['input_folder']
             rurb.to_csv(f'{inpath}/rurb.csv')
 
-    def totalR(self, meteopar, irrpar, urbpar):
+    def totalR(self, meteopar = None, irrpar = None, urbpar = None):
         #somma le ricariche
         #scrivere in modo che le componenti da solmmare possano essere scelte
         #autonomamente
@@ -200,14 +200,60 @@ class RechargeCalc():
         #altrimenti chiamate le funzioni
         print('Total recharge dataframe creation')
         start = time.time()
+        #Check if the partial recharges are already computed
+        keys = ['rmeteo']
+        if 'rmeteo' not in self.recharges:
+            self.meteoricR(meteopar['SPs'])
+        if self.conditions['irr']:
+            keys += ['rirr']
+            if 'rirr' not in self.recharges:
+                self.irrigationR(irrpar['Is'], irrpar['coeffs'], irrpar['spath'])
+        if self.conditions['urb']:
+            keys += ['rurb']
+            if 'rurb' not in self.recharges:
+                self.urbanR(urbpar['coeff_urb'])
+        #Sum the recharges
+        tool = self.input['ind'].loc[:, self.info['id']]
+        tool3d = np.zeros((len(keys), len(tool), self.info['nSP']))
+        for i, k in enumerate(keys):
+            loc = self.findSPcol(self.recharges[k].columns, self.info['id'])
+            toolr = pd.merge(tool, self.recharges[k].loc[:, loc],
+                             how = 'left', on = self.info['id'])
+            tool3d[i, :, :] = toolr.iloc[:, 1:]
+        toolsum = pd.DataFrame(np.sum(tool3d, axis = 0))
+        toolsum.columns = toolr.columns[1:]
+        toolsum[self.info['id']] = tool
+        rtot = self.input['ind'].loc[:, ('row', 'column', self.info['id'])]
+        rtot = pd.merge(rtot, toolsum, how = 'left', on = self.info['id'])
         
-        if 'rirr' not in self.recharges:
-            self.irrigationR(irrpar['Is'], irrpar['coeffs'])
-        if 'rurb' not in self.recharges:
-            self.urbanR(urbpar['coeff_urb'])
+        #Store the variable
+        self.recharges['rtot'] = rtot
         end = time.time()
-        print('Elapsed time: {round(end-start, 2) s}')
+        print(f'Elapsed time: {round(end - start, 2)} s')
+    
+    def findSPcol(self, col, ind):
+        names = [ind]
+        for name in col:
+            if name.find('SP') != -1:
+                names += [name]
+        return names
+    
+    def addoutpath(self, outpath):
+        self.paths['oupath'] = outpath
+    
+    def insertind(self, df, r, c, pos = 0, name = 'none'):
+        name = self.info['id'] if name == 'none' else name
+        newc = []
+        for i in range(len(r)):
+            newc += [f'{r[i]}X{c[i]}']
         
+        if (name not in df.columns):
+            df.insert(pos, name, newc)
+        else:
+            df[name] = newc
+        return df
+    
+
 # 	def export(..., data = '', fileformat = '.csv'):
 # 		#esportare le ricariche prodotte
 # 		#data: urban, irrigation, meteoric, total

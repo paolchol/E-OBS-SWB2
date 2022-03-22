@@ -82,11 +82,22 @@ rmeteo = pd.DataFrame(rmeteo3d[0, :, :])
 rmeteo.insert(0, 'nrow', rmeteo.index.values)
 rmeteo = pd.melt(rmeteo, id_vars = 'nrow', var_name = 'ncol',
                 value_name = 'SP1')
-r = list(map(str, rmeteo['nrow']+1))
-c = list(map(str, rmeteo['ncol']+1))
+rmeteo['ncol'] = rmeteo['ncol'].astype(np.int64)
+
+rmeteo['nrow'] = rmeteo['nrow']+1
+rmeteo['ncol'] = rmeteo['ncol']+1
+
+r = list(map(str, rmeteo['nrow']))
+c = list(map(str, rmeteo['ncol']))
 newc = []
 for i in range(len(r)):
-    newc += [int(f'{r[i]}0{c[i]}')]
+    if int(f'{r[i]}0{c[i]}') not in newc:
+        newc += [int(f'{r[i]}0{c[i]}')]
+        
+#provare drop duplicates e controllare che droppi il secondo
+
+#cancellare i doppi
+    
 rmeteo.insert(0, 'indicatore', newc)
 
 for i in range(1, rmeteo3d.shape[0]):
@@ -188,15 +199,18 @@ tool = ind_df.loc[:, 'indicatore']
 loc = findSPcol(rmeteo.columns)
 toolm = pd.merge(tool, rmeteo.loc[:, loc], how = 'left', on = 'indicatore')
 loc = findSPcol(rirr.columns)
-tooli = pd.merge(tool, rmeteo.loc[:, loc], how = 'left', on = 'indicatore')
+tooli = pd.merge(tool, rirr.loc[:, loc], how = 'left', on = 'indicatore')
 loc = findSPcol(rurb.columns)
-toolu = pd.merge(tool, rmeteo.loc[:, loc], how = 'left', on = 'indicatore')
+toolu = pd.merge(tool, rurb.loc[:, loc], how = 'left', on = 'indicatore')
 
 tsum = toolm.iloc[:, 1:] + tooli.iloc[:, 1:] + toolu.iloc[:, 1:]
 tsum['indicatore'] = tool
 
 rtot = ind_df.loc[:, ('row', 'column', 'indicatore')]
 rtot = pd.merge(rtot, tsum, how = 'left', on = 'indicatore')
+
+sum(rmeteo.duplicated('indicatore'))
+dup = rmeteo.loc[rmeteo.duplicated('indicatore'), 'indicatore']
 
 del tool, toolm, tooli, toolu, loc
 
@@ -211,3 +225,11 @@ del tool, toolm, tooli, toolu, loc
 # - Irrigation recharge
 
 # - Urban recharge
+
+# %% Checks
+
+rtot.isnull().sum().sum()
+rmeteo.isnull().sum().sum()
+tsum.isnull().sum().sum()
+
+rmeteo.dtypes

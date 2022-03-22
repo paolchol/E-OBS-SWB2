@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Use the class RechargeCalc
+Guide to the use of class "RechargeCalc"
 
 @author: paolo
 """
@@ -29,6 +29,9 @@ inputpath = "./Data/Calcolo_ricarica_totale"
 r = RechargeCalc(swb2path, inputpath, startyear,
                  endyear, cell_area, uniqueid = 'indicatore')
 r.loadinputfiles()
+
+#Correct the indicators provided
+r.input['ind'].loc[r.input['ind']['distretto'] == 'Muzza', 'distretto'] = 'MUZZA'
 
 # Create meteoric recharge dataframe
 
@@ -93,11 +96,31 @@ r.totalR(meteopar, irrpar, urbpar)
 
 # Export
 
-r.recharges['rirr']
 
-'r.recharges' in locals()
+# %% Drafts
 
-f = RechargeCalc(swb2path, inputpath, startyear,
-                 endyear, cell_area, uniqueid = 'indicatore')
+getkeys(r.recharges)
 
-p.recharges
+r.info['id']
+r.recharges['rmeteo'].columns
+
+
+def findSPcol(col, ind):
+    print(ind)
+    names = [ind]
+    for name in col:
+        if name.find('SP') != -1:
+            names += [name]
+    return names
+
+
+findSPcol(r.recharges['rmeteo'].columns, r.info['id'])
+
+r.input['ind'].dtypes
+
+cc = r.input['ind'].astype({'indicatore': str})
+cc.dtypes
+
+max(r.input['ind']['column'])
+
+
