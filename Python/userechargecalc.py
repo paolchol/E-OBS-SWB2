@@ -99,7 +99,7 @@ r.totalR(meteopar, irrpar, urbpar)
 
 # %% Drafts
 
-getkeys(r.recharges)
+#getkeys(r.recharges)
 
 r.info['id']
 r.recharges['rmeteo'].columns
