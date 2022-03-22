@@ -5,6 +5,8 @@ Created on Wed Mar 16 16:23:57 2022
 @author: paolo
 """
 
+import pandas as pd
+
 def calcarea(ind_df, in_rirr, cell_area):
     in_rirr.insert(len(in_rirr.columns),'area', 0)
     for i, distr in enumerate(in_rirr['distretto'], 0):
