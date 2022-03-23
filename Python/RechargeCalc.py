@@ -10,18 +10,19 @@ The working directory has to be set in ./E-OBS-SWB2 for this to work
 @author: paolo
 """
 
-import os
+# import os
 import numpy as np
 import pandas as pd
 import glob
 import time
+import geopandas as gp
 
 #The directory has to be set in ./E-OBS-SWB2 for this to work
 from Python.SWB2output import SWB2output
 from Python.custom_functions import repeat_list
 
 class RechargeCalc():
-
+    
     def __init__(self, swb2path, inputpath, sy, ey, cell_area, uniqueid):
         #Initialize the class
         #Provide the paths to:
@@ -236,8 +237,12 @@ class RechargeCalc():
                 names += [name]
         return names
     
-    def addoutpath(self, outpath):
-        self.paths['oupath'] = outpath
+    def setoutpath(self, outpath):
+        if outpath == 'none':
+            outpath = self.paths['outpath'] if ('outpath' in self.paths) else self.paths['input_folder']
+        else:
+            self.paths['outpath'] = outpath
+        return outpath
     
     def insertind(self, df, r, c, pos = 0, name = 'none'):
         name = self.info['id'] if name == 'none' else name
@@ -250,11 +255,47 @@ class RechargeCalc():
             df[name] = newc
         return df
     
+    def getdf(self, var, tag):
+        #Get the df
+        if (var == 'input'):
+            df = self.input[tag]
+        elif (var == 'recharge'):
+            df = self.recharges[tag]
+        return df
 
-# 	def export(..., data = '', fileformat = '.csv'):
-# 		#esportare le ricariche prodotte
-# 		#data: urban, irrigation, meteoric, total
-# 		#check su data e poi esporta il df voluto nel formato voluto
-# 		#format: .csv, .txt
-# 	def georef(df, coord):
-# 		#esportare un dataframe come shapefile assegnandone le coordinate
+    def export(self, var, tag, outpath = 'none', fileext = 'csv'):
+        #Exports the recharges or other data of the class        
+        #var: 'input', 'recharge'
+        #tag:
+        # if var: input
+        # - 'ind', 'irr', 'urb'
+        # if var: recharge
+        # - 'rmeteo', 'rirr', 'rurb', 'rtot'
+        #Set the output path
+        outpath = self.setoutpath(outpath)
+        df = self.getdf(var, tag)
+        #Export the file
+        df.to_csv(f'{outpath}/{tag}.{fileext}')
+    
+    def georef(self, var, tag, coordpath, proj = 'none', outpath = 'none'):
+        #Export a shapefile of the selected dataframe
+        #var: 'input', 'recharge'
+        #tag:
+        # if var: input
+        # - 'ind', 'irr', 'urb'
+        # if var: recharge
+        # - 'rmeteo', 'rirr', 'rurb', 'rtot'
+        #coordpath:
+        # path to a .csv file with columns 'row', 'column', self.info['id'], 'x', 'y'
+        outpath = self.setoutpath(outpath)
+        coord = pd.read_csv(coordpath)
+        coord = self.insertind(coord, coord['row'], coord['column'], name = self.info['id'])
+        coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
+        tool = pd.merge(self.getdf(var, tag), coord, on = self.info['id'])
+        geodf = gp.GeoDataFrame(tool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
+        geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+        geodf.to_file(f'{outpath}/{tag}.shp', driver = 'ESRI Shapefile')
+        print(f'Shapefile saved in {outpath} as {tag}.shp')
+        
+# def save(self, outpath):
+#     #Save a pickle of the class
