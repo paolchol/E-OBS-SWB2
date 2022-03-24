@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Guide of the "SWB2output" class for SWB2 output handling
- In section 'Guide to the class usage', instructions are provided 
+ In section 'Class usage guide', instructions are provided 
 
 @author: paolo
 """
@@ -19,7 +19,7 @@ os.chdir('C:/E-OBS-SWB2')
 
 from Python.SWB2output import SWB2output
 
-# %% Guide for the class use
+# %% Class usage guide
 
 #Path to an example netCDF file produced by SWB2
 swb2path = "./Data/SWB2_output/p1_ModelMI_net_infiltration__2014-01-01_2018-12-31__338_by_660.nc"
@@ -41,8 +41,8 @@ f.sumtotdf
 #Stress period definition
 SP1 = 90   #days, 01/01 - 30/03
 SP2 = 76   #days, 01/04 - 12/06
-SP3 = 92   #days, 13/06 - 
-SP4 = 107  #days, - 31/12
+SP3 = 92   #days, 13/06 - 15/09
+SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
 SPs = np.cumsum(SPs)
 
@@ -55,3 +55,6 @@ f.SP_sum(SPs, outpath = 'some path')
 #Important to save memory
 f.close()
 
+#6. Obtain a single dataframe with index, row, column, SP columns
+f.obtain_df_SP(index = 'indicatore')
+dfSP = f.results['dfSP']

@@ -9,7 +9,7 @@ The working directory has to be set in ./E-OBS-SWB2 for this to work
 @author: paolo
 """
 
-import os
+# import os
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
@@ -38,13 +38,14 @@ class SWB2output():
             "units": self.netCDF[getkeys(self.netCDF.variables)[3]].units,
             "nodata_value": self.netCDF[getkeys(self.netCDF.variables)[3]]._FillValue
             }
+        self.results = {}
     
     def print_md(self):
-        #Prints the metadata
+        #Prints the original netCDF metadata
         print(self.netCDF)
     
     def extract(self):
-        #Returns the main variable of the output as a numpy array
+        #Returns the main variable of the output as a numpy 3d array
         variable = self.metadata['main_variable']
         return np.ma.getdata(self.netCDF[variable][:, :, :])
 
@@ -60,7 +61,7 @@ class SWB2output():
             xll = round(np.ma.getdata(self.netCDF['x'][0]).item()) - size/2
             yll = round(np.ma.getdata(self.netCDF['y'][-1]).item()) - size/2
             #name: prendere ModelMI. nel caso in cui sia p1_ prenderà p1
-            fname = f"{outpath}/{name}_{variable}_sum_tot.asc"
+            fname = f'{outpath}/{name}_{variable}_sum_tot.asc'
             save_ArcGRID(df, fname, xll, yll, size, -9999)
             print(f'ArcGRID saved in {outpath} as: {name}_{variable}_sum_tot.asc')
         return self.sumtotdf
@@ -118,11 +119,44 @@ class SWB2output():
                 var3d[k, :, :] = sp
                 k += 1
             s = e #It will get the subsequent day
-        # self.SPsum = var3d
-        # return self.SPsum
+        
         print('End of the procedure')
         if outpath != 'none': print(f'The ASCII files are saved in {outpath}')
-        return var3d
+        self.results['SPsum3d'] = var3d
+        # return self.SPsum
+    
+    def obtain_df_SP(self, index = 'none'):
+        if 'SPsum3d' in self.results:
+            df = pd.DataFrame(self.results['SPsum3d'][0, :, :])
+        else:
+            print('Error: Run SP_sum() method before running obtain_df_SP()')
+            return
+        df.insert(0, 'nrow', df.index.values)
+        df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol',
+         value_name = 'SP1')
+        df['nrow'] = df['nrow'] + 1
+        df['ncol'] = df['ncol'] + 1
+        df = self.insertind(df, df['nrow'], df['ncol'], name = index)
+        
+        for i in range(1, self.results['SPsum3d'].shape[0]):
+            df = pd.DataFrame(self.results['SPsum3d'][i, :, :])
+            df.insert(0, 'nrow', df.index.values)
+            df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol',
+             value_name = f'SP{i+1}')
+            if f'SP{i+1}' not in df.columns:
+                df.insert(len(df.columns), f'SP{i+1}', df[f'SP{i+1}'])
+        self.results['dfSP'] = df
+    
+    def insertind(self, df, r, c, pos = 0, name = 'none'):
+        # name = self.info['id'] if name == 'none' else name
+        newc = []
+        for i in range(len(r)):
+            newc += [f'{r[i]}X{c[i]}']
+        if (name not in df.columns):
+            df.insert(pos, name, newc)
+        else:
+            df[name] = newc
+        return df
     
     def close(self):
         #Close the netCDF file

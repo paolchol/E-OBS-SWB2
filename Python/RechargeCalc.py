@@ -153,6 +153,7 @@ class RechargeCalc():
         #Save the variables
         self.recharges['rirr'] = rirr
         self.paths['special_irr'] = specialpath
+        if (specialpath != 'none'): self.input['spirr'] = sp_rirr
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export:
