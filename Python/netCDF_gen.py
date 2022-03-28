@@ -133,7 +133,6 @@ for i, n in enumerate(index, start = 0):
         ds.createDimension('x', len(idx_lon))
         ds.createDimension('y', len(idx_lat))
         ds.createDimension('time', None)
-        ds.createDimension('nv', 2)
         
         ## Variables
         #x(x)
@@ -162,7 +161,7 @@ for i, n in enumerate(index, start = 0):
         y[:] = la
         tout = eobs_todaymet(np.where(tyR == year)[0])
         time[:] = tout
-        yearday[:] = range(0, 365)
+        yearday[:] = range(1, 366)
         value[:] = np.around(val, 1)
         
         #Close the file
