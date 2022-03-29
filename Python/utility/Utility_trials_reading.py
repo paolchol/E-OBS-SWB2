@@ -107,7 +107,7 @@ print(pWGS84['x'])
 print(pWGS84)
 p = np.ma.getdata(pWGS84['prcp'][1:10, :, :])
 
-
+pWGS84['time'][:]
 
 pWGS84.close()
 

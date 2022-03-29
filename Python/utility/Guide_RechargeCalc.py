@@ -5,16 +5,24 @@ Guide to the use of class "RechargeCalc"
 @author: paolo
 """
 
+# %% Setup
+
 import os
 import numpy as np
 # import pandas as pd
 # import glob
 
 os.chdir('C:/E-OBS-SWB2')
+
+# %% Call the class
+
 from Python.RechargeCalc import RechargeCalc
 
-#Define the variables
+# %% Class usage
 
+#1. Initialize the class
+
+#Define the variables
 startyear = 2014
 endyear = 2018
 cell_area = 100*100 #m2
@@ -22,8 +30,6 @@ cell_area = 100*100 #m2
 swb2path = "./Data/SWB2_output/1Speranza_netinfiltration.nc"
 #Path to the input .csv files folder
 inputpath = "./Data/Calcolo_ricarica_totale"
-
-# Initialize the class
 
 r = RechargeCalc(swb2path, inputpath, startyear,
                  endyear, cell_area, uniqueid = 'indicatore')
@@ -34,7 +40,7 @@ r.loadinputfiles()
 #Correct the indicators provided
 r.input['ind'].loc[r.input['ind']['distretto'] == 'Muzza', 'distretto'] = 'MUZZA'
 
-# Create meteoric recharge dataframe
+#2. Create meteoric recharge dataframe
 
 #Define the stress periods
 SP1 = 90   #days, 01/01 - 30/03
@@ -46,7 +52,7 @@ SPs = np.cumsum(SPs)
 
 r.meteoricR(SPs)
 
-# Create irrigation recharge dataframe
+#3. Create irrigation recharge dataframe
 
 #Define the coefficients needed
 coeffs = {
@@ -66,21 +72,19 @@ spath = f'{inputpath}/rirrigua_speciale.csv'
 
 r.irrigationR(Is, coeffs, spath)
 
-# Create urban recharge dataframe
+#4. Create urban recharge dataframe
 
 coeff_urb = 0.15
 
 r.urbanR(coeff_urb)
 
-# Create total recharge dataframe
+#5. Create total recharge dataframe
 
 #Launch after computing all the partial recharges
-
 r.totalR()
 
 #Launch directly
 #needs the parameters defined before, inside a dictionary or a dataframe
-
 meteopar = {
     'SPs': SPs
     }
@@ -95,7 +99,7 @@ urbpar = {
 
 r.totalR(meteopar, irrpar, urbpar)
 
-# Export
+#6. Export
 
 #as .csv
 outpath = "./Data/Calcolo_ricarica_totale"
