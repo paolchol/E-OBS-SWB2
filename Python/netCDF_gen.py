@@ -21,7 +21,7 @@ os.chdir('C:/E-OBS-SWB2')
 
 # %% Custom functions
 
-from Python.custom_functions import transf
+# from Python.custom_functions import transf
 from Python.custom_functions import eobs_todaymet
 
 # %% Define area of the project
@@ -51,8 +51,15 @@ maxlat = max(model_extremes.lat) + 0.1 + 0.1
 
 # %% Set the parameters
 
-#This has to be changed/optimized
+#Path to the folder where to store the results: outpath
+#Path to a custom folder
+# outpath = r'./Export/netCDF/netcdf_WGS84'
+#Direct path to the model folder
+outpath = './Model/swb2_MODELMI/climate_ncfile'
+#Path to the folder where the E-OBS data are stored: inpath
+inpath = './Data/E-OBS'
 
+#This has to be changed/optimized
 index = [4, 7, 8] # referred to the index of the files in fls = glob.glob('./Dati/E-OBS/*.nc')
 tag = ['rr','tn', 'tx'] #names in the E-OBS files
 outname = ['prcp', 'tmin', 'tmax'] #names in the output files (Daymet copies)
@@ -80,18 +87,8 @@ tyR = t.year
 
 # %% Generate the new files
 
-#Get the path to the files
-#Path to a custom folder
-# outpath = r'./Export/netCDF/netcdf_WGS84'
-#Direct path to the model folder
-outpath = r'./Model/swb2_MODELMI/climate_ncfile'
-
 #Create a list of the files contained in the selected folder
-fls = glob.glob('./Data/E-OBS/*.nc')
-
-# n = 4
-# year = 2014
-# i = 0
+fls = glob.glob(f'{inpath}/*.nc')
 
 for i, n in enumerate(index, start = 0):
     ncf = nc.Dataset(fls[n])
@@ -110,8 +107,8 @@ for i, n in enumerate(index, start = 0):
 
     for year in yU[np.where((yU >= 2014) & (yU <= 2018))]:
         
-        idx = np.where(yR == year)
-        val = ncf[tag[i]][idx[0], idx_lat, idx_lon]
+        idx = np.where(yR == year)[0]
+        val = ncf[tag[i]][idx, idx_lat, idx_lon]
         val = np.ma.getdata(val)
         
         #To be coherent with the convention used in SWB for data sorting,
