@@ -55,7 +55,7 @@ maxlat = max(model_extremes.lat) + 0.1 + 0.1
 #Path to a custom folder
 # outpath = r'./Export/netCDF/netcdf_WGS84'
 #Direct path to the model folder
-outpath = './Model/swb2_MODELMI/climate_ncfile'
+outpath = './Model/swb2_MODELMI/climate_ncfile/prova'
 #Path to the folder where the E-OBS data are stored: inpath
 inpath = './Data/E-OBS'
 
@@ -111,8 +111,8 @@ for i, n in enumerate(index, start = 0):
         val = ncf[tag[i]][idx, idx_lat, idx_lon]
         val = np.ma.getdata(val)
         
-        #To be coherent with the convention used in SWB for data sorting,
-        #flip the variable matrix around the horizontal axis
+        #Flip the variable matrix around the horizontal axis to maintain the
+        #coherence with the inversion of la
         val = np.flip(val, axis = 1)
         
         fname = f'{outpath}/{outname[i]}_EOBS_{year}.nc'
@@ -130,18 +130,19 @@ for i, n in enumerate(index, start = 0):
         ds.createDimension('x', len(idx_lon))
         ds.createDimension('y', len(idx_lat))
         ds.createDimension('time', None)
+        ds.createDimension('nv', 2)
         
         ## Variables
         #x(x)
         x = ds.createVariable('x', 'd', ('x'))
         x.units = 'degrees'
-        x.long_name = 'x geographic coordinate (lon) - WGS84'
-        x.standard_name = 'geographic_x_coordinate'
+        x.long_name = 'x coordinate of projection'
+        x.standard_name = 'projection_x_coordinate'
         #y(y)
         y = ds.createVariable('y', 'd', ('y'))
         y.units = 'degrees'
-        y.long_name = 'y geographic coordinate (lat) - WGS84'
-        y.standard_name = 'geographic_y_coordinate'
+        y.long_name = 'y coordinate of projection'
+        y.standard_name = 'projection_y_coordinate'
         #Time
         time = ds.createVariable('time', 'd', ('time'))
         time.units = 'days since 1980-01-01 00:00:00 UTC' #try to keep the same numeration as E-OBS
