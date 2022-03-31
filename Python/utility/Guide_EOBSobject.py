@@ -30,9 +30,13 @@ inpath = './Data/E-OBS'
 #   https://surfobs.climate.copernicus.eu/dataaccess/access_eobs.php
 var = 'rr' #daily precipitation sum
 
-f = EOBSobject(inpath, var)
+f = EOBSobject(inpath, outpath, var)
 f.load() #load the netcdf file
 
+#If you want to provide directly the path to a single file, set folder to False
+# inpath = './Data/E-OBS/file.nc'
+# f = EOBSobject(inpath, var, folder = False)
 
+#outpath is set as inpath if the field is left untouched
 
 
