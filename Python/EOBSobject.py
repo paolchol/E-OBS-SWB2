@@ -337,15 +337,15 @@ class EOBSobject():
             units = self.netcdf['time']['units'] #check if this works
         self.units['time'] = units
     
-    def transf_eobstime(self, y, to = date(1980, 1, 1)):
+    def transf_eobstime(self, x, to = date(1980, 1, 1)):
         #to: time reference to be transformed to
         #   standard: Daymet, starting from 1980-01-01
         dstart = to
         estart = date(1950, 1, 1)
         k = dstart - estart
         #For SWB2, add 0.5
-        y1 = y - k.days + 0.5 if self.info['for_swb2'] else y - k.days
-        return y1
+        y = x - k.days + 0.5 if self.info['for_swb2'] else y - k.days
+        return y
     
     def write_fname(self, method, res):
         outpath = self.paths['outpath']
