@@ -29,7 +29,7 @@ os.chdir('C:/E-OBS-SWB2/Python/drafts/trialsfinalstructure')
 #Read the other script
 #Same operation as "source" in R
 exec(open("xdef.py").read())
-x #defined in xdef.py
+# print(x) #x is defined in xdef.py
 #__name__ is still main by calling xdef.py like this
 
 #This can be useful to clean up the main code by calling a "module" script and
