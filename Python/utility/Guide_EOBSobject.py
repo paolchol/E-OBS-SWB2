@@ -8,6 +8,7 @@ Created on Tue Mar 29 16:17:37 2022
 # %% Setup
 
 import os
+import pandas as pd
 os.chdir('C:/E-OBS-SWB2')
 
 # %% Call the class
@@ -32,10 +33,40 @@ inpath = './Data/E-OBS'
 var = 'rr' #daily precipitation sum
 
 f = EOBSobject(inpath, var, outpath)
-f.load() #load the netcdf file
 
 #If you want to provide directly the path to a single file, set folder to False
 # inpath = './Data/E-OBS/file.nc'
 # f = EOBSobject(inpath, var, folder = False)
 
-f.get_dates()
+#If the output needs to be used for SWB2
+f = EOBSobject(inpath, var, outpath, swb2 = True)
+
+# Load the netcdf file
+f.load()
+
+# 2. Cut in space
+
+coord = {'lon': [8.691, 8.929, 9.524, 9.537],
+          'lat': [45.611, 45.308, 45.610, 45.306]}
+coord = pd.DataFrame(coord)
+
+# 3. Cut in time
+
+start = 2014
+end = 2018
+
+# 4. Cut in space and time
+
+# 5. Generate ArcGRID files
+#save_arcgrid
+
+# 6. Perform the operation on multiple E-OBS .nc files
+
+var = ['rr', 'tn', 'tx']
+for v in var:
+    f = EOBSobject(inpath, v, outpath)
+    f.load()
+    f.cut_spacetime(coord, start, end)
+    f.close()
+
+#The name of the output netcdf file will be composed as var_EOBS_method_year
