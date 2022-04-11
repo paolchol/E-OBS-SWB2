@@ -14,26 +14,26 @@ from datetime import date, timedelta
 class EOBSobject():
     
     def __init__(self, inpath, var, outpath = 'none', outname = 'none',
-                 folder = True, swb2 = False):
+                 fname = 'none', folder = True, swb2 = False):
         #Store the info
         self.info = {
             'var': var,
             'for_swb2': swb2
             }
         self.set_outname(outname)
+        self.set_fname(fname)
         #Store the path
         #folder condition: default is True, path to a folder
-        #if path to a single file
+        #   False if path to a single file
         if folder: self.paths = { 'inpath': self.find_path(inpath, var) }
         else: self.paths = { 'inpath': inpath }
         self.set_outpath(outpath, folder)
-        #Store the units
-        self.units = {
-            # 'variable': #save here the unit of the variable
-            }
     
     def load(self):
         self.netcdf = nc.Dataset(self.paths['inpath'])
+        #Store the units
+        self.info['units'] = self.netcdf[self.info['var']].units
+        self.info['missing_value'] = self.netcdf[self.info['var']]._FillValue
     
     def print_metadata(self):
         #Raw metadata
@@ -53,7 +53,7 @@ class EOBSobject():
         
         la = self.netcdf['latitude'][:]
         lo = self.netcdf['longitude'][:]
-        tool = round(la[0] - la[1], 1) * contourcell
+        tool = round(la[1] - la[0], 1) * contourcell
         minlon = min(coord[loncol]) - tool
         minlat = min(coord[latcol]) - tool
         maxlon = max(coord[loncol]) + tool
@@ -160,16 +160,7 @@ class EOBSobject():
             return
     
     def save_netcdf(self, res = None, method = 'raw'):
-        # outpath = self.paths['outpath']
         outname = self.info['outname']
-        # check = False
-        
-     
-        
-        #ottimizzare il passaggio di variabili tra funzioni
-        #df può anche non essere passato, passando solo i vari idx
-        #e estraendolo direttamente qui
-        
         if method == 'raw':
             #Saves the same dataset, just by applying a custom format
             _, tool, _ = self.get_dates()
@@ -183,19 +174,17 @@ class EOBSobject():
             la = self.get_lat(method, res['idx_lat'])
             lo = self.get_lon(method, res['idx_lon'])
         
-        if method == 'cut_space':
+        if (method == 'cut_space'):
             description = "Clip in space of the E-OBS dataset"
             _, tool, _ = self.get_dates()
             start_day = f"{tool.day}/{tool.month}/{tool.year}"
             tout = np.ma.getdata(self.netcdf['time'][:])
-            
-        elif method == 'cut_time':
+        elif (method == 'cut_time'):
             description = "Clip in time of the E-OBS dataset"
             start_day = res['start_day']
             tout = res['time']
-        
-        elif method == 'cut_spacetime':
-            description = "Clip in sapce and time of the E-OBS dataset"
+        elif (method == 'cut_spacetime'):
+            description = "Clip in space and time of the E-OBS dataset"
             start_day = res['start_day']
             tout = res['time']
             
@@ -204,20 +193,22 @@ class EOBSobject():
             df = np.flip(df, axis = 1)
             df = np.around(df, 1)
             tunits = 'days since 1980-01-01 00:00:00 UTC'
-            #Expertiment:
-            #   try to keep the same numeration as E-OBS
+            
+            #Expertiment to uniform also the files for SWB2:
+            # - try to keep the same numeration as E-OBS and run SWB2
+            # - try to keep the "start_day" as YYYY-MM-DD
         else:
             tunits = self.netcdf['time'].units
         
         fname = self.write_fname(method, res)
-        
-        # if not check: fname = f'{outpath}/{outname}_EOBS_{method}.nc'
+        #Create the netcdf dataset: netcdf3 for swb2, netcdf4 in general
         if self.info['for_swb2']: ds = nc.Dataset(fname, 'w', format = "NETCDF3_CLASSIC")
-        else: ds = nc.Dataset(fname, 'w')
+        else: ds = nc.Dataset(fname, 'w', format = 'NETCDF4')
         
         ## General metadata
         ds.description = description
-        ds.source = "E-OBS v24.0"
+        version = self.netcdf.__dict__[self.get_keys(self.netcdf.__dict__)[0]]
+        ds.source = f"E-OBS {version}"
         ds.start_day = start_day
         #Syntax of start_day can be changed to YYYY-MM-DD,
         # but first I need to try run SWB2 in that configuration
@@ -249,7 +240,7 @@ class EOBSobject():
         #Value
         value = ds.createVariable(outname, 'f4', ('time','y','x'), fill_value = -9999)
         value.units = self.info['units']
-        value.missing_value = -9999.0
+        value.missing_value = self.info['missing_value']
         value.coordinates = 'lat lon'
         
         ## Fill the variables
@@ -262,17 +253,14 @@ class EOBSobject():
         #Close the file
         ds.close()
     
-    def save_arcgrid(self, code = 0):
-        self.paths['outpath']
-        if code == 0: self.cut_space() #call cut_space
-        #call cut_time
-        #call cut_spacetime
-    
     #----------------------------------------------------------
-    #ASCII section
+    #ArcGRID section
     
-    #anzi, basta definire bene le funzioni cut in modo che ritornino qualcosa
-    #utilizzabile sia da una funzione save_netcdf sia da una save_arcgrid
+    def save_arcgrid(self, method = 'raw'):
+        self.paths['outpath']
+        if method == 'cut_space': self.cut_space() #call cut_space
+        #call cut_time
+        #call cut_spacetime    
     
     #----------------------------------------------------------
     #General operations
@@ -298,6 +286,14 @@ class EOBSobject():
         end = origin + timedelta(ndays)
         return origin, start, end
     
+    def get_keys(self, dict):
+        #Returns the dictionary keys of a dictonary as a list
+        # got from:
+        # https://www.geeksforgeeks.org/python-get-dictionary-keys-as-a-list/
+        #Other method
+        # return list(dict.keys())
+        return [*dict]
+    
     def get_lat(self, method, idx_lat = None):
         if (method == 'cut_space') or (method == 'cut_spacetime'): 
             return self.netcdf['latitude'][idx_lat]
@@ -313,13 +309,16 @@ class EOBSobject():
     def get_var(self, method, idx_time = None, idx_lat = None, idx_lon = None):
         if method == 'raw':
             df = np.ma.getdata(self.netcdf[self.info['var']][:, :, :])
-        elif method == 'cut_time':
-            df = np.ma.getdata(self.netcdf[self.info['var']][idx_time, :, :])
         elif method == 'cut_space':
             df = np.ma.getdata(self.netcdf[self.info['var']][:, idx_lat, idx_lon])
+        elif method == 'cut_time':
+            df = np.ma.getdata(self.netcdf[self.info['var']][idx_time, :, :])
         elif method == 'cut_spacetime':
             df = np.ma.getdata(self.netcdf[self.info['var']][idx_time, idx_lat, idx_lon])
         return df
+    
+    def set_fname(self, fname):
+        self.info['fname'] = fname
     
     def set_outname(self, outname):
         self.info['outname'] = outname if outname != 'none' else self.info['var']
@@ -344,16 +343,17 @@ class EOBSobject():
         estart = date(1950, 1, 1)
         k = dstart - estart
         #For SWB2, add 0.5
-        y = x - k.days + 0.5 if self.info['for_swb2'] else y - k.days
+        y = x - k.days + 0.5 if self.info['for_swb2'] else x - k.days
         return y
     
     def write_fname(self, method, res):
+        if self.info['fname'] != 'none': return self.info['fname']
         outpath = self.paths['outpath']
         outname = self.info['outname']
         fname = f'{outpath}/{outname}_EOBS_{method}'
         if (method == 'cut_time' or method == 'cut_spacetime') and res['option'] != 'bundle':
             tool = res['start_day'].split('/')[2]
-            fname = f'{fname}_{tool}'
+            fname = f'{fname}_{tool}'            
         fname = f'{fname}.nc'
         return fname
         
