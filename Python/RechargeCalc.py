@@ -299,4 +299,4 @@ class RechargeCalc():
         print(f'Shapefile saved in {outpath} as {tag}.shp')
         
 # def save(self, outpath):
-#     #Save a pickle of the class
+#     #Save a pickle of the object
