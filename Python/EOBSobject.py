@@ -49,9 +49,10 @@ class EOBSobject():
     
     def cut_space(self, coord, save = True, internal = False,
                  loncol = 'lon', latcol = 'lat', contourcell = 0):
-        #coord: extremes of desired area
-        #contourcell: number of contour cells to extract around the provided
-        # coordinates
+        """
+        coord: extremes of desired area
+        contourcell: number of contour cells to extract around the provided coordinates
+        """
         
         la = self.netcdf['latitude'][:]
         lo = self.netcdf['longitude'][:]
