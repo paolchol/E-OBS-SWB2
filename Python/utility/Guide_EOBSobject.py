@@ -36,11 +36,16 @@ var = 'rr' #daily precipitation sum
 f = EOBSobject(inpath, var, outpath)
 
 #If you want to provide directly the path to a single file, set folder to False
-# inpath = './Data/E-OBS/file.nc'
-# f = EOBSobject(inpath, var, folder = False)
+inpath = './Data/E-OBS/file.nc'
+f = EOBSobject(inpath, var, folder = False)
 
-#If the output needs to be used for SWB2
+
 f = EOBSobject(inpath, var, outpath, swb2 = True)
+
+# Inserire un'opzione per flippare il dataset e l'asse della latitudine
+# senza però impostare la data daymet ecc
+#If the output needs to have a flipped latitude axis and value dataframe
+#This option has to be set to True if the output needs to be used for SWB2
 
 # Load the netcdf file
 f.load()
@@ -50,9 +55,11 @@ f.load()
 
 # 2.1 Cut in space
 
+#Provide the extreme coordinates of the area you want to cut
 coord = {'lon': [8.691, 8.929, 9.524, 9.537],
           'lat': [45.611, 45.308, 45.610, 45.306]}
 coord = pd.DataFrame(coord)
+
 f.cut_space(coord)
 
 #To add more cells
@@ -86,6 +93,7 @@ f.cut_spacetime(coord, start, end)
 
 #You can also save the file as it is
 #This will only change the metadata or other things as the name of the main variable
+#However, this method is memory consuming and may not work on your laptop as it is
 
 f.save_netcdf(method = 'raw')
 
@@ -94,12 +102,14 @@ f.save_netcdf(method = 'raw')
 #Specify the method: 'cut_space', 'cut_time', 'cut_spacetime'
 #Provide the necessary information: coord, start, end
 
-f.save_arcgrid()
+g = f.save_arcgrid('cut_spacetime', coord, start, end)
+g.shape
 
 # 4. Perform the operation on multiple E-OBS .nc files
 
 var = ['rr', 'tn', 'tx']
-#Also outpath and inpath could be provided in lists
+#Also outpath and inpath could be provided in lists, if you want to refer to
+#single files each time in different folders
 for v in var:
     f = EOBSobject(inpath, v, outpath)
     f.load()

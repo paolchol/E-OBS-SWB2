@@ -167,7 +167,7 @@ class EOBSobject():
             #Saves the same dataset, just by applying a custom format
             _, tool, _ = self.get_dates()
             start_day = f"{tool.day}/{tool.month}/{tool.year}"
-            # df = self.get_var(method)
+            df = self.get_var(method) #it may be too computationally heavy
             la = self.get_lat(method)
             lo = self.get_lon(method)
             tout = np.ma.getdata(self.netcdf['time'][:])
@@ -196,7 +196,7 @@ class EOBSobject():
             df = np.around(df, 1)
             tunits = 'days since 1980-01-01 00:00:00 UTC'
             
-            #Expertiment to uniform also the files for SWB2:
+            #Experiment to uniform also the files for SWB2:
             # - try to keep the same numeration as E-OBS and run SWB2
             # - try to keep the "start_day" as YYYY-MM-DD
         else:
@@ -250,7 +250,7 @@ class EOBSobject():
         y[:] = la
         time[:] = tout
         yearday[:] = range(1, 366)
-        value[:] = df if method != 'raw' else self.get_var(method)
+        value[:] = df #if method != 'raw' else self.get_var(method)
         
         #Close the file
         ds.close()
