@@ -5,16 +5,20 @@ EOBSobject class definition
 @author: paolo
 """
 
+from datetime import date, timedelta
 import glob
 import netCDF4 as nc
 import numpy as np
+import os
 import pandas as pd
-from datetime import date, timedelta
 
 class EOBSobject():
     
     def __init__(self, inpath, var, outpath = 'none', outname = 'none',
                  fname = 'none', folder = True, swb2 = False):
+        #folder condition: default is True, path to a folder
+        #   False if path to a single file
+        
         #Store the info
         self.info = {
             'var': var,
@@ -22,9 +26,7 @@ class EOBSobject():
             }
         self.set_outname(outname)
         self.set_fname(fname)
-        #Store the path
-        #folder condition: default is True, path to a folder
-        #   False if path to a single file
+        #Store the input path
         if folder: self.paths = { 'inpath': self.find_path(inpath, var) }
         else: self.paths = { 'inpath': inpath }
         self.set_outpath(outpath, folder)
@@ -128,7 +130,7 @@ class EOBSobject():
     def cut_spacetime(self, coord, start, end, save = True, internal = False,
                       loncol = 'lon', latcol = 'lat', contourcell = 0,
                       option = 'singleyear', day = False):
-        res_ca = self.cut_space(coord, False, True,
+        res_cs = self.cut_space(coord, False, True,
                                 loncol, latcol, contourcell)
         if option == 'singleyear':
             for year in range(start, end + 1):
@@ -137,8 +139,8 @@ class EOBSobject():
                     'start_day': res_ct['start_day'],
                     'time': res_ct['time'],
                     'idx_time': res_ct['idx_time'],
-                    'idx_lat': res_ca['idx_lat'],
-                    'idx_lon': res_ca['idx_lon'],
+                    'idx_lat': res_cs['idx_lat'],
+                    'idx_lon': res_cs['idx_lon'],
                     'option': option
                     }
                 if save: self.save_netcdf(res, method = 'cut_spacetime')
@@ -149,8 +151,8 @@ class EOBSobject():
                 'start_day': res_ct['start_day'],
                 'time': res_ct['time'],
                 'idx_time': res_ct['idx_time'],
-                'idx_lat': res_ca['idx_lat'],
-                'idx_lon': res_ca['idx_lon'],
+                'idx_lat': res_cs['idx_lat'],
+                'idx_lon': res_cs['idx_lon'],
                 'option': option
                 }
             if save: self.save_netcdf(res, method = 'cut_spacetime')
@@ -165,7 +167,7 @@ class EOBSobject():
             #Saves the same dataset, just by applying a custom format
             _, tool, _ = self.get_dates()
             start_day = f"{tool.day}/{tool.month}/{tool.year}"
-            df = self.get_var(method)
+            # df = self.get_var(method)
             la = self.get_lat(method)
             lo = self.get_lon(method)
             tout = np.ma.getdata(self.netcdf['time'][:])
@@ -174,16 +176,16 @@ class EOBSobject():
             la = self.get_lat(method, res['idx_lat'])
             lo = self.get_lon(method, res['idx_lon'])
         
-        if (method == 'cut_space'):
+        if method == 'cut_space':
             description = "Clip in space of the E-OBS dataset"
             _, tool, _ = self.get_dates()
             start_day = f"{tool.day}/{tool.month}/{tool.year}"
             tout = np.ma.getdata(self.netcdf['time'][:])
-        elif (method == 'cut_time'):
+        elif method == 'cut_time':
             description = "Clip in time of the E-OBS dataset"
             start_day = res['start_day']
             tout = res['time']
-        elif (method == 'cut_spacetime'):
+        elif method == 'cut_spacetime':
             description = "Clip in space and time of the E-OBS dataset"
             start_day = res['start_day']
             tout = res['time']
@@ -248,7 +250,7 @@ class EOBSobject():
         y[:] = la
         time[:] = tout
         yearday[:] = range(1, 366)
-        value[:] = df
+        value[:] = df if method != 'raw' else self.get_var(method)
         
         #Close the file
         ds.close()
@@ -256,11 +258,57 @@ class EOBSobject():
     #----------------------------------------------------------
     #ArcGRID section
     
-    def save_arcgrid(self, method = 'raw'):
-        self.paths['outpath']
-        if method == 'cut_space': self.cut_space() #call cut_space
-        #call cut_time
-        #call cut_spacetime    
+    def save_arcgrid(self, method, coord = None, start = None, end = None, save = True, internal = False,
+                      loncol = 'lon', latcol = 'lat', contourcell = 0,
+                      option = 'singleyear', day = False, createfolder = True):
+        
+        if method == 'cut_space':
+            res = self.cut_space(coord, False, True,
+                                    loncol, latcol, contourcell)
+        elif method == 'cut_time':
+            res = self.cut_time(start, end, False, True, option, day)
+        elif method == 'cut_spacetime':
+            res = self.cut_spacetime(coord, start, end, False, True, loncol,
+                                         latcol, contourcell, option, day)
+        if method == 'raw':
+            la = self.get_lat(method)
+            lo = self.get_lon(method)
+            t = self.get_time(method)
+        else:
+            df = self.get_var(method, res['idx_time'], res['idx_lat'], res['idx_lon'])
+            df = np.flip(df, axis = 1)
+            la = self.get_lat(method, res['idx_lat'])
+            lo = self.get_lon(method, res['idx_lon'])
+            t = self.get_time(method, res)
+    
+        namefolder = self.info['outname']
+        outpath = self.paths['outpath']
+        if createfolder:
+            if not os.path.exists(outpath):
+                os.makedirs(outpath)
+            outpath = f"{outpath}/{namefolder}"
+            if not os.path.exists(outpath):
+                os.makedirs(outpath)
+        
+        size = round(la[1] - la[0], 1)
+        xll = lo[0] - size/2
+        yll = la[0] - size/2
+        nodata = self.info['missing_value']
+
+        for i in range(0, len(t)):
+            y, m, d = self.transf_eobsdate(t[i], number = True)
+            fname = f'{outpath}/{namefolder}_{y}_{m}_{d}.asc'
+            if method != 'raw':
+                tool = round(pd.DataFrame(df[i, :, :]), 1)
+            else:
+                df = np.flip(self.get_var('cut_time', idx_time = i))
+                tool = round(pd.DataFrame(df), 1)
+            tool.to_csv(fname, sep = ' ', header = False, index = False)
+            header = f'ncols         {df.shape[2]}\nnrows         {df.shape[1]}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
+            with open(fname, 'r+') as f:
+                content = f.read()
+                f.seek(0, 0)
+                f.write(header + '\n' + content)
     
     #----------------------------------------------------------
     #General operations
@@ -306,16 +354,21 @@ class EOBSobject():
         else:
             return self.netcdf['longitude'][:]
     
+    def get_time(self, method, res = None):
+        if (method == 'cut_time') or (method == 'cut_spacetime'):
+            return res['time']
+        else:
+            return self.netcdf['time'][:]
+    
     def get_var(self, method, idx_time = None, idx_lat = None, idx_lon = None):
         if method == 'raw':
-            df = np.ma.getdata(self.netcdf[self.info['var']][:, :, :])
+            return np.ma.getdata(self.netcdf[self.info['var']][:, :, :])
         elif method == 'cut_space':
-            df = np.ma.getdata(self.netcdf[self.info['var']][:, idx_lat, idx_lon])
+            return np.ma.getdata(self.netcdf[self.info['var']][:, idx_lat, idx_lon])
         elif method == 'cut_time':
-            df = np.ma.getdata(self.netcdf[self.info['var']][idx_time, :, :])
+            return np.ma.getdata(self.netcdf[self.info['var']][idx_time, :, :])
         elif method == 'cut_spacetime':
-            df = np.ma.getdata(self.netcdf[self.info['var']][idx_time, idx_lat, idx_lon])
-        return df
+            return np.ma.getdata(self.netcdf[self.info['var']][idx_time, idx_lat, idx_lon])
     
     def set_fname(self, fname):
         self.info['fname'] = fname
@@ -346,7 +399,17 @@ class EOBSobject():
         y = x - k.days + 0.5 if self.info['for_swb2'] else x - k.days
         return y
     
+    def transf_eobsdate(self, x, number = False):
+        #Returns the year, month and day corresponding to the number given
+        #If x is a plain number (not a variable), "number" must be set to True
+        from datetime import date, timedelta
+        start = date(1950, 1, 1)
+        days = x.item() if number else x
+        end = start + timedelta(days = days)
+        return end.year, end.strftime('%m'), end.strftime('%d')
+    
     def write_fname(self, method, res):
+        #Writes fname for save_netcdf function
         if self.info['fname'] != 'none': return self.info['fname']
         outpath = self.paths['outpath']
         outname = self.info['outname']
