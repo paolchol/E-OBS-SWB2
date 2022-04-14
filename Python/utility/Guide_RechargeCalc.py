@@ -56,21 +56,16 @@ r.meteoricR(SPs)
 
 #Define the coefficients needed
 coeffs = {
-    '1': 0.5,
-    '2': 0.7,
-    '3': 0.5    #no need of the third if no "special" code 2 is present
+    'E': 0.3,  #Irrigation technique efficiency
+    'R': 0.05, #Residual runoff
+    'RISP': 1, #1 - fraction of water saved by a change of irrigation technique
+    'P': 1     #Percentage of the cell covered by the irrigation
     }
-#Percentage of irrigation in each stress period
-I1 = 0  #%
-I2 = 62 #%
-I3 = 88 #%
-I4 = 0  #%
-Is = [I1, I2, I3, I4]
 #Path to the input file related to the "special" irrigation district
 #Leave it as 'none' if you don't have one
 spath = f'{inputpath}/rirrigua_speciale.csv'
 
-r.irrigationR(Is, coeffs, spath)
+r.irrigationR(coeffs, spath)
 
 #4. Create urban recharge dataframe
 

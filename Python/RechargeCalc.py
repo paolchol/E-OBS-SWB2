@@ -19,17 +19,20 @@ import geopandas as gp
 
 #The directory has to be set in ./E-OBS-SWB2 for this to work
 from Python.SWB2output import SWB2output
-from Python.custom_functions import repeat_list
 
 class RechargeCalc():
     
     def __init__(self, swb2path, inputpath, sy, ey, cell_area, uniqueid):
-        #Initialize the class
-        #Provide the paths to:
-        # - the swb2 'net_infiltration' netCDF4 file (swb2path)
-        # - the folder where the needed inputh files are saved
-        #sy: initial year
-        #ey: final year
+        """
+        Initialize the class
+        Provide the paths to:
+         - the swb2 'net_infiltration' netCDF4 file (swb2path)
+         - the folder where the needed inputh files are saved
+        sy: initial year
+        ey: final year
+        cell_area: area of the cell in m2
+        uniqueid: name of the unique id column in the "indicatori" file
+        """
         
         self.paths = {
             "swb2_output": swb2path,
@@ -58,7 +61,7 @@ class RechargeCalc():
                     k += [i]
         #Get the main indicator file and insert the indicator column
         ind = pd.read_csv(fls[k[0]])
-        ind = self.insertind(ind, ind['row'], ind['column'])
+        ind = self.insert_ind(ind, ind['row'], ind['column'])
         #Store the input files inside the object
         self.input = {
             'ind': ind
@@ -83,7 +86,7 @@ class RechargeCalc():
          value_name = 'SP1')
         rmeteo['nrow'] = rmeteo['nrow'] + 1
         rmeteo['ncol'] = rmeteo['ncol'] + 1
-        rmeteo = self.insertind(rmeteo, rmeteo['nrow'], rmeteo['ncol'])
+        rmeteo = self.insert_ind(rmeteo, rmeteo['nrow'], rmeteo['ncol'])
         
         for i in range(1, rmeteo3d.shape[0]):
             df = pd.DataFrame(rmeteo3d[i, :, :])
@@ -103,63 +106,50 @@ class RechargeCalc():
             outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
             rmeteo.to_csv(f'{outpath}/rmeteo.csv')
 
-    def irrigationR(self, Is, coeffs, specialpath = 'none', export = False):
-        #Compute the irrigation recharge dataframe
-        #Input data: l/s
+    
+    def irrigationR(self, coeffs, specialpath = 'none', export = False):
+        
         print('Irrigation recharge dataframe creation')
         start = time.time()
-        nrep = self.info['end_year'] - self.info['start_year'] + 1
-        Is = repeat_list(Is, nrep, True)
+        # nrep = self.info['end_year'] - self.info['start_year'] + 1
+        # Is = repeat_list(Is, nrep, True)
         irr = self.input['irr']
+        if specialpath != 'none':
+            sp_irr = pd.read_csv(specialpath)
+            self.input['special_irr'] = sp_irr
         
         #Calculate the irrigated area
         if 'area' not in irr.columns:
             irr.insert(len(irr.columns),'area', 0)
-        for i, distr in enumerate(irr['distretto'], 0):
-            cond = (self.input['ind']['distretto'] == distr) & (self.input['ind']['zona_agricola'] == 1)
+        for distr in irr['distretto']:
+            cond = (self.input['ind']['distretto'] == distr) and (self.input['ind']['zona_agricola'] == 1)
             area = sum(cond) * self.info['cell_area_m2']
-            irr.loc[i, 'area'] = area
-        
-        #Calculate the discharge Q in m/s
-        if 'Q_ms' not in irr.columns:
-            irr.insert(len(irr.columns),'Q_ms', 0)
-        irr['Q_ms'] = irr['portata_concessa_ls'] * 0.001 / irr['area']
+            irr.loc[irr['distretto'] == distr, 'area'] = area
         
         #Calculate the irrigation recharge and assign it to each cell
-        rirr = self.input['ind'].loc[:,(self.info['id'], 'distretto', 'zona_agricola')]
-        for i, I in enumerate(Is, 0):
-          for j, distr in enumerate(irr['distretto'], 0):
-            sp = irr.loc[j, 'speciale'] #'special' code
-            if (sp != 1):
-                Q = irr['Q_ms'][j]
-                cond = (rirr['distretto'] == distr) & (rirr['zona_agricola'] == 1)
-                if f'SP{i+1}' not in rirr.columns:
-                    rirr.insert(len(rirr.columns), f'SP{i+1}', 0)
-                if (sp != 2):
-                    rirr.loc[cond, f'SP{i+1}'] = Q * I * coeffs['1'] * coeffs['2']
-                else:
-                    rirr.loc[cond, f'SP{i+1}'] = Q * I * coeffs['1'] * coeffs['2'] * coeffs['3']
-        
-        #Assign the provided "special" recharge to the "special" districts
-        if (specialpath != 'none'):
-            sp_rirr = pd.read_csv(specialpath)
-            sdistr = irr.loc[irr['speciale'] == 1, 'distretto']
-            for s in sdistr:
-                cond = (rirr['distretto'] == s) & (rirr['zona_agricola'] == 1)
-                rirrcol = rirr.columns[3:]
-                spcol = sp_rirr.columns[1:]
-                rirr.loc[cond, rirrcol] = sp_rirr.loc[sp_rirr['distretto'] == s, spcol].values
-        
+        rirr = self.input['ind'].loc[:, (self.info['id'], 'distretto', 'zona_agricola')]
+        for sp in self.find_SPcol(irr.columns):
+            for distr in irr['distretto']:
+                if sp not in rirr.columns:
+                    rirr.insert(len(rirr.columns), sp, 0)
+                code = irr.loc[irr['distretto'] == distr, 'code']
+                if code != 1: Q = irr.loc[irr['distretto'] == distr, sp]
+                else: Q = sp_irr.loc[sp_irr['distretto'] == distr, sp]
+                
+                cond = (rirr['distretto'] == distr) and (rirr['zona_agricola'] == 1)
+                A = irr.loc[rirr['distretto'] == distr, 'area']
+                K = 1 - coeffs['E'] - coeffs['R']
+                rirr.loc[cond, sp] = (Q * coeffs['RISP'])/(A * coeffs['P']) * K
+
         #Save the variables
         self.recharges['rirr'] = rirr
         self.paths['special_irr'] = specialpath
-        if (specialpath != 'none'): self.input['spirr'] = sp_rirr
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export:
             outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
             rirr.to_csv(f'{outpath}/rirr.csv')
-
+    
     def urbanR(self, coeff_urb, export = False):
         #Compute the urban recharge dataframe
         print('Urban recharge dataframe creation')
@@ -170,7 +160,7 @@ class RechargeCalc():
         if 'area' not in urb.columns:
             urb.insert(1,'area', 0)
         for i, com in enumerate(urb['nome_com'], 0):
-            cond = (self.input['ind']['nome_com'] == com) & (self.input['ind']['zona_urbana'] == 1)
+            cond = (self.input['ind']['nome_com'] == com) and (self.input['ind']['zona_urbana'] == 1)
             area = sum(cond) * self.info['cell_area_m2']
             urb.loc[i, 'area'] = area
            
@@ -182,7 +172,7 @@ class RechargeCalc():
                     rurb.insert(len(rurb.columns), f'SP{i+1}', 0)
                 Q = urb.loc[urb['nome_com'] == com, colname].values.item()
                 A = urb.loc[urb['nome_com'] == com, 'area'].values.item()
-                cond = (rurb['nome_com'] == com) & (rurb['zona_urbana'] == 1)
+                cond = (rurb['nome_com'] == com) and (rurb['zona_urbana'] == 1)
                 rurb.loc[cond, f'SP{i+1}'] = (Q / A) * coeff_urb
         
         #Save the variables
@@ -204,7 +194,8 @@ class RechargeCalc():
         if self.conditions['irr']:
             keys += ['rirr']
             if 'rirr' not in self.recharges:
-                self.irrigationR(irrpar['Is'], irrpar['coeffs'], irrpar['spath'])
+                # self.irrigationR(irrpar['Is'], irrpar['coeffs'], irrpar['spath'])
+                pass
         if self.conditions['urb']:
             keys += ['rurb']
             if 'rurb' not in self.recharges:
@@ -213,7 +204,7 @@ class RechargeCalc():
         tool = self.input['ind'].loc[:, self.info['id']]
         tool3d = np.zeros((len(keys), len(tool), self.info['nSP']))
         for i, k in enumerate(keys):
-            loc = self.findSPcol(self.recharges[k].columns, self.info['id'])
+            loc = self.find_SPcol(self.recharges[k].columns, self.info['id'], True)
             toolr = pd.merge(tool, self.recharges[k].loc[:, loc],
                              how = 'left', on = self.info['id'])
             tool3d[i, :, :] = toolr.iloc[:, 1:]
@@ -231,21 +222,21 @@ class RechargeCalc():
             outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
             rtot.to_csv(f'{outpath}/rtot.csv')
     
-    def findSPcol(self, col, ind):
-        names = [ind]
+    def find_SPcol(self, col, ind = None, indname = False):
+        names = [ind] if indname else []
         for name in col:
             if name.find('SP') != -1:
                 names += [name]
         return names
     
-    def setoutpath(self, outpath):
+    def set_outpath(self, outpath):
         if outpath == 'none':
             outpath = self.paths['outpath'] if ('outpath' in self.paths) else self.paths['input_folder']
         else:
             self.paths['outpath'] = outpath
         return outpath
     
-    def insertind(self, df, r, c, pos = 0, name = 'none'):
+    def insert_ind(self, df, r, c, pos = 0, name = 'none'):
         name = self.info['id'] if name == 'none' else name
         newc = []
         for i in range(len(r)):
@@ -256,7 +247,7 @@ class RechargeCalc():
             df[name] = newc
         return df
     
-    def getdf(self, var, tag):
+    def get_df(self, var, tag):
         #Get the df
         if (var == 'input'):
             df = self.input[tag]
@@ -272,31 +263,96 @@ class RechargeCalc():
         # - 'ind', 'irr', 'urb'
         # if var: recharge
         # - 'rmeteo', 'rirr', 'rurb', 'rtot'
+        
         #Set the output path
-        outpath = self.setoutpath(outpath)
-        df = self.getdf(var, tag)
+        outpath = self.set_outpath(outpath)
+        df = self.get_df(var, tag)
         #Export the file
         df.to_csv(f'{outpath}/{tag}.{fileext}')
     
     def georef(self, var, tag, coordpath, proj = 'none', outpath = 'none'):
-        #Export a shapefile of the selected dataframe
-        #var: 'input', 'recharge'
-        #tag:
-        # if var: input
-        # - 'ind', 'irr', 'urb'
-        # if var: recharge
-        # - 'rmeteo', 'rirr', 'rurb', 'rtot'
-        #coordpath:
-        # path to a .csv file with columns 'row', 'column', self.info['id'], 'x', 'y'
-        outpath = self.setoutpath(outpath)
+        """
+        Export a shapefile of the selected dataframe
+        var: 'input', 'recharge'
+        tag:
+         if var: input
+         - 'ind', 'irr', 'urb'
+         if var: recharge
+         - 'rmeteo', 'rirr', 'rurb', 'rtot'
+        coordpath:
+         path to a .csv file with columns 'row', 'column', self.info['id'], 'x', 'y'
+        """
+        
+        outpath = self.set_outpath(outpath)
         coord = pd.read_csv(coordpath)
-        coord = self.insertind(coord, coord['row'], coord['column'], name = self.info['id'])
+        coord = self.insert_ind(coord, coord['row'], coord['column'], name = self.info['id'])
         coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
-        tool = pd.merge(self.getdf(var, tag), coord, on = self.info['id'])
+        tool = pd.merge(self.get_df(var, tag), coord, on = self.info['id'])
         geodf = gp.GeoDataFrame(tool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
         geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
         geodf.to_file(f'{outpath}/{tag}.shp', driver = 'ESRI Shapefile')
         print(f'Shapefile saved in {outpath} as {tag}.shp')
+    
+    #-------------------------------------------------------
+    #Old functions section
+    
+    def old_irrigationR(self, Is, coeffs, specialpath = 'none', export = False):
+        #Compute the irrigation recharge dataframe
+        #Input data: l/s
+        print('Irrigation recharge dataframe creation')
+        from Python.custom_functions import repeat_list
+        start = time.time()
+        nrep = self.info['end_year'] - self.info['start_year'] + 1
+        Is = repeat_list(Is, nrep, True)
+        irr = self.input['irr']
+        
+        #Calculate the irrigated area
+        if 'area' not in irr.columns:
+            irr.insert(len(irr.columns),'area', 0)
+        for i, distr in enumerate(irr['distretto'], 0):
+            cond = (self.input['ind']['distretto'] == distr) and (self.input['ind']['zona_agricola'] == 1)
+            area = sum(cond) * self.info['cell_area_m2']
+            irr.loc[i, 'area'] = area
+        
+        #Calculate the discharge Q in m/s
+        if 'Q_ms' not in irr.columns:
+            irr.insert(len(irr.columns),'Q_ms', 0)
+        irr['Q_ms'] = irr['portata_concessa_ls'] * 0.001 / irr['area']
+        
+        #Calculate the irrigation recharge and assign it to each cell
+        rirr = self.input['ind'].loc[:,(self.info['id'], 'distretto', 'zona_agricola')]
+        for i, I in enumerate(Is, 0):
+          for j, distr in enumerate(irr['distretto'], 0):
+            sp = irr.loc[j, 'speciale'] #'special' code
+            if (sp != 1):
+                Q = irr['Q_ms'][j]
+                cond = (rirr['distretto'] == distr) and (rirr['zona_agricola'] == 1)
+                if f'SP{i+1}' not in rirr.columns:
+                    rirr.insert(len(rirr.columns), f'SP{i+1}', 0)
+                if (sp != 2):
+                    rirr.loc[cond, f'SP{i+1}'] = Q * I * coeffs['1'] * coeffs['2']
+                else:
+                    rirr.loc[cond, f'SP{i+1}'] = Q * I * coeffs['1'] * coeffs['2'] * coeffs['3']
+        
+        #Assign the provided "special" recharge to the "special" districts
+        if (specialpath != 'none'):
+            sp_rirr = pd.read_csv(specialpath)
+            sdistr = irr.loc[irr['speciale'] == 1, 'distretto']
+            for s in sdistr:
+                cond = (rirr['distretto'] == s) and (rirr['zona_agricola'] == 1)
+                rirrcol = rirr.columns[3:]
+                spcol = sp_rirr.columns[1:]
+                rirr.loc[cond, rirrcol] = sp_rirr.loc[sp_rirr['distretto'] == s, spcol].values
+        
+        #Save the variables
+        self.recharges['rirr'] = rirr
+        self.paths['special_irr'] = specialpath
+        if (specialpath != 'none'): self.input['spirr'] = sp_rirr
+        end = time.time()
+        print(f'Elapsed time: {round(end-start, 2)} s')
+        if export:
+            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
+            rirr.to_csv(f'{outpath}/rirr.csv')
         
 # def save(self, outpath):
 #     #Save a pickle of the object
