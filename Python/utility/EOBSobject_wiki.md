@@ -60,3 +60,60 @@ f = EOBSobject(inpath, var, outpath, swb2 = True)
 ```python
 f.load()
 ```
+
+### 2. Generate netcdf files
+
+You can produce netcdf files starting from the E-OBS data.
+
+#### 2.1 Cut in space
+
+Provide the extreme coordinates of the area you want to cut, then call `cut_space()`.
+```python
+coord = {'lon': [8.691, 8.929, 9.524, 9.537],
+          'lat': [45.611, 45.308, 45.610, 45.306]}
+coord = pd.DataFrame(coord)
+f.cut_space(coord)
+```
+
+It is possible to keep more cells than the area you want to cut, for example 1 cell to 
+```python
+f.set_fname(f'{outpath}/rr_morecells.nc')
+#just to provide a custom name to distinguish the files, not needed for the code to work
+f.cut_space(coord, contourcell = 2)
+```
+
+#### 2.2 Cut in time
+
+To cut in time, provide the start and end years of the period you choose, then call `cut_time()`.
+```python
+start = 2014
+end = 2018
+f.cut_time(start, end)
+```
+
+The default option will generate one file for each year. If you want to generate a single file, set `option` as 'bundle'.
+```python
+f.cut_time(start, end, option = 'bundle')
+```
+
+With the `bundle` option, you can also cut between given days. You need to set day as `True` and provide start and end as `datetime.date` objects.
+```python
+from datetime import date
+start_day = date(2011, 12, 30)
+end_day = date(2017, 7, 15)
+f.cut_time(start_day, end_day, option = 'bundle', day = True)
+```
+
+#### 2.3 Cut in space and time
+
+All options available for `cut_space` and `cut_time` are also available for `cut_spacetime`.
+```python
+f.cut_spacetime(coord, start, end)
+```
+
+#### 2.4 Keep the raw file
+
+You can also save the file as it is. This will only change the metadata or other things as the name of the main variable. However, this method is memory consuming and may not work on your laptop as it is.
+```python
+f.save_netcdf(method = 'raw')
+```
