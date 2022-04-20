@@ -32,12 +32,17 @@ swb2path = "./Data/SWB2_output/1Speranza_netinfiltration.nc"
 inputpath = "./Data/Calcolo_ricarica_totale"
 
 r = RechargeCalc(swb2path, inputpath, startyear,
-                 endyear, cell_area, uniqueid = 'indicatore')
-r.loadinputfiles()
+                 endyear, cell_area, uniqueid = 'indicatore', nSP = 20)
+r.load_inputfiles()
 #if no irrigation or urban recharges are needed, set urb or irr to False
-#r.loadinputfiles(urb = False)
+r.load_inputfiles(urb = False)
 
-#Correct the indicators provided
+#Once you loaded the input files, you can access them via
+r.input['ind']
+r.input['rmeteo']
+r.input['rirr']
+#You can then perform any operation you would on dataframes,
+#for example correct a wrong value provided
 r.input['ind'].loc[r.input['ind']['distretto'] == 'Muzza', 'distretto'] = 'MUZZA'
 
 #2. Create meteoric recharge dataframe
@@ -85,7 +90,6 @@ meteopar = {
     }
 irrpar = {
     'coeffs': coeffs,
-    'Is': Is,
     'spath': spath
     }
 urbpar = {

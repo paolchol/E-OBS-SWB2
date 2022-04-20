@@ -11,27 +11,28 @@ The working directory has to be set in ./E-OBS-SWB2 for this to work
 """
 
 # import os
+import glob
 import numpy as np
 import pandas as pd
-import glob
+import sys
 import time
-import geopandas as gp
 
 #The directory has to be set in ./E-OBS-SWB2 for this to work
 from Python.SWB2output import SWB2output
 
 class RechargeCalc():
     
-    def __init__(self, swb2path, inputpath, sy, ey, cell_area, uniqueid):
+    def __init__(self, swb2path, inputpath, sy, ey, cell_area, uniqueid, nSP):
         """
         Initialize the class
         Provide the paths to:
          - the swb2 'net_infiltration' netCDF4 file (swb2path)
-         - the folder where the needed inputh files are saved
-        sy: initial year
-        ey: final year
-        cell_area: area of the cell in m2
-        uniqueid: name of the unique id column in the "indicatori" file
+         - the folder where the needed input files are saved (inputpath)
+        Other variables needed:
+         - sy: initial year
+         - ey: final year
+         - cell_area: area of the cell in m2
+         - uniqueid: name of the unique id column in the "indicatori" file
         """
         
         self.paths = {
@@ -42,12 +43,13 @@ class RechargeCalc():
             "start_year": sy,
             "end_year": ey,
             "cell_area_m2": cell_area,
-            "id": uniqueid
+            "id": uniqueid,
+            "nSP": nSP
             }
         self.recharges = {}
         self.conditions = {}
     
-    def loadinputfiles(self, irr = True, urb = True):
+    def load_inputfiles(self, irr = True, urb = True):
         #Load the files needed
         print('Loading the input files')
         inpath = self.paths['input_folder']
@@ -58,6 +60,7 @@ class RechargeCalc():
             for i in range(len(fls)):
                 if(fls[i].find(name) != -1):
                     print(f'{name} file found')
+                    self.paths[name] = fls[i]
                     k += [i]
         #Get the main indicator file and insert the indicator column
         ind = pd.read_csv(fls[k[0]])
@@ -71,11 +74,15 @@ class RechargeCalc():
         self.conditions['irr'] = irr
         self.conditions['urb'] = urb
     
+    #----------------------------------------------------------------------
+    #Recharges calculation
+    
     def meteoricR(self, SPs, export = False):
         #Compute the meteoric recharge dataframe
         #Provide the stress periods definition (SPs)
         print('Meteoric recharge dataframe creation')
         start = time.time()
+        SPs = self.set_SPs(SPs, 1)
         f = SWB2output(self.paths['swb2_output'])
         rmeteo3d = f.SP_sum(SPs, units = 'ms') #return the SP sum directly in m/s
         f.close()
@@ -105,14 +112,11 @@ class RechargeCalc():
         if export:
             outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
             rmeteo.to_csv(f'{outpath}/rmeteo.csv')
-
     
     def irrigationR(self, coeffs, specialpath = 'none', export = False):
         
         print('Irrigation recharge dataframe creation')
         start = time.time()
-        # nrep = self.info['end_year'] - self.info['start_year'] + 1
-        # Is = repeat_list(Is, nrep, True)
         irr = self.input['irr']
         if specialpath != 'none':
             sp_irr = pd.read_csv(specialpath)
@@ -147,8 +151,9 @@ class RechargeCalc():
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export:
-            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
-            rirr.to_csv(f'{outpath}/rirr.csv')
+            self.export('recharge', 'rirr')
+            # outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
+            # rirr.to_csv(f'{outpath}/rirr.csv')
     
     def urbanR(self, coeff_urb, export = False):
         #Compute the urban recharge dataframe
@@ -222,19 +227,15 @@ class RechargeCalc():
             outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
             rtot.to_csv(f'{outpath}/rtot.csv')
     
+    #-----------------------------------------------------------------------
+    #General functions
+    
     def find_SPcol(self, col, ind = None, indname = False):
         names = [ind] if indname else []
         for name in col:
             if name.find('SP') != -1:
                 names += [name]
         return names
-    
-    def set_outpath(self, outpath):
-        if outpath == 'none':
-            outpath = self.paths['outpath'] if ('outpath' in self.paths) else self.paths['input_folder']
-        else:
-            self.paths['outpath'] = outpath
-        return outpath
     
     def insert_ind(self, df, r, c, pos = 0, name = 'none'):
         name = self.info['id'] if name == 'none' else name
@@ -246,23 +247,20 @@ class RechargeCalc():
         else:
             df[name] = newc
         return df
-    
-    def get_df(self, var, tag):
-        #Get the df
-        if (var == 'input'):
-            df = self.input[tag]
-        elif (var == 'recharge'):
-            df = self.recharges[tag]
-        return df
 
-    def export(self, var, tag, outpath = 'none', fileext = 'csv'):
-        #Exports the recharges or other data of the class        
-        #var: 'input', 'recharge'
-        #tag:
-        # if var: input
-        # - 'ind', 'irr', 'urb'
-        # if var: recharge
-        # - 'rmeteo', 'rirr', 'rurb', 'rtot'
+    def export(self, var, tag, fileext = 'csv', outpath = 'none'):
+        """
+        Exports the recharges or other data of the class        
+        var: 'input', 'recharge'
+        tag:
+         if var = input
+         - 'ind', 'irr', 'urb'
+         if var = recharge
+         - 'rmeteo', 'rirr', 'rurb', 'rtot'
+        fileext: file extention wanted. Default: csv
+        outpath: path to a wanted output folder. Default: variable 'outpath'
+         defined previously
+        """
         
         #Set the output path
         outpath = self.set_outpath(outpath)
@@ -270,18 +268,29 @@ class RechargeCalc():
         #Export the file
         df.to_csv(f'{outpath}/{tag}.{fileext}')
     
+    def get_df(self, var, tag):
+        #Get the df
+        if var == 'input':
+            df = self.input[tag]
+        elif var == 'recharge':
+            df = self.recharges[tag]
+        return df
+    
     def georef(self, var, tag, coordpath, proj = 'none', outpath = 'none'):
         """
         Export a shapefile of the selected dataframe
-        var: 'input', 'recharge'
-        tag:
+        var (str): 'input', 'recharge'
+        tag (str):
          if var: input
          - 'ind', 'irr', 'urb'
          if var: recharge
          - 'rmeteo', 'rirr', 'rurb', 'rtot'
         coordpath:
          path to a .csv file with columns 'row', 'column', self.info['id'], 'x', 'y'
+        outpath: path to a wanted output folder. Default: variable 'outpath'
+         defined previously
         """
+        if 'geopandas' not in sys.modules:  import geopandas as gp
         
         outpath = self.set_outpath(outpath)
         coord = pd.read_csv(coordpath)
@@ -292,6 +301,24 @@ class RechargeCalc():
         geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
         geodf.to_file(f'{outpath}/{tag}.shp', driver = 'ESRI Shapefile')
         print(f'Shapefile saved in {outpath} as {tag}.shp')
+    
+    def set_SPs(self, SPs, c = None):
+        """
+        Sets the stress periods duration as a variable of the class
+        If c = 1 returns the cumulative sum of the stress periods duration
+        SPs (list):
+            A list containing the length in days of the stress periods inside
+            one year
+        """
+        self.info['SPs'] = SPs
+        if c == 1: return np.cumsum(SPs)
+    
+    def set_outpath(self, outpath):
+        if outpath == 'none':
+            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
+        else:
+            self.paths['outpath'] = outpath
+        return outpath
     
     #-------------------------------------------------------
     #Old functions section
