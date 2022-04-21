@@ -66,7 +66,8 @@ class SWB2output():
             print(f'ArcGRID saved in {outpath} as: {name}_{variable}_sum_tot.asc')
         return self.sumtotdf
     
-    def SP_sum(self, SPs, outpath = 'none', name = 'name', units = 'none'):
+    def SP_sum(self, SPs, outpath = 'none', name = 'name', units = 'none',
+               retval = False):
         #Perform a sum of the main variable over the stress periods provided
         # as SPs
         #Returns a 3D variable containing all the sums as the 0 index
@@ -104,13 +105,13 @@ class SWB2output():
                     sp = np.sum(sp, axis = 0) #inches
                 elif(units == 'ms'):
                     #Transform into m/s
-                    sp = np.sum(sp, axis = 0)*0.0254/(60*60*sp.shape[0]) #m/s
+                    sp = np.sum(sp, axis = 0)*0.0254/(60*60*24*sp.shape[0]) #m/s
                 else:
                     return print('Unrecognised unit. The available units are:\
                                  inches, ms (for meters/second)')
             
-                #Save as Arc GRID ASCII file
                 if(outpath != 'none'):
+                    #Save as Arc GRID ASCII file
                     name = variable if name == 'name' else name
                     fname = f'{outpath}/{name}_{y}_SP{i}_inch.asc'
                     sp = pd.DataFrame(sp)
@@ -123,7 +124,7 @@ class SWB2output():
         print('End of the procedure')
         if outpath != 'none': print(f'The ASCII files are saved in {outpath}')
         self.results['SPsum3d'] = var3d
-        # return self.SPsum
+        if retval: return var3d
     
     def obtain_df_SP(self, index = 'none'):
         if 'SPsum3d' in self.results:
