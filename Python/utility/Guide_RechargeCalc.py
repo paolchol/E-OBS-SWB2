@@ -9,8 +9,6 @@ Guide to the use of class "RechargeCalc"
 
 import os
 import numpy as np
-# import pandas as pd
-# import glob
 
 os.chdir('C:/E-OBS-SWB2')
 
@@ -19,6 +17,8 @@ os.chdir('C:/E-OBS-SWB2')
 from Python.RechargeCalc import RechargeCalc
 
 # %% Class usage
+
+#0. Set up your input files
 
 #1. Initialize the class
 
@@ -33,6 +33,8 @@ inputpath = "./Data/Calcolo_ricarica_totale"
 
 r = RechargeCalc(swb2path, inputpath, startyear,
                  endyear, cell_area, uniqueid = 'indicatore', nSP = 20)
+
+#Load the input files needed
 r.load_inputfiles()
 #if no irrigation or urban recharges are needed, set urb or irr to False
 r.load_inputfiles(urb = False)
@@ -53,9 +55,8 @@ SP2 = 76   #days, 01/04 - 12/06
 SP3 = 92   #days, 13/06 - 15/09
 SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
-SPs = np.cumsum(SPs)
 
-r.meteoricR(SPs)
+rmeteo3d = r.meteoricR(SPs)
 
 #3. Create irrigation recharge dataframe
 

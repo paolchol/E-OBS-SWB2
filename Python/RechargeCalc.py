@@ -84,7 +84,7 @@ class RechargeCalc():
         start = time.time()
         SPs = self.set_SPs(SPs, 1)
         f = SWB2output(self.paths['swb2_output'])
-        rmeteo3d = f.SP_sum(SPs, units = 'ms') #return the SP sum directly in m/s
+        rmeteo3d = f.SP_sum(SPs, units = 'ms', retval = True) #return the SP sum directly in m/s
         f.close()
         
         rmeteo = pd.DataFrame(rmeteo3d[0, :, :])
@@ -109,9 +109,7 @@ class RechargeCalc():
         self.recharges['rmeteo'] = rmeteo
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
-        if export:
-            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
-            rmeteo.to_csv(f'{outpath}/rmeteo.csv')
+        if export: self.export('recharge', 'rmeteo')
     
     def irrigationR(self, coeffs, specialpath = 'none', export = False):
         
@@ -126,37 +124,39 @@ class RechargeCalc():
         if 'area' not in irr.columns:
             irr.insert(len(irr.columns),'area', 0)
         for distr in irr['distretto']:
-            cond = (self.input['ind']['distretto'] == distr) and (self.input['ind']['zona_agricola'] == 1)
+            cond = (self.input['ind']['distretto'] == distr) & (self.input['ind']['zona_agricola'] == 1)
             area = sum(cond) * self.info['cell_area_m2']
             irr.loc[irr['distretto'] == distr, 'area'] = area
         
         #Calculate the irrigation recharge and assign it to each cell
         rirr = self.input['ind'].loc[:, (self.info['id'], 'distretto', 'zona_agricola')]
+        K = 1 - coeffs['E'] - coeffs['R']
         for sp in self.find_SPcol(irr.columns):
+            if sp not in rirr.columns:
+                rirr.insert(len(rirr.columns), sp, 0)
             for distr in irr['distretto']:
-                if sp not in rirr.columns:
-                    rirr.insert(len(rirr.columns), sp, 0)
-                code = irr.loc[irr['distretto'] == distr, 'code']
-                if code != 1: Q = irr.loc[irr['distretto'] == distr, sp]
-                else: Q = sp_irr.loc[sp_irr['distretto'] == distr, sp]
-                
-                cond = (rirr['distretto'] == distr) and (rirr['zona_agricola'] == 1)
-                A = irr.loc[rirr['distretto'] == distr, 'area']
-                K = 1 - coeffs['E'] - coeffs['R']
-                rirr.loc[cond, sp] = (Q * coeffs['RISP'])/(A * coeffs['P']) * K
-
-        #Save the variables
+                code = irr.loc[irr['distretto'] == distr, 'code'].values[0]
+                cond = (rirr['distretto'] == distr) & (rirr['zona_agricola'] == 1)
+                if code != 1:
+                    Q = float(irr.loc[irr['distretto'] == distr, sp].values[0])
+                    A = irr.loc[irr['distretto'] == distr, 'area'].values[0]
+                    rirr.loc[cond, sp] = (Q * coeffs['RISP'])/(A * coeffs['P']) * K
+                else:
+                    Q = float(sp_irr.loc[sp_irr['distretto'] == distr, sp].values[0])
+                    rirr.loc[cond, sp] = Q
+        #Store the variables
         self.recharges['rirr'] = rirr
         self.paths['special_irr'] = specialpath
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
-        if export:
-            self.export('recharge', 'rirr')
-            # outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
-            # rirr.to_csv(f'{outpath}/rirr.csv')
+        if export: self.export('recharge', 'rirr')
     
     def urbanR(self, coeff_urb, export = False):
-        #Compute the urban recharge dataframe
+        """
+        Compute the urban recharge dataframe
+        The urban recharge is calculated as a fraction of a provided discharge
+        
+        """
         print('Urban recharge dataframe creation')
         start = time.time()
         
@@ -165,7 +165,7 @@ class RechargeCalc():
         if 'area' not in urb.columns:
             urb.insert(1,'area', 0)
         for i, com in enumerate(urb['nome_com'], 0):
-            cond = (self.input['ind']['nome_com'] == com) and (self.input['ind']['zona_urbana'] == 1)
+            cond = self.double_cond(self.input['ind']['nome_com'] == com, self.input['ind']['zona_urbana'] == 1)
             area = sum(cond) * self.info['cell_area_m2']
             urb.loc[i, 'area'] = area
            
@@ -177,16 +177,14 @@ class RechargeCalc():
                     rurb.insert(len(rurb.columns), f'SP{i+1}', 0)
                 Q = urb.loc[urb['nome_com'] == com, colname].values.item()
                 A = urb.loc[urb['nome_com'] == com, 'area'].values.item()
-                cond = (rurb['nome_com'] == com) and (rurb['zona_urbana'] == 1)
+                cond = self.double_cond(rurb['nome_com'] == com, rurb['zona_urbana'] == 1)
                 rurb.loc[cond, f'SP{i+1}'] = (Q / A) * coeff_urb
         
         #Save the variables
         self.recharges['rurb'] = rurb
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
-        if export:
-            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
-            rurb.to_csv(f'{outpath}/rurb.csv')
+        if export: self.export('recharge', 'rurb')
 
     def totalR(self, meteopar = None, irrpar = None, urbpar = None, export = False):
         #Sum the recharge components
@@ -199,8 +197,7 @@ class RechargeCalc():
         if self.conditions['irr']:
             keys += ['rirr']
             if 'rirr' not in self.recharges:
-                # self.irrigationR(irrpar['Is'], irrpar['coeffs'], irrpar['spath'])
-                pass
+                self.irrigationR(irrpar['coeffs'], irrpar['spath'])
         if self.conditions['urb']:
             keys += ['rurb']
             if 'rurb' not in self.recharges:
@@ -223,31 +220,17 @@ class RechargeCalc():
         self.recharges['rtot'] = rtot
         end = time.time()
         print(f'Elapsed time: {round(end - start, 2)} s')
-        if export:
-            outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
-            rtot.to_csv(f'{outpath}/rtot.csv')
+        if export: self.export('recharge', 'rtot')
     
     #-----------------------------------------------------------------------
     #General functions
     
-    def find_SPcol(self, col, ind = None, indname = False):
-        names = [ind] if indname else []
-        for name in col:
-            if name.find('SP') != -1:
-                names += [name]
-        return names
+    def double_cond(self, c1, c2):
+        cond = []
+        for i in range(len(c1)):
+            cond += [c1[i] and c2[i]]
+        return cond
     
-    def insert_ind(self, df, r, c, pos = 0, name = 'none'):
-        name = self.info['id'] if name == 'none' else name
-        newc = []
-        for i in range(len(r)):
-            newc += [f'{r[i]}X{c[i]}']
-        if (name not in df.columns):
-            df.insert(pos, name, newc)
-        else:
-            df[name] = newc
-        return df
-
     def export(self, var, tag, fileext = 'csv', outpath = 'none'):
         """
         Exports the recharges or other data of the class        
@@ -266,7 +249,14 @@ class RechargeCalc():
         outpath = self.set_outpath(outpath)
         df = self.get_df(var, tag)
         #Export the file
-        df.to_csv(f'{outpath}/{tag}.{fileext}')
+        df.to_csv(f'{outpath}/{tag}.{fileext}', index = False)
+        
+    def find_SPcol(self, col, ind = None, indname = False):
+        names = [ind] if indname else []
+        for name in col:
+            if name.find('SP') != -1:
+                names += [name]
+        return names
     
     def get_df(self, var, tag):
         #Get the df
@@ -302,6 +292,17 @@ class RechargeCalc():
         geodf.to_file(f'{outpath}/{tag}.shp', driver = 'ESRI Shapefile')
         print(f'Shapefile saved in {outpath} as {tag}.shp')
     
+    def insert_ind(self, df, r, c, pos = 0, name = 'none'):
+        name = self.info['id'] if name == 'none' else name
+        newc = []
+        for i in range(len(r)):
+            newc += [f'{r[i]}X{c[i]}']
+        if (name not in df.columns):
+            df.insert(pos, name, newc)
+        else:
+            df[name] = newc
+        return df
+    
     def set_SPs(self, SPs, c = None):
         """
         Sets the stress periods duration as a variable of the class
@@ -312,6 +313,9 @@ class RechargeCalc():
         """
         self.info['SPs'] = SPs
         if c == 1: return np.cumsum(SPs)
+    
+    def set_tags(self, district = None, agr_zone = None, urb_zone = None):
+        pass
     
     def set_outpath(self, outpath):
         if outpath == 'none':
@@ -337,7 +341,7 @@ class RechargeCalc():
         if 'area' not in irr.columns:
             irr.insert(len(irr.columns),'area', 0)
         for i, distr in enumerate(irr['distretto'], 0):
-            cond = (self.input['ind']['distretto'] == distr) and (self.input['ind']['zona_agricola'] == 1)
+            cond = self.double_cond(self.input['ind']['distretto'] == distr, self.input['ind']['zona_agricola'] == 1)
             area = sum(cond) * self.info['cell_area_m2']
             irr.loc[i, 'area'] = area
         
@@ -353,7 +357,7 @@ class RechargeCalc():
             sp = irr.loc[j, 'speciale'] #'special' code
             if (sp != 1):
                 Q = irr['Q_ms'][j]
-                cond = (rirr['distretto'] == distr) and (rirr['zona_agricola'] == 1)
+                cond = self.double_cond(rirr['distretto'] == distr, rirr['zona_agricola'] == 1)
                 if f'SP{i+1}' not in rirr.columns:
                     rirr.insert(len(rirr.columns), f'SP{i+1}', 0)
                 if (sp != 2):
@@ -366,7 +370,7 @@ class RechargeCalc():
             sp_rirr = pd.read_csv(specialpath)
             sdistr = irr.loc[irr['speciale'] == 1, 'distretto']
             for s in sdistr:
-                cond = (rirr['distretto'] == s) and (rirr['zona_agricola'] == 1)
+                cond = self.double_cond(rirr['distretto'] == s, rirr['zona_agricola'] == 1)
                 rirrcol = rirr.columns[3:]
                 spcol = sp_rirr.columns[1:]
                 rirr.loc[cond, rirrcol] = sp_rirr.loc[sp_rirr['distretto'] == s, spcol].values
