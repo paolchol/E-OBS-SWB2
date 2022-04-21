@@ -138,6 +138,7 @@ class EOBSobject():
                 res_ct = self.cut_time(year, year, save = False, internal = True)
                 res = {
                     'start_day': res_ct['start_day'],
+                    'end': end,
                     'time': res_ct['time'],
                     'idx_time': res_ct['idx_time'],
                     'idx_lat': res_cs['idx_lat'],
@@ -150,6 +151,7 @@ class EOBSobject():
             res_ct = self.cut_time(start, end, False, True, option, day)
             res = {
                 'start_day': res_ct['start_day'],
+                'end': end,
                 'time': res_ct['time'],
                 'idx_time': res_ct['idx_time'],
                 'idx_lat': res_cs['idx_lat'],
@@ -417,7 +419,10 @@ class EOBSobject():
         fname = f'{outpath}/{outname}_EOBS_{method}'
         if (method == 'cut_time' or method == 'cut_spacetime') and res['option'] != 'bundle':
             tool = res['start_day'].split('/')[2]
-            fname = f'{fname}_{tool}'            
+            fname = f'{fname}_{tool}'
+        elif (method == 'cut_time' or method == 'cut_spacetime') and res['option'] == 'bundle':
+            tool = f"{res['start_day'].split('/')[2]}_{res['end']}"
+            fname = f'{fname}_{tool}'
         fname = f'{fname}.nc'
         return fname
         

@@ -25,7 +25,7 @@ from Python.EOBSobject import EOBSobject
 #   as the example below
 #   outpath is set as inpath if the field is left untouched
 outpath = './Model/swb2_MODELMI/climate_ncfile'
-outpath = './Data'
+
 #Path to the folder where the E-OBS data are stored: inpath
 inpath = './Data/E-OBS'
 #E-OBS code (lowercase) of the variable needed: var
