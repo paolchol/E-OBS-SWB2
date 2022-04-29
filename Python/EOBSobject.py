@@ -425,7 +425,3 @@ class EOBSobject():
             fname = f'{fname}_{tool}'
         fname = f'{fname}.nc'
         return fname
-        
-        
-        
-        
