@@ -170,7 +170,6 @@ class EOBSobject():
             #Saves the same dataset, just by applying a custom format
             _, tool, _ = self.get_dates()
             start_day = f"{tool.day}/{tool.month}/{tool.year}"
-            df = self.get_var(method) #it may be too computationally heavy
             la = self.get_lat(method)
             lo = self.get_lon(method)
             tout = np.ma.getdata(self.netcdf['time'][:])
