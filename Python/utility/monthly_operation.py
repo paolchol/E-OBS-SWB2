@@ -68,7 +68,8 @@ def monthly_operation(file, var, start, end, function = np.sum,
         for i in range(1, 12+1):
             e += month_duration(i, year)
             df = np.ma.getdata(f[var][s:e, :, :])
-            op = function(df, axis = 0)
+            op = np.flip(df, axis = 1)
+            op = function(op, axis = 0)
             if singlecell:
                 out[k, 0] = i
                 out[k, 2] = year
@@ -79,9 +80,6 @@ def monthly_operation(file, var, start, end, function = np.sum,
     out = pd.DataFrame(out, columns = ['month', 'station', 'year', valname])
     out['station'] = station
     return out
-
-
-
 
 stations = {
     'row': [4, 2, 6],
