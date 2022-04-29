@@ -253,7 +253,7 @@ class EOBSobject():
         y[:] = la
         time[:] = tout
         yearday[:] = range(1, 366)
-        value[:] = df #if method != 'raw' else self.get_var(method)
+        value[:] = df if method != 'raw' else np.ma.getdata(self.netcdf[self.info['var']][:, :, :])
         
         #Close the file
         ds.close()
@@ -264,20 +264,22 @@ class EOBSobject():
     def save_arcgrid(self, method, coord = None, start = None, end = None, save = True, internal = False,
                       loncol = 'lon', latcol = 'lat', contourcell = 0,
                       option = 'singleyear', day = False, createfolder = True):
-        
-        if method == 'cut_space':
-            res = self.cut_space(coord, False, True,
-                                    loncol, latcol, contourcell)
-        elif method == 'cut_time':
-            res = self.cut_time(start, end, False, True, option, day)
-        elif method == 'cut_spacetime':
-            res = self.cut_spacetime(coord, start, end, False, True, loncol,
-                                         latcol, contourcell, option, day)
+        """
+        Save the E-OBS dataset as daily ArcGRID files
+        """
         if method == 'raw':
             la = self.get_lat(method)
             lo = self.get_lon(method)
             t = self.get_time(method)
         else:
+            if method == 'cut_space':
+                res = self.cut_space(coord, False, True,
+                                    loncol, latcol, contourcell)
+            elif method == 'cut_time':
+                res = self.cut_time(start, end, False, True, option, day)
+            elif method == 'cut_spacetime':
+                res = self.cut_spacetime(coord, start, end, False, True, loncol,
+                                         latcol, contourcell, option, day)
             df = self.get_var(method, res['idx_time'], res['idx_lat'], res['idx_lon'])
             df = np.flip(df, axis = 1)
             la = self.get_lat(method, res['idx_lat'])
@@ -304,8 +306,7 @@ class EOBSobject():
             if method != 'raw':
                 tool = round(pd.DataFrame(df[i, :, :]), 1)
             else:
-                df = np.flip(self.get_var('cut_time', idx_time = i))
-                tool = round(pd.DataFrame(df), 1)
+                tool = round(pd.DataFrame(np.flip(np.ma.getdata(self.netcdf[self.info['var']][i, :, :]), 1)))
             tool.to_csv(fname, sep = ' ', header = False, index = False)
             header = f'ncols         {df.shape[2]}\nnrows         {df.shape[1]}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
             with open(fname, 'r+') as f:
