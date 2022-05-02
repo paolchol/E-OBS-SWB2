@@ -5,10 +5,14 @@
 
 ## What the codes do
 - Handle E-OBS data
-- Create netCDF files compatible with SWB2
-- Create ArcASCII GRID files compatible with SWB1 and SWB2
+  - Creation of a class to handle E-OBS data: `EOBSobject`
+- Support the creation of input files for SWB2 starting from E-OBS data:
+  - Create netCDF files compatible with SWB2
+  - Create ArcASCII GRID files compatible with SWB1 and SWB2
 - Handle SWB2 netCDF output
-  - Creation of a class for SWB2 ouput: *SWB2output*
+  - Creation of a class to handle SWB2 output: `SWB2output`
+- Calculate the total recharge by adding urban and irrigation components:
+  - Creation of a class to perform the needed operations: `RechargeCalc`
 
 ## Repository organization
 The repository is still undergoing massive reorganization to be functional and easily understandable.
