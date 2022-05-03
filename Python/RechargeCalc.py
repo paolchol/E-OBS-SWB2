@@ -137,11 +137,13 @@ class RechargeCalc():
         
         #Calculate the irrigation recharge and assign it to each cell
         rirr = self.input['ind'].loc[:, (self.info['id'], 'distretto', 'zona_agricola')]
+        #if splist != None:
         K = 1 - coeffs['E'] - coeffs['R']
         for sp in self.find_SPcol(irr.columns):
             if sp not in rirr.columns:
                 rirr.insert(len(rirr.columns), sp, 0)
             for distr in irr['distretto']:
+                #if sp in splist: use alt code
                 code = irr.loc[irr['distretto'] == distr, 'code'].values[0]
                 cond = (rirr['distretto'] == distr) & (rirr['zona_agricola'] == 1)
                 if code != 1:
@@ -151,6 +153,7 @@ class RechargeCalc():
                 else:
                     Q = float(sp_irr.loc[sp_irr['distretto'] == distr, sp].values[0])
                     rirr.loc[cond, sp] = Q
+        
         #Store the variables
         self.recharges['rirr'] = rirr
         self.paths['special_irr'] = specialpath
