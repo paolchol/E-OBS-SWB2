@@ -109,5 +109,10 @@ r.export('recharge', 'rtot', outpath = outpath)
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
          proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
          outpath = outpath)
+#If you don't want to keep the X and Y columns in the exported dataframe,
+#set dropcoord as True
+r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
+         proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
+         outpath = outpath, outname = 'rtot_noXY', dropcoord = True)
 
 

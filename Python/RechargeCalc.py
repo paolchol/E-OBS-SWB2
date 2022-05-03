@@ -266,7 +266,8 @@ class RechargeCalc():
             df = self.recharges[tag]
         return df
     
-    def georef(self, var, tag, coordpath, proj = 'none', outpath = 'none'):
+    def georef(self, var, tag, coordpath, proj = 'none', outpath = 'none',
+               outname = 'none', dropcoord = False):
         """
         Export a shapefile of the selected dataframe
         var (str): 'input', 'recharge'
@@ -280,16 +281,19 @@ class RechargeCalc():
         outpath: path to a wanted output folder. Default: variable 'outpath'
          defined previously
         """
-        if 'geopandas' not in sys.modules:  import geopandas as gp
+        #if 'geopandas' not in sys.modules: 
+        import geopandas as gp
         
         outpath = self.set_outpath(outpath)
+        outname = outname if outname != 'none' else f'{tag}'
         coord = pd.read_csv(coordpath)
         coord = self.insert_ind(coord, coord['row'], coord['column'], name = self.info['id'])
         coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
         tool = pd.merge(self.get_df(var, tag), coord, on = self.info['id'])
         geodf = gp.GeoDataFrame(tool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
         geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-        geodf.to_file(f'{outpath}/{tag}.shp', driver = 'ESRI Shapefile')
+        if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
+        geodf.to_file(f'{outpath}/{outname}.shp', driver = 'ESRI Shapefile')
         print(f'Shapefile saved in {outpath} as {tag}.shp')
     
     def insert_ind(self, df, r, c, pos = 0, name = 'none'):
