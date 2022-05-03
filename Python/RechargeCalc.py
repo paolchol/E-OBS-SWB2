@@ -103,16 +103,23 @@ class RechargeCalc():
             if f'SP{i+1}' not in rmeteo.columns:
                 rmeteo.insert(len(rmeteo.columns), f'SP{i+1}', df[f'SP{i+1}'])
         
+        lastSP = i+1
+        if lastSP != self.info['nSP']:
+            sps = self.find_SPcol(rmeteo.columns)
+            k = 0
+            for i in range(lastSP, self.info['nSP']):
+                rmeteo.insert(len(rmeteo.columns), f'SP{i+1}', rmeteo.loc[:, sps[k]])
+                k = k+1 if k < len(sps)-1 else 0
+        
         #Save the variables
         self.info['SPs'] = SPs
-        self.info['nSP'] = rmeteo3d.shape[0] #number of stress periods
+        # self.info['nSP'] = rmeteo3d.shape[0] #number of stress periods
         self.recharges['rmeteo'] = rmeteo
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export: self.export('recharge', 'rmeteo')
     
     def irrigationR(self, coeffs, specialpath = 'none', export = False):
-        
         print('Irrigation recharge dataframe creation')
         start = time.time()
         irr = self.input['irr']
