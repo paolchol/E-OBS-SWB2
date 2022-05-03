@@ -12,3 +12,5 @@ import numpy as np
 im = Image.open('C:/E-OBS-SWB2/Data/Shp/ModelMI_ID_stazioni.tif')
 # im.show()
 imarray = np.array(im)
+
+
