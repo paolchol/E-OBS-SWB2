@@ -15,27 +15,34 @@ import pandas as pd
 class EOBSobject():
     
     def __init__(self, inpath, var, outpath = 'none', outname = 'none',
-                 fname = 'none', folder = True, swb2 = False):
+                 fname = 'none', API = False, folder = True, swb2 = False):
         #folder condition: default is True, path to a folder
         #   False if path to a single file
         
         #Store the info
         self.info = {
             'var': var,
-            'for_swb2': swb2
+            'for_swb2': swb2,
+            'API': API
             }
         self.set_outname(outname)
         self.set_fname(fname)
         #Store the input path
-        if folder: self.paths = { 'inpath': self.find_path(inpath, var) }
+        if API: pass
+        elif folder: self.paths = { 'inpath': self.find_path(inpath, var) }
         else: self.paths = { 'inpath': inpath }
         self.set_outpath(outpath, folder)
     
     def load(self):
-        self.netcdf = nc.Dataset(self.paths['inpath'])
-        #Store the units
-        self.info['units'] = self.netcdf[self.info['var']].units
-        self.info['missing_value'] = self.netcdf[self.info['var']]._FillValue
+        if not self.info['API']:
+            self.netcdf = nc.Dataset(self.paths['inpath'])
+            #Store the units
+            self.info['units'] = self.netcdf[self.info['var']].units
+            self.info['missing_value'] = self.netcdf[self.info['var']]._FillValue
+        else:
+            #Run the API and load the desired dataset
+            #May need additional parameters, as the version of E-OBS and such
+            pass
     
     def print_metadata(self):
         #Raw metadata
@@ -51,9 +58,10 @@ class EOBSobject():
                  loncol = 'lon', latcol = 'lat', contourcell = 0):
         """
         coord: extremes of desired area
+            provided as a pandas dataframe with loncol as the column containing
+            longitude and latcol as the column containing latitude
         contourcell: number of contour cells to extract around the provided coordinates
         """
-        
         la = self.netcdf['latitude'][:]
         lo = self.netcdf['longitude'][:]
         tool = round(la[1] - la[0], 1) * contourcell
@@ -73,13 +81,14 @@ class EOBSobject():
     
     def cut_time(self, start, end, save = True, internal = False,
                  option = 'singleyear', day = False):
-        #start, end: years (int) if day = False
-        #   if day = True, they have to be in datetime.date format, ex: date(2014, 7, 20)
-        #   day = True works only for option = 'bundle'
-        #option:
-        # - 'singleyear': single files, one for each year
-        # - 'bundle': one single file between the selected dates
-        
+        """
+        start, end: years (int) if day = False
+           if day = True, they have to be in datetime.date format, ex: date(2014, 7, 20)
+           day = True works only for option = 'bundle'
+        option:
+         - 'singleyear': single files, one for each year
+         - 'bundle': one single file between the selected dates
+        """
         #Get the E-OBS time limits from its metadata
         o, sd, ed = self.get_dates()
         #Create an array of the data real-world dates
@@ -165,6 +174,8 @@ class EOBSobject():
             return
     
     def save_netcdf(self, res = None, method = 'raw'):
+        #Check the 	Climate and Forecast Metadata Convention v1.4 (CF-v1.4)
+        #and try to keep the metadata as they are defined there
         outname = self.info['outname']
         if method == 'raw':
             #Saves the same dataset, just by applying a custom format
@@ -338,9 +349,11 @@ class EOBSobject():
         return origin, start, end
     
     def get_keys(self, dict):
-        #Returns the dictionary keys of a dictonary as a list
-        # got from:
-        # https://www.geeksforgeeks.org/python-get-dictionary-keys-as-a-list/
+        """
+        Returns the dictionary keys of a dictonary as a list
+        Got from:
+        https://www.geeksforgeeks.org/python-get-dictionary-keys-as-a-list/
+        """
         #Other method
         # return list(dict.keys())
         return [*dict]
@@ -393,8 +406,12 @@ class EOBSobject():
         self.units['time'] = units
     
     def transf_eobstime(self, x, to = date(1980, 1, 1)):
-        #to: time reference to be transformed to
-        #   standard: Daymet, starting from 1980-01-01
+        """
+        Returns the time as number of days starting from a desired point in time
+        x: date in the E-OBS format
+        to: time reference to be transformed to
+            standard: Daymet, starting from 1980-01-01
+        """
         dstart = to
         estart = date(1950, 1, 1)
         k = dstart - estart
@@ -403,8 +420,10 @@ class EOBSobject():
         return y
     
     def transf_eobsdate(self, x, number = False):
-        #Returns the year, month and day corresponding to the number given
-        #If x is a plain number (not a variable), "number" must be set to True
+        """
+        Returns the year, month and day corresponding to the number given (x)
+        If x is a plain number (not a variable), "number" must be set to True
+        """
         from datetime import date, timedelta
         start = date(1950, 1, 1)
         days = x.item() if number else x
@@ -412,7 +431,9 @@ class EOBSobject():
         return end.year, end.strftime('%m'), end.strftime('%d')
     
     def write_fname(self, method, res):
-        #Writes fname for save_netcdf function
+        """
+        Writes fname for save_netcdf function, starting from the method utilized        
+        """
         if self.info['fname'] != 'none': return self.info['fname']
         outpath = self.paths['outpath']
         outname = self.info['outname']

@@ -4,8 +4,8 @@
 
 E-OBS data are bla bla...
 Link to the data
-Explain netcdf format
-Link to the netcdf project page
+Explain NetCDF format
+Link to the NetCDF project page
 
 ## Code
 
@@ -117,3 +117,24 @@ You can also save the file as it is. This will only change the metadata or other
 ```python
 f.save_netcdf(method = 'raw')
 ```
+
+### 3. Generate daily ArcGRID files
+
+Specify the method: `'cut_space'`, `'cut_time'`, `'cut_spacetime'`. \
+Provide the necessary information: `coord`, `start`, `end`. All the possible information you can provide to obtain a NetCDF you can also apply to this method (for example, the `contourcell` parameter)
+```python
+g = f.save_arcgrid('cut_spacetime', coord, start, end)
+g.shape
+```
+### 4. Perform the operation on multiple E-OBS .nc files
+
+Set up a list of variable tags, then perform a for loop for the different variables.
+```python
+var = ['rr', 'tn', 'tx']
+for v in var:
+    f = EOBSobject(inpath, v, outpath)
+    f.load()
+    f.cut_spacetime(coord, start, end)
+    f.close()
+```
+Outpath and inpath could be provided in lists as well, if you want to refer to single files each time in different folders.
