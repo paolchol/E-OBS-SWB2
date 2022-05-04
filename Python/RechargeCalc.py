@@ -10,7 +10,6 @@ The working directory has to be set in ./E-OBS-SWB2 for this to work
 @author: paolo
 """
 
-# import os
 import glob
 import numpy as np
 import pandas as pd

@@ -23,6 +23,11 @@ In the folder *./Data/Calcolo_ricarica_irrigua/template* in this repository you 
 
 ## Code
 
+### Needed modules and classes
+
+The needed modules to use the `RechargeCalc` class are: glob, numpy, pandas, sys and time. To run `RechargeCalc.georef()` also geopandas is needed. 
+The `SWB2output` class is also needed (available in this GitHub repository), which in turn makes it needed to import netCDF4 and a series of functions from *custom_functions.py*. By downloading the repository */Python* folder as it is, the "concatenation" of classes and functions will work automatically by setting the working directory in the parent folder of where you will store the */Python* folder.
+
 ### Setup
 
 ```python
