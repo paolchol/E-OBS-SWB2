@@ -141,6 +141,8 @@ class RechargeCalc():
         K = 1 - coeffs['E'] - coeffs['R']
         for sp in self.find_SPcol(irr.columns):
             if sp not in rirr.columns:
+                #create another df and then join it, because like this is inefficient
+                #(python says it)
                 rirr.insert(len(rirr.columns), sp, 0)
             for distr in irr['distretto']:
                 #if sp in splist: use alt code
@@ -294,6 +296,7 @@ class RechargeCalc():
         #if 'geopandas' not in sys.modules: 
         import geopandas as gp
         
+        start = time.time()
         outpath = self.set_outpath(outpath)
         outname = outname if outname != 'none' else f'{tag}'
         coord = pd.read_csv(coordpath)
@@ -304,7 +307,9 @@ class RechargeCalc():
         geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
         if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
         geodf.to_file(f'{outpath}/{outname}.shp', driver = 'ESRI Shapefile')
-        print(f'Shapefile saved in {outpath} as {tag}.shp')
+        end = time.time()
+        print(f'Shapefile saved in {outpath} as {outname}.shp')
+        print(f'Elapsed time: {round(end-start, 2)} s')
     
     def insert_ind(self, df, r, c, pos = 0, name = 'none'):
         name = self.info['id'] if name == 'none' else name

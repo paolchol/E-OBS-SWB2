@@ -56,7 +56,7 @@ SP3 = 92   #days, 13/06 - 15/09
 SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
 
-rmeteo3d = r.meteoricR(SPs)
+r.meteoricR(SPs)
 
 #3. Create irrigation recharge dataframe
 
