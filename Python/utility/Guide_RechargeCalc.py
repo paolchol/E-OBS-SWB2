@@ -27,7 +27,7 @@ startyear = 2014
 endyear = 2018
 cell_area = 100*100 #m2
 #Path to the SWB2 output
-swb2path = "./Data/SWB2_output/1Speranza_netinfiltration.nc"
+swb2path = "./Data/SWB2_output/VersioneFINALE_net_infiltration.nc"
 #Path to the input .csv files folder
 inputpath = "./Data/Calcolo_ricarica_totale"
 
@@ -41,8 +41,7 @@ r.load_inputfiles(urb = False)
 
 #Once you loaded the input files, you can access them via
 r.input['ind']
-r.input['rmeteo']
-r.input['rirr']
+r.input['irr']
 #You can then perform any operation you would on dataframes,
 #for example correct a wrong value provided
 r.input['ind'].loc[r.input['ind']['distretto'] == 'Muzza', 'distretto'] = 'MUZZA'
@@ -73,6 +72,11 @@ spath = f'{inputpath}/rirrigua_speciale.csv'
 
 r.irrigationR(coeffs, spath)
 
+#Multiple coefficients
+
+multicoeffs = ''
+
+
 #4. Create urban recharge dataframe
 
 coeff_urb = 0.15
@@ -81,7 +85,7 @@ r.urbanR(coeff_urb)
 
 #5. Create total recharge dataframe
 
-#Launch after computing all the partial recharges
+#Launch after computing all the needed partial recharges
 r.totalR()
 
 #Launch directly
@@ -107,12 +111,38 @@ r.export('recharge', 'rtot', outpath = outpath)
 #as .shp
 #proj: crs in the PROJ4 format. In this case, Monte Mario EPSG:3003
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
-         proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
+         crs = 'epsg:3003',
+         # proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
          outpath = outpath)
 #If you don't want to keep the X and Y columns in the exported dataframe,
 #set dropcoord as True
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
-         proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
+         crs = 'epsg:3003',
+         # proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
          outpath = outpath, outname = 'rtot_noXY', dropcoord = True)
 
+#7. Modify values
 
+outpath = "./Stefano"
+rtot = r.get_df('recharge', 'rtot')
+ind = r.get_df('input', 'ind')
+idx = ind[r.info['id']][ind['zona_urbana'] == 1]
+cond = rtot[r.info['id']].isin(idx)
+
+# keep = rtot.copy()
+
+rtot.loc[cond, r.find_SPcol(rtot)] = rtot.loc[cond, r.find_SPcol(rtot)]*10
+r.recharges['rtot'] = rtot
+
+r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
+         crs = 'epsg:3003',
+         # proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
+         outpath = outpath, outname = 'rtot_10urb', dropcoord = True)
+
+# keep.loc[cond, r.find_SPcol(keep)] = keep.loc[cond, r.find_SPcol(keep)]*5
+# r.recharges['rtot'] = keep
+
+# r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
+#          crs = 'epsg:3003',
+#          # proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
+#          outpath = outpath, outname = 'rtot_5urb', dropcoord = True)
