@@ -13,7 +13,7 @@ The working directory has to be set in ./E-OBS-SWB2 for this to work
 import glob
 import numpy as np
 import pandas as pd
-import sys
+# import sys
 import time
 
 #The directory has to be set in ./E-OBS-SWB2 for this to work
@@ -97,16 +97,18 @@ class RechargeCalc():
         for i in range(1, rmeteo3d.shape[0]):
             df = pd.DataFrame(rmeteo3d[i, :, :])
             df.insert(0, 'nrow', df.index.values)
-            df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol',
-             value_name = f'SP{i+1}')
+            df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol', value_name = f'SP{i+1}')
+            # df = self.insert_ind(df, 'nrow', 'ncol')
             if f'SP{i+1}' not in rmeteo.columns:
                 rmeteo.insert(len(rmeteo.columns), f'SP{i+1}', df[f'SP{i+1}'])
+                #rmeteo.join(pd.DataFrame({f'SP{i+1}': df[f'SP{i+1}']}), on = self.info['ind'])
         
         lastSP = i+1
         if lastSP != self.info['nSP']:
             sps = self.find_SPcol(rmeteo.columns)
             k = 0
             for i in range(lastSP, self.info['nSP']):
+                # rmeteo.join(pd.DataFrame({f'SP{i+1}': rmeteo.loc[:, sps[k]]}))
                 rmeteo.insert(len(rmeteo.columns), f'SP{i+1}', rmeteo.loc[:, sps[k]])
                 k = k+1 if k < len(sps)-1 else 0
         
@@ -118,7 +120,13 @@ class RechargeCalc():
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export: self.export('recharge', 'rmeteo')
     
-    def irrigationR(self, coeffs, specialpath = 'none', export = False):
+    def irrigationR(self, coeffs, specialpath = 'none', export = False,
+                    multicoeff = False, splist = None):
+        """
+        coeffs: dictionary if multicoeff is False, pandas.DataFrame if multicoeff
+                is True
+        splist: list of SPs in which to use the second line of coefficients
+        """
         print('Irrigation recharge dataframe creation')
         start = time.time()
         irr = self.input['irr']
@@ -136,27 +144,32 @@ class RechargeCalc():
         
         #Calculate the irrigation recharge and assign it to each cell
         rirr = self.input['ind'].loc[:, (self.info['id'], 'distretto', 'zona_agricola')]
-        #if splist != None:
-        K = 1 - coeffs['E'] - coeffs['R']
         for sp in self.find_SPcol(irr.columns):
             if sp not in rirr.columns:
-                #create another df and then join it, because like this is inefficient
-                #(python says it)
                 rirr.insert(len(rirr.columns), sp, 0)
+                # rirr.join(pd.DataFrame({sp: [0 for x in range(0, len(rirr.index))]}))
+                # pd.concat((rirr, pd.DataFrame({sp: [0 for x in range(0, len(rirr.index))]})), axis = 1)
+                if multicoeff and sp in splist:
+                    RISP = coeffs['RISP'][1]
+                    P = coeffs['P'][1]
+                    K = 1 - coeffs['E'][1] - coeffs['R'][1]
+                else:
+                    RISP = coeffs['RISP']
+                    P = coeffs['P']
+                    K = 1 - coeffs['E'] - coeffs['R']
             for distr in irr['distretto']:
-                #if sp in splist: use alt code
                 code = irr.loc[irr['distretto'] == distr, 'code'].values[0]
                 cond = (rirr['distretto'] == distr) & (rirr['zona_agricola'] == 1)
                 if code != 1:
                     Q = float(irr.loc[irr['distretto'] == distr, sp].values[0])
                     A = irr.loc[irr['distretto'] == distr, 'area'].values[0]
-                    rirr.loc[cond, sp] = (Q * coeffs['RISP'])/(A * coeffs['P']) * K
+                    rirr.loc[cond, sp] = (Q * RISP)/(A * P) * K
                 else:
                     Q = float(sp_irr.loc[sp_irr['distretto'] == distr, sp].values[0])
                     rirr.loc[cond, sp] = Q
         
         #Store the variables
-        self.recharges['rirr'] = rirr
+        self.recharges['rirr'] = rirr.copy() #save a de-fragmented dataframe
         self.paths['special_irr'] = specialpath
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
@@ -234,6 +247,17 @@ class RechargeCalc():
         if export: self.export('recharge', 'rtot')
     
     #-----------------------------------------------------------------------
+    #Operations on the recharges
+    
+    def modify_recharge(self, var, tag, cond, operation):
+        """
+        Mock-up of a possible function to operate directly on the recharges
+        """
+        df = self.get_df(var, tag)
+        df[cond] = operation(df[cond])
+        self.recharges[tag] = df
+    
+    #-----------------------------------------------------------------------
     #General functions
     
     def double_cond(self, c1, c2):
@@ -242,7 +266,8 @@ class RechargeCalc():
             cond += [c1[i] and c2[i]]
         return cond
     
-    def export(self, var, tag, fileext = 'csv', outpath = 'none'):
+    def export(self, var, tag, fileext = 'csv', outpath = 'none',
+               withcoord = False, coordpath = None):
         """
         Exports the recharges or other data of the class        
         var: 'input', 'recharge'
@@ -255,12 +280,19 @@ class RechargeCalc():
         outpath: path to a wanted output folder. Default: variable 'outpath'
          defined previously
         """
-        
+        start = time.time()
         #Set the output path
         outpath = self.set_outpath(outpath)
         df = self.get_df(var, tag)
+        if withcoord: 
+            coord = pd.read_csv(coordpath)
+            coord = self.insert_ind(coord, coord['row'], coord['column'], name = self.info['id'])
+            coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
+            df = pd.merge(coord, df, on = self.info['id'])
         #Export the file
         df.to_csv(f'{outpath}/{tag}.{fileext}', index = False)
+        end = time.time()
+        print(f'{end-start} s')
         
     def find_SPcol(self, col, ind = None, indname = False):
         names = [ind] if indname else []
@@ -277,7 +309,7 @@ class RechargeCalc():
             df = self.recharges[tag]
         return df
     
-    def georef(self, var, tag, coordpath, proj = 'none', outpath = 'none',
+    def georef(self, var, tag, coordpath, crs = 'epsg:4326', proj = 'none', outpath = 'none',
                outname = 'none', dropcoord = False):
         """
         Export a shapefile of the selected dataframe
@@ -302,10 +334,21 @@ class RechargeCalc():
         coord = self.insert_ind(coord, coord['row'], coord['column'], name = self.info['id'])
         coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
         tool = pd.merge(self.get_df(var, tag), coord, on = self.info['id'])
-        geodf = gp.GeoDataFrame(tool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
-        geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-        if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
-        geodf.to_file(f'{outpath}/{outname}.shp', driver = 'ESRI Shapefile')
+        
+        newtool = tool.copy()
+        
+        geodf = gp.GeoDataFrame(newtool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
+        # geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+        
+        geodf.set_crs(crs, inplace = True)
+        
+        geodf.index = geodf[self.info['id']]
+        geodf.drop([self.info['id'], 'X', 'Y'], axis = 1, inplace = True)
+        
+        # return geodf
+        
+        # if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
+        geodf.to_file(f'{outpath}/{outname}.shp')
         end = time.time()
         print(f'Shapefile saved in {outpath} as {outname}.shp')
         print(f'Elapsed time: {round(end-start, 2)} s')
@@ -320,6 +363,7 @@ class RechargeCalc():
         else:
             df[name] = newc
         return df
+    
     
     def set_SPs(self, SPs, c = None):
         """
