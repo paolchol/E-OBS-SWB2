@@ -277,7 +277,7 @@ class RechargeCalc():
             cond += [c1[i] and c2[i]]
         return cond
     
-    def export(self, var, tag, fileext = 'csv', outpath = 'none',
+    def export(self, var, tag, fileext = 'csv', outpath = 'none', outname = 'none',
                withcoord = False, coordpath = None):
         """
         Exports the recharges or other data of the class        
@@ -301,7 +301,8 @@ class RechargeCalc():
             coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
             df = pd.merge(coord, df, on = self.info['id'])
         #Export the file
-        df.to_csv(f'{outpath}/{tag}.{fileext}', index = False)
+        outname = tag if outname == 'none' else outname
+        df.to_csv(f'{outpath}/{outname}.{fileext}', index = False)
         end = time.time()
         print(f'{end-start} s')
         

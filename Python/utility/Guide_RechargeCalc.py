@@ -104,10 +104,14 @@ r.totalR(meteopar, irrpar, urbpar)
 
 #6. Export
 
-#as .csv
+#Export as .csv
 outpath = "./Data/Calcolo_ricarica_totale"
 r.export('recharge', 'rtot', outpath = outpath)
-#as .shp
+#You can include the 
+r.export('recharge', 'rtot', outpath = outpath, outname = 'prova',
+         withcoord = True, coordpath = "./Data/Calcolo_ricarica_totale/coord.csv")
+
+#Export as .shp
 #proj: crs in the PROJ4 format. In this case, Monte Mario EPSG:3003
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
          crs = 'epsg:3003',
