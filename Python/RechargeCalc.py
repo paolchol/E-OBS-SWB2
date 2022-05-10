@@ -257,13 +257,16 @@ class RechargeCalc():
         df[cond] = operation(df[cond])
         self.recharges[tag] = df
     
-    def modify_urbancells(self, var, tag, coeff):
+    def modify_urbancells(self, var, tag, coeff, mun_cond = False, name = None):
         """
         Modifies the values of the cells that have 'zona_urbana' = 1 by
         multiplying them by a coefficient (coeff)
         """
         df = self.get_df(var, tag)
-        idx = self.input['ind'][self.info['id']][self.input['ind']['zona_urbana'] == 1]
+        if mun_cond:
+            idx = self.input['ind'][self.info['id']][(self.input['ind']['zona_urbana'] == 1) & (self.input['ind']['nome_com'] == name)]
+        else:
+            idx = self.input['ind'][self.info['id']][self.input['ind']['zona_urbana'] == 1]
         cond = df[self.info['id']].isin(idx)
         df.loc[cond, self.find_SPcol(df)] = df.loc[cond, self.find_SPcol(df)]*coeff
         self.recharges[tag] = df

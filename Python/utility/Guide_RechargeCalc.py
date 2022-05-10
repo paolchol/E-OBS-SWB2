@@ -129,6 +129,9 @@ r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
 outpath = "./Stefano"
 r.modify_urbancells('recharge', 'rtot', 2)
 
+r.modify_urbancells('recharge', 'rtot', 2, mun_cond = True, name = 'MILANO')
+
+
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
          crs = 'epsg:3003',
          outpath = outpath, outname = 'rtot_2urb', dropcoord = True)
