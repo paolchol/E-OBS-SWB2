@@ -76,7 +76,6 @@ r.irrigationR(coeffs, spath)
 
 multicoeffs = ''
 
-
 #4. Create urban recharge dataframe
 
 coeff_urb = 0.15
@@ -123,26 +122,14 @@ r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
 
 #7. Modify values
 
+#Modify 
 outpath = "./Stefano"
-rtot = r.get_df('recharge', 'rtot')
-ind = r.get_df('input', 'ind')
-idx = ind[r.info['id']][ind['zona_urbana'] == 1]
-cond = rtot[r.info['id']].isin(idx)
-
-# keep = rtot.copy()
-
-rtot.loc[cond, r.find_SPcol(rtot)] = rtot.loc[cond, r.find_SPcol(rtot)]*10
-r.recharges['rtot'] = rtot
+r.modify_urbancells('recharge', 'rtot', 2)
 
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
          crs = 'epsg:3003',
-         # proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
-         outpath = outpath, outname = 'rtot_10urb', dropcoord = True)
+         outpath = outpath, outname = 'rtot_2urb', dropcoord = True)
 
-# keep.loc[cond, r.find_SPcol(keep)] = keep.loc[cond, r.find_SPcol(keep)]*5
-# r.recharges['rtot'] = keep
-
-# r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
-#          crs = 'epsg:3003',
-#          # proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
-#          outpath = outpath, outname = 'rtot_5urb', dropcoord = True)
+#To perform other trials, call again the function used to obtain the value in 
+# the first place, in this case r.totalR()
+r.totalR()

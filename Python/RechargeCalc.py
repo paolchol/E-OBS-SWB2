@@ -61,7 +61,7 @@ class RechargeCalc():
                     print(f'{name} file found')
                     self.paths[name] = fls[i]
                     k += [i]
-        #Get the main indicator file and insert the indicator column
+        #Get the main indicator file and insert the custom indicator column
         ind = pd.read_csv(fls[k[0]])
         ind = self.insert_ind(ind, ind['row'], ind['column'])
         #Store the input files inside the object
@@ -255,6 +255,17 @@ class RechargeCalc():
         """
         df = self.get_df(var, tag)
         df[cond] = operation(df[cond])
+        self.recharges[tag] = df
+    
+    def modify_urbancells(self, var, tag, coeff):
+        """
+        Modifies the values of the cells that have 'zona_urbana' = 1 by
+        multiplying them by a coefficient (coeff)
+        """
+        df = self.get_df(var, tag)
+        idx = self.input['ind'][self.info['id']][self.input['ind']['zona_urbana'] == 1]
+        cond = df[self.info['id']].isin(idx)
+        df.loc[cond, self.find_SPcol(df)] = df.loc[cond, self.find_SPcol(df)]*coeff
         self.recharges[tag] = df
     
     #-----------------------------------------------------------------------

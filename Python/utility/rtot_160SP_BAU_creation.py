@@ -23,6 +23,7 @@ inputpath = "./Stefano/360SP"
 r = RechargeCalc(swb2path, inputpath, startyear,
                  endyear, cell_area, uniqueid = 'indicatore', nSP = 360)
 r.load_inputfiles(urb = False)
+
 SP1 = 90   #days, 01/01 - 30/03
 SP2 = 76   #days, 01/04 - 12/06
 SP3 = 92   #days, 13/06 - 15/09
