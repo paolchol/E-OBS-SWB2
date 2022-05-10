@@ -107,7 +107,7 @@ r.totalR(meteopar, irrpar, urbpar)
 #Export as .csv
 outpath = "./Data/Calcolo_ricarica_totale"
 r.export('recharge', 'rtot', outpath = outpath)
-#You can include the 
+#You can include the X and Y coordinates in the CSV file
 r.export('recharge', 'rtot', outpath = outpath, outname = 'prova',
          withcoord = True, coordpath = "./Data/Calcolo_ricarica_totale/coord.csv")
 
@@ -128,14 +128,15 @@ r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
 #Modify the urban cells values
 outpath = "./Stefano"
 r.modify_urbancells('recharge', 'rtot', 2)
-
-r.modify_urbancells('recharge', 'rtot', 2, mun_cond = True, name = 'MILANO')
-
+#Modify only the urban cells inside a specified municipality
+r.modify_urbancells('recharge', 'rtot', 3, mun_cond = True, name = 'MILANO')
+r.modify_urbancells('recharge', 'rtot', 3, mun_cond = True, name = 'ARLUNO')
 
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
          crs = 'epsg:3003',
          outpath = outpath, outname = 'rtot_2urb', dropcoord = True)
 
-#To perform other trials, call again the function used to obtain the value in 
+#To perform other trials starting from the untouched recharge,
+# call again the function used to obtain the value in 
 # the first place, in this case r.totalR()
 r.totalR()
