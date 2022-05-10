@@ -348,21 +348,17 @@ class RechargeCalc():
         coord = pd.read_csv(coordpath)
         coord = self.insert_ind(coord, coord['row'], coord['column'], name = self.info['id'])
         coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
-        tool = pd.merge(self.get_df(var, tag), coord, on = self.info['id'])
-        
-        newtool = tool.copy()
-        
-        geodf = gp.GeoDataFrame(newtool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
+        tool = pd.merge(coord, self.get_df(var, tag), on = self.info['id'])
+        # newtool = tool.copy()
+        geodf = gp.GeoDataFrame(tool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
         # geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-        
         geodf.set_crs(crs, inplace = True)
-        
         geodf.index = geodf[self.info['id']]
-        geodf.drop([self.info['id'], 'X', 'Y'], axis = 1, inplace = True)
-        
-        # return geodf
-        
-        # if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
+        geodf.drop(self.info['id'], axis = 1, inplace = True)
+        if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
+
+        #This operation (to_file) takes too much time, try to address the issues that causes it and
+        #fix them
         geodf.to_file(f'{outpath}/{outname}.shp')
         end = time.time()
         print(f'Shapefile saved in {outpath} as {outname}.shp')
