@@ -277,7 +277,6 @@ class RechargeCalc():
         idx2 = df[self.info['id']].isin(idx)
         df.loc[idx2, self.find_SPcol(df)] = df.loc[idx2, self.find_SPcol(df)] * coeff
         self.recharges[tag] = df
-        return cond, idx
     
     #-----------------------------------------------------------------------
     #General functions
