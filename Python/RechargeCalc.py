@@ -192,7 +192,7 @@ class RechargeCalc():
             cond = self.double_cond(self.input['ind']['nome_com'] == com, self.input['ind']['zona_urbana'] == 1)
             area = sum(cond) * self.info['cell_area_m2']
             urb.loc[i, 'area'] = area
-           
+        
         #Calculate the urban recharge and assign it to each cell
         rurb = self.input['ind'].loc[:, (self.info['id'], 'nome_com', 'zona_urbana')]
         for i, colname in enumerate(urb.columns[2:], 0):
@@ -209,7 +209,7 @@ class RechargeCalc():
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export: self.export('recharge', 'rurb')
-
+    
     def totalR(self, meteopar = None, irrpar = None, urbpar = None, export = False):
         #Sum the recharge components
         print('Total recharge dataframe creation')
