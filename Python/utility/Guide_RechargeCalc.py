@@ -123,20 +123,36 @@ r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
          crs = 'epsg:3003',
          outpath = outpath, outname = 'rtot_noXY', dropcoord = True)
 
-#7. Modify values
+#7. Extract or modify values
 
-#Modify the urban cells values
+#Extract
+#Use get_df and .copy() to create an exact copy of the DataFrame. In this 
+# way any modification you may do on extracted will not affect the DataFrame
+# stored in the RechargeCalc object
+extracted = r.get_df('recharge', 'rtot').copy()
+
+#Modify - Examples
+#Modify the urban cells values multiplyng them by 2
+r.modify_recharge('recharge', 'rtot', 2,
+                  col = 'zona_urbana', valcol = 1)
+
+#Modify the urban cells inside a specified municipality, multiplying them by 3
+r.modify_recharge('recharge', 'rtot', 3,
+                  single_cond = False, multi_cond = True,
+                  col = ['zona_urbana', 'nome_com'], valcol = [1, 'MILANO'])
+
+#Modify the urban cells inside a specified municipality and for a specified
+# land cover, multiplying them by 4
+r.modify_recharge('recharge', 'rtot', 4,
+                  single_cond = False, multi_cond = True,
+                  col = ['zona_urbana', 'nome_com', 'land_cover'], valcol = [1, 'MILANO', 121])
+
+#You can then export the desired modified dataframe in the same ways
+# explained in Section 6
 outpath = "./Stefano"
-r.modify_urbancells('recharge', 'rtot', 2)
-#Modify only the urban cells inside a specified municipality
-r.modify_urbancells('recharge', 'rtot', 3, mun_cond = True, name = 'MILANO')
-r.modify_urbancells('recharge', 'rtot', 3, mun_cond = True, name = 'ARLUNO')
-
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
          crs = 'epsg:3003',
          outpath = outpath, outname = 'rtot_2urb', dropcoord = True)
-
-#To perform other trials starting from the untouched recharge,
-# call again the function used to obtain the value in 
-# the first place, in this case r.totalR()
+#All the modifies add up. To return to the original recharge, re-run the 
+#function used to obtain the value in the first place. In this case r.totalR()
 r.totalR()

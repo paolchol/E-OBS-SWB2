@@ -249,27 +249,35 @@ class RechargeCalc():
     #-----------------------------------------------------------------------
     #Operations on the recharges
     
-    def modify_recharge(self, var, tag, cond, operation):
-        """
-        Mock-up of a possible function to operate directly on the recharges
-        """
-        df = self.get_df(var, tag)
-        df[cond] = operation(df[cond])
-        self.recharges[tag] = df
+    # def modify_recharge(self, var, tag, cond, operation):
+    #     """
+    #     Mock-up of a possible function to operate directly on the recharges
+    #     """
+    #     df = self.get_df(var, tag)
+    #     df[cond] = operation(df[cond])
+    #     self.recharges[tag] = df
     
-    def modify_urbancells(self, var, tag, coeff, mun_cond = False, name = None):
+    def modify_recharge(self, var, tag, coeff, single_cond = True,
+                        multi_cond = False, col = None, valcol = None):
         """
-        Modifies the values of the cells that have 'zona_urbana' = 1 by
+        Modifies the values of the cells that have col == valcol
         multiplying them by a coefficient (coeff)
+        
+        col and valcol can be provided as lists, by setting single_cond to False
+        and multi_cond as True
         """
+        if single_cond:
+            cond = self.input['ind'][col] == valcol
+        elif multi_cond:
+            cond = self.input['ind'][col[0]] == valcol[0]
+            for i in range(1, len(col)):
+                cond = (cond) & (self.input['ind'][col[i]] == valcol[i])
         df = self.get_df(var, tag)
-        if mun_cond:
-            idx = self.input['ind'][self.info['id']][(self.input['ind']['zona_urbana'] == 1) & (self.input['ind']['nome_com'] == name)]
-        else:
-            idx = self.input['ind'][self.info['id']][self.input['ind']['zona_urbana'] == 1]
-        cond = df[self.info['id']].isin(idx)
-        df.loc[cond, self.find_SPcol(df)] = df.loc[cond, self.find_SPcol(df)]*coeff
+        idx = self.input['ind'].loc[cond, self.info['id']]
+        idx2 = df[self.info['id']].isin(idx)
+        df.loc[idx2, self.find_SPcol(df)] = df.loc[idx2, self.find_SPcol(df)] * coeff
         self.recharges[tag] = df
+        return cond, idx
     
     #-----------------------------------------------------------------------
     #General functions
