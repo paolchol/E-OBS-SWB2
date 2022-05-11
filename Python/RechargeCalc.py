@@ -154,9 +154,9 @@ class RechargeCalc():
                     P = coeffs['P'][1]
                     K = 1 - coeffs['E'][1] - coeffs['R'][1]
                 else:
-                    RISP = coeffs['RISP']
-                    P = coeffs['P']
-                    K = 1 - coeffs['E'] - coeffs['R']
+                    RISP = coeffs['RISP'][0]
+                    P = coeffs['P'][0]
+                    K = 1 - coeffs['E'][0] - coeffs['R'][0]
             for distr in irr['distretto']:
                 code = irr.loc[irr['distretto'] == distr, 'code'].values[0]
                 cond = (rirr['distretto'] == distr) & (rirr['zona_agricola'] == 1)
@@ -282,9 +282,9 @@ class RechargeCalc():
     #General functions
     
     def double_cond(self, c1, c2):
-        cond = []
-        for i in range(len(c1)):
-            cond += [c1[i] and c2[i]]
+        cond = c1
+        for i in range(len(c2)):
+            cond = c1 & c2[i]
         return cond
     
     def export(self, var, tag, fileext = 'csv', outpath = 'none', outname = 'none',

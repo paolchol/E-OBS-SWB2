@@ -73,8 +73,18 @@ spath = f'{inputpath}/rirrigua_speciale.csv'
 r.irrigationR(coeffs, spath)
 
 #Multiple coefficients
+#Apply a different set of coefficients to a selected list of stress periods. In
+#this example, E = 0, R = 0, RISP = 0 and P = 1 are applied to the stress periods
+#SP3 and SP4
+multicoeffs = {
+    'E': [0.3, 0],  #Irrigation technique efficiency
+    'R': [0.05, 0], #Residual runoff
+    'RISP': [1, 0], #1 - fraction of water saved by a change of irrigation technique
+    'P': [1, 1]     #Percentage of the cell covered by the irrigation
+    }
+splist = ['SP3', 'SP4']
 
-multicoeffs = ''
+r.irrigationR(multicoeffs, spath, multicoeff = True, splist = splist)
 
 #4. Create urban recharge dataframe
 
