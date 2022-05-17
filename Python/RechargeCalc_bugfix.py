@@ -86,6 +86,8 @@ class RechargeCalc():
         rmeteo3d = f.SP_sum(SPs, units = 'ms', retval = True) #return the SP sum directly in m/s
         f.close()
         
+        return rmeteo3d
+        
         rmeteo = pd.DataFrame(rmeteo3d[0, :, :])
         rmeteo.insert(0, 'nrow', rmeteo.index.values)
         rmeteo = pd.melt(rmeteo, id_vars = 'nrow', var_name = 'ncol', value_name = 'SP1')

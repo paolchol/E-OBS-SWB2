@@ -30,17 +30,19 @@ The `SWB2output` class is also needed (available in this GitHub repository), whi
 
 ### Setup
 
+Import the necessary modules and set up the working directory
 ```python
 import os
 import numpy as np
-
 os.chdir('C:/E-OBS-SWB2')
+```
 
-#Call the class
+Import the class
+```python
 from Python.RechargeCalc import RechargeCalc
 ```
 
-#1. Initialize the class
+### 1. Initialize the class
 
 #Define the variables
 startyear = 2014

@@ -12,10 +12,11 @@
 #Paths
 #Direct path to the netCDF file you want to import
 # netCDFpath = 'C:/E-OBS-SWB2/Data/SWB2_output/0Impervious_net_infiltration.nc'
-netCDFpath = 'C:/E-OBS-SWB2/Data/Calcolo_ricarica_totale/bugtrials/VersioneFINALE_net_infiltration.nc'
+path = 'C:/E-OBS-SWB2/Data/Calcolo_ricarica_totale/bugtrials'
+netCDFpath = paste0(path, '/VersioneFINALE_net_infiltration.nc')
 #Path where to save the ASCII files created
 # Leave none if you don't want to create ASCII files
-outpath = 'none'
+outpath = paste0(path, '/R_ASCII')
 
 #Specify the stress periods
 SP1 = 90   #days, 01/01 - 30/03
@@ -37,7 +38,8 @@ variable = 'net_infiltration'
 library(ncdf4)
 library(tictoc)
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+setwd('C:/E-OBS-SWB2/R')
 source('custom_functions.R')
 
 # Sum over the specified stress periods -----------------------------------
