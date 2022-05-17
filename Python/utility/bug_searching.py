@@ -145,6 +145,7 @@ print(t2.loc[t2['indicatore'] == '100X101', 'SP1 [m/s]'].values[0])
 # f = open(f'{bugtrials}/R_ASCII/net_infiltration_2015_SP4.asc', 'r')
 # f.read()
 
+#SP8
 Rascii = np.genfromtxt(f'{bugtrials}/R_ASCII/net_infiltration_2015_SP4.asc', dtype = None)
 #trasforma in mm
 Rascii = Rascii*0.0254/(60*60*24*107)
@@ -153,13 +154,13 @@ diff = Rascii - rmeteo3d[7,:,:]
 #ci sono delle differenze nell'ordine di grandezza dei dati
 #serve controllare che R e python facciano le somme correttamente
 #le differenze si trovano nelle celle (numerazione di Python)
-[4, 1]
-[6, 2]
-[26, 14]
-[28, 14]
-[29, 14]
+check_val = [[4, 1],
+             [6, 2],
+             [26, 14],
+             [28, 14],
+             [29, 14]]
 
-# %% verifica della correttezza della somma
+# %% Verifica della correttezza della somma
 
 from Python.SWB2output import SWB2output
 
@@ -168,5 +169,46 @@ SPscum = np.cumsum(SPs)
 SP_sum_in = swb2.SP_sum(SPscum, units = 'inches', retval = True)
 SP_sum_ms = swb2.SP_sum(SPscum, units = 'ms', retval = True)
 var = swb2.netCDF['net_infiltration'][:,:,:]
+
+#Stress period 8
+SP8_start = SP1 + SP2 + SP3 + SP4 + SP1 + SP2 + SP3
+SP8_end = SP8_start + SP4
+
+SP8 = var[SP8_start:SP8_end, 4, 1]
+sumsp8 = np.sum(SP8, axis = 0)
+
+print(Rascii[4,1] - sumsp8)
+print(SP_sum_in[7, 4, 1] - sumsp8)
+
+#C'è un errore nel calcolo che viene effettuato su R
+
+for pos in check_val:
+    SP8 = var[SP8_start:SP8_end, pos[0], pos[1]]
+    sumsp8 = np.sum(SP8, axis = 0)
+    print(f'Difference R: {Rascii[pos[0], pos[1]] - sumsp8}')
+    print(f'Difference Python: {SP_sum_in[7, pos[0], pos[1]] - sumsp8}')
+
+#Sistemare il calcolo su R e rifare prova
+
+Rascii_fix = np.genfromtxt(f'{bugtrials}/R_ASCII/fix/net_infiltration_2015_SP4.asc', dtype = None)
+for pos in check_val:
+    SP8 = var[SP8_start:SP8_end, pos[0], pos[1]]
+    sumsp8 = np.sum(SP8, axis = 0)
+    print(f'Difference R: {Rascii_fix[pos[0], pos[1]] - sumsp8}')
+    print(f'Difference Python: {SP_sum_in[7, pos[0], pos[1]] - sumsp8}')
+
+#Ora i risultati sono uguali
+#Provo su un altro stress period
+#SP13
+Rascii_fix = np.genfromtxt(f'{bugtrials}/R_ASCII/fix/net_infiltration_2017_SP1.asc', dtype = None)
+diff = Rascii_fix - SP_sum_in[12, :, :]
+sum(sum(diff > 10E-8)) #35453 celle hanno una differenza maggiore di 10^-8
+sum(sum(diff > 10E-7)) #0 celle hanno una differenza maggiore di 10^-7
+
+#La somma operata sia da SWB2output.SP_sum sia dalla funzione SP_sum su R è ora corretta
+
+# %% Confronto tra rmeteo
+#Generare un rmeteo tramite ASCII su QGIS (primi 2 SP)
+#Generare rmeteo tramite meteoricR con RechargeCalc
 
 

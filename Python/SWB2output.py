@@ -67,12 +67,14 @@ class SWB2output():
         return self.sumtotdf
     
     def SP_sum(self, SPs, outpath = 'none', name = 'name', units = 'none',
-               retval = False):
-        #Perform a sum of the main variable over the stress periods provided
-        # as SPs
-        #Returns a 3D variable containing all the sums as the 0 index
-        #If outpath is specified, saves an ArcASCII GRID file for each sum
+               retval = False, checkleap = True):
+        """
+        Perform a sum of the main variable over the stress periods provided
+        as SPs
         
+        Returns a 3D variable containing all the sums as the 0 index
+        If outpath is specified, saves an ArcASCII GRID file for each sum
+        """
         variable = self.metadata['main_variable']
         units = self.metadata['units'] if units == 'none' else units
         print(f'Performing the sum of {variable} over the stress periods provided')
@@ -91,17 +93,22 @@ class SWB2output():
         #Create the 3D variable
         var3d = np.zeros((len(period)*len(SPs), self.netCDF[variable].shape[1], self.netCDF[variable].shape[2]))
         
-        for y in period: #Extract a single year
-            e += leap(y)
+        for y in period:
+            #Extract a single year
+            e += leap(y) if checkleap else 365
             year = np.ma.getdata(self.netCDF[variable][s:e, :, :])
+            print(year.shape)
+            #Set up a counter
             base = 0
-            for i, SP in enumerate(SPs, start = 1): #Extract the variable in the Stress Period
+            for i, SP in enumerate(SPs, start = 1):
+                if (checkleap) & (leap(y) == 366): SP = SP+1 #& (i == 1)
+                #Extract the variable in the Stress Period
                 sp = year[base:SP, :, :]
                 base = SP
-                #Sum the infiltration across the stress period
+                #Sum the variable in the stress period
                 if(units == 'inches'):
                     #Keep in inches (make the transformation later)
-                    # Useful because otherwise ArcGIS can't read the values (too small)
+                    #Useful because otherwise ArcGIS can't read the values (too small)
                     sp = np.sum(sp, axis = 0) #inches
                 elif(units == 'ms'):
                     #Transform into m/s
@@ -113,7 +120,7 @@ class SWB2output():
                 if(outpath != 'none'):
                     #Save as Arc GRID ASCII file
                     name = variable if name == 'name' else name
-                    fname = f'{outpath}/{name}_{y}_SP{i}_inch.asc'
+                    fname = f'{outpath}/{name}_{y}_SP{i}_{units}.asc'
                     sp = pd.DataFrame(sp)
                     save_ArcGRID(sp, fname, xll, yll, size, self.metadata['nodata_value'])
                 #Save in the 3D variable
@@ -142,8 +149,8 @@ class SWB2output():
         for i in range(1, self.results['SPsum3d'].shape[0]):
             df = pd.DataFrame(self.results['SPsum3d'][i, :, :])
             df.insert(0, 'nrow', df.index.values)
-            df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol',
-             value_name = f'SP{i+1}')
+            df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol', value_name = f'SP{i+1}')
+            #insert indicator
             if f'SP{i+1}' not in df.columns:
                 df.insert(len(df.columns), f'SP{i+1}', df[f'SP{i+1}'])
         self.results['dfSP'] = df
