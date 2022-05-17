@@ -16,7 +16,7 @@ path = 'C:/E-OBS-SWB2/Data/Calcolo_ricarica_totale/bugtrials'
 netCDFpath = paste0(path, '/VersioneFINALE_net_infiltration.nc')
 #Path where to save the ASCII files created
 # Leave none if you don't want to create ASCII files
-outpath = paste0(path, '/R_ASCII')
+outpath = paste0(path, '/R_ASCII/fix')
 
 #Specify the stress periods
 SP1 = 90   #days, 01/01 - 30/03

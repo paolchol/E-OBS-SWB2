@@ -24,6 +24,7 @@ leap <- function(year){
 
 # SWB2 netCDF handling ----------------------------------------------------
 
+
 SPsum <- function(path, SPs, var,
                   starty, endy,
                   outpath = 'none'){
@@ -47,9 +48,12 @@ SPsum <- function(path, SPs, var,
     year = ncvar_get(f, var, start = c(1, 1, s), count = c(varsize[1], varsize[2], leap(y)))
     base = 1
     for (i in seq_len(length(SPs))){
-      SP = SPs[i]
+      SP = ifelse((leap(y) == 366), SPs[i]+1, SPs[i])
       sp = year[, , base:SP]
-      base = SP
+      base = SP+1
+      if((leap(y) == 366) & (i == 1)){
+        print('Be careful, when transforming to m/s, consider that SP1 of year ', y, ' has ', dim(sp)[3], ' days')
+      }
       for(j in seq_len(dim(sp)[3])) var3d[k, , ] = var3d[k, , ] + sp[, , j]
       if (outpath != 'none'){
         fname = paste0(outpath, '/', var, '_', y, '_SP', i, '.asc')
