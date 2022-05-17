@@ -76,33 +76,38 @@ class RechargeCalc():
     #----------------------------------------------------------------------
     #Recharges calculation
     
-    def meteoricR(self, SPs, export = False):
+    def meteoricR(self, SPs, units = 'ms', export = False):
         #Compute the meteoric recharge dataframe
         #Provide the stress periods definition (SPs)
         print('Meteoric recharge dataframe creation')
         start = time.time()
         SPs = self.set_SPs(SPs, 1)
         f = SWB2output(self.paths['swb2_output'])
-        rmeteo3d = f.SP_sum(SPs, units = 'ms', retval = True) #return the SP sum directly in m/s
+        rmeteo3d = f.SP_sum(SPs, units = units, retval = True) #return the SP sum directly in m/s
         f.close()
         
-        return rmeteo3d
+        rmeteoi = pd.DataFrame(rmeteo3d[0, :, :])
+        rmeteoi.insert(0, 'nrow', rmeteoi.index.values)
+        rmeteoi = pd.melt(rmeteoi, id_vars = 'nrow', var_name = 'ncol', value_name = 'SP1')
+        rmeteoi['nrow'] = rmeteoi['nrow'] + 1
+        rmeteoi['ncol'] = rmeteoi['ncol'] + 1
+        rmeteoi = self.insert_ind(rmeteoi, rmeteoi['nrow'], rmeteoi['ncol'])
         
-        rmeteo = pd.DataFrame(rmeteo3d[0, :, :])
-        rmeteo.insert(0, 'nrow', rmeteo.index.values)
-        rmeteo = pd.melt(rmeteo, id_vars = 'nrow', var_name = 'ncol', value_name = 'SP1')
-        rmeteo['nrow'] = rmeteo['nrow'] + 1
-        rmeteo['ncol'] = rmeteo['ncol'] + 1
-        rmeteo = self.insert_ind(rmeteo, rmeteo['nrow'], rmeteo['ncol'])
+        rmeteoj = rmeteoi.copy()
+        
         
         for i in range(1, rmeteo3d.shape[0]):
             df = pd.DataFrame(rmeteo3d[i, :, :])
             df.insert(0, 'nrow', df.index.values)
             df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol', value_name = f'SP{i+1}')
-            # df = self.insert_ind(df, 'nrow', 'ncol')
-            if f'SP{i+1}' not in rmeteo.columns:
-                rmeteo.insert(len(rmeteo.columns), f'SP{i+1}', df[f'SP{i+1}'])
-                #rmeteo.join(pd.DataFrame({f'SP{i+1}': df[f'SP{i+1}']}), on = self.info['ind'])
+            dfj = self.insert_ind(df, df['nrow'], df['ncol'], startfrom = 1)
+            if f'SP{i+1}' not in rmeteoi.columns:
+                rmeteoi.insert(len(rmeteoi.columns), f'SP{i+1}', df[f'SP{i+1}'])
+                rmeteoj = rmeteoj.join(dfj.loc[:,[self.info['id'], f'SP{i+1}']].set_index(self.info['id']), on = self.info['id'])
+                return rmeteoj, rmeteoi
+                #check che join sia corretto così
+        
+
         
         lastSP = i+1
         if lastSP != self.info['nSP']:
@@ -373,8 +378,11 @@ class RechargeCalc():
         print(f'Shapefile saved in {outpath} as {outname}.shp')
         print(f'Elapsed time: {round(end-start, 2)} s')
     
-    def insert_ind(self, df, r, c, pos = 0, name = 'none'):
+    def insert_ind(self, df, r, c, pos = 0, name = 'none', startfrom = 0):
         name = self.info['id'] if name == 'none' else name
+        if startfrom != 0:
+            r = r + startfrom
+            c = c + startfrom
         newc = []
         for i in range(len(r)):
             newc += [f'{r[i]}X{c[i]}']

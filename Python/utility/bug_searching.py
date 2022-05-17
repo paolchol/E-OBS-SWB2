@@ -56,20 +56,8 @@ import pandas as pd
 Smeteo = pd.read_excel(f"{bugtrials}/tabelle_ricaricameteorica.xlsx")
 Sirr = pd.read_excel(f"{bugtrials}/tabelle_ricaricairrigua.xlsx")
 
-#sostituisco indicatore
-def insert_ind(df, r, c, pos = 0, name = 'none'):
-    name = 'indicatore' if name == 'none' else name
-    newc = []
-    for i in range(len(r)):
-        newc += [f'{r[i]}X{c[i]}']
-    if (name not in df.columns):
-        df.insert(pos, name, newc)
-    else:
-        df[name] = newc
-    return df
-
-Smeteo = insert_ind(Smeteo, Smeteo['row'], Smeteo['column'])
-Sirr = insert_ind(Sirr, Sirr['row'], Sirr['column'])
+Smeteo = r.insert_ind(Smeteo, Smeteo['row'], Smeteo['column'])
+Sirr = r.insert_ind(Sirr, Sirr['row'], Sirr['column'])
 
 # %% Compare
 
@@ -78,20 +66,13 @@ f = pd.DataFrame({'id': [1, 2, 3, 4, 5, 1]})
 d = [1, 2]
 f.isin(d)
 
-def find_SPcol(col, ind = None, indname = False):
-    names = [ind] if indname else []
-    for name in col:
-        if name.find('SP') != -1:
-            names += [name]
-    return names
-
 rmeteo.sort_values('indicatore', inplace = True)
 rirr.sort_values('indicatore', inplace = True)
 Smeteo.sort_values('indicatore', inplace = True)
 Sirr.sort_values('indicatore', inplace = True)
 
 #Differenze tra ricariche irrigue
-sum(rirr[find_SPcol(rirr)].values == Sirr[find_SPcol(Sirr)].values)
+sum(rirr[r.find_SPcol(rirr)].values == Sirr[r.find_SPcol(Sirr)].values)
 #Le differenze sono nello stesso numero in ogni SP con irrigazione presente
 
 t1 = rirr.loc[Sirr['SP18 [m/sec]'] != rirr['SP18'], ['indicatore', 'distretto', 'SP18']]
@@ -207,8 +188,54 @@ sum(sum(diff > 10E-7)) #0 celle hanno una differenza maggiore di 10^-7
 
 #La somma operata sia da SWB2output.SP_sum sia dalla funzione SP_sum su R è ora corretta
 
+diff = Rascii - SP_sum_ms[7, :,:]
+
+
 # %% Confronto tra rmeteo
 #Generare un rmeteo tramite ASCII su QGIS (primi 2 SP)
 #Generare rmeteo tramite meteoricR con RechargeCalc
 
+#load R_gen_rmeteo_inches.shp
+#inserisci indicatore con la x
+import geopandas as gpd
+R_gen = gpd.read_file(f'{bugtrials}/R_gen_rmeteo_inches.shp')
+R_gen = r.insert_ind(R_gen, R_gen['row'], R_gen['column'])
+
+#genera rmeteo per i primi due SP
+#rmeteo.insert
+
+#rmeteo.join
+rmeteoj, rmeteoi = r.meteoricR(SPs, units = 'inches')
+rmeteoi.sort_values('indicatore', inplace = True)
+rmeteoj.sort_values('indicatore', inplace = True)
+for sp in r.find_SPcol(rmeteoi):
+    diff = rmeteoi[sp] - rmeteoj[sp]
+    print(sp)
+    print(f'Numero di celle con diff > 10^-8: {sum(diff > 10E-8)}')
+    print(f'Numero di celle con diff > 10^-7: {sum(diff > 10E-7)}')
+#I due metodi forniscono lo stesso risultato
+#Mantenere quello più efficiente (in teoria è join da quello che dice la documentazione di pandas)
+
+#Confronto con R
+#ordina per indicatore
+#fai differenza
+#conta le differenze maggiori di 10E-8
+joined = rmeteoj.join(R_gen.loc[:, ['indicatore','SP1_1', 'SP2_1']].set_index('indicatore'), on = 'indicatore')
+filtered = joined[~joined['SP1_1'].isnull()].copy()
+filtered['diff1'] = filtered['SP1_1'] - filtered['SP1']
+filtered['diff2'] = filtered['SP2_1'] - filtered['SP2']
+sum(filtered['diff1'] > 10E-5)
+sum(filtered['diff2'] > 10E-5)
+#circa 60000 celle sono diverse
+
+# %% Cambiamento nell'assegnamento dell'indicatore 
+"""
+In meteoricR, quando traformo da griglia a righe/colonne, alla prima colonna
+della griglia va assegnato il numero 4, corrispondente alla prima colonna
+nello shapefile di punti utilizzato per indicatori.csv
+
+Sommare quindi 4 invece di 1 alle colonne, quando viene inserita la colonna indicatore
+
+Mettere opzione in insert_ind e anche in meteoricR
+"""
 

@@ -43,7 +43,6 @@ SPsum <- function(path, SPs, var,
   period = seq(starty, endy)
   s = k = 1
   var3d = array(0, dim = c(length(period)*length(SPs), varsize[1], varsize[2]))
-  #y = 2014
   for (y in period){
     year = ncvar_get(f, var, start = c(1, 1, s), count = c(varsize[1], varsize[2], leap(y)))
     base = 1

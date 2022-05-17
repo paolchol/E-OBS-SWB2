@@ -97,7 +97,6 @@ class SWB2output():
             #Extract a single year
             e += leap(y) if checkleap else 365
             year = np.ma.getdata(self.netCDF[variable][s:e, :, :])
-            print(year.shape)
             #Set up a counter
             base = 0
             for i, SP in enumerate(SPs, start = 1):
