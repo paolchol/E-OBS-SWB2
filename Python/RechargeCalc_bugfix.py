@@ -93,11 +93,7 @@ class RechargeCalc():
         rmeteo = pd.DataFrame(rmeteo3d[0, :, :])
         rmeteo.insert(0, 'nrow', rmeteo.index.values)
         rmeteo = pd.melt(rmeteo, id_vars = 'nrow', var_name = 'ncol', value_name = 'SP1')
-        # rmeteoi['nrow'] = rmeteoi['nrow'] + fixrow
-        # rmeteoi['ncol'] = rmeteoi['ncol'] + fixcol
         rmeteo = self.insert_ind(rmeteo, rmeteo['nrow'], rmeteo['ncol'], fixrow, fixcol)
-        
-        # rmeteoj = rmeteoi.copy()
         
         for i in range(1, rmeteo3d.shape[0]):
             df = pd.DataFrame(rmeteo3d[i, :, :])
@@ -225,7 +221,9 @@ class RechargeCalc():
         if export: self.export('recharge', 'rurb')
     
     def totalR(self, meteopar = None, irrpar = None, urbpar = None, export = False):
-        #Sum the recharge components
+        """
+        Sum the recharge components
+        """
         print('Total recharge dataframe creation')
         print('---------------------------------')
         start = time.time()
@@ -361,7 +359,7 @@ class RechargeCalc():
         outpath: path to a wanted output folder. Default: variable 'outpath'
          defined previously
         """
-        #if 'geopandas' not in sys.modules: 
+        #if 'geopandas' not in sys.modules:
         import geopandas as gp
         
         start = time.time()
@@ -421,5 +419,6 @@ class RechargeCalc():
             self.paths['outpath'] = outpath
         return outpath
 
-    # def save(self, outpath):
-    #     #Save a pickle of the object
+    def save(self, outpath):
+         #Save a pickle of the object
+         pass
