@@ -25,9 +25,7 @@ leap <- function(year){
 # SWB2 netCDF handling ----------------------------------------------------
 
 
-SPsum <- function(path, SPs, var,
-                  starty, endy,
-                  outpath = 'none'){
+SPsum <- function(path, SPs, var, starty, endy, outpath = 'none'){
   #path: path to the netCDF file to be imported
   #SPs: stress periods lengths. Defined as cumulative sums
   library(ncdf4)
