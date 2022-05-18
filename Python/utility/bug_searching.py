@@ -35,7 +35,7 @@ SP2 = 76   #days, 01/04 - 12/06
 SP3 = 92   #days, 13/06 - 15/09
 SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
-rmeteo3d = r.meteoricR(SPs)
+r.meteoricR(SPs)
 rmeteo = r.get_df('recharge', 'rmeteo')
 
 #ottengo rirr
@@ -239,3 +239,95 @@ Sommare quindi 4 invece di 1 alle colonne, quando viene inserita la colonna indi
 Mettere opzione in insert_ind e anche in meteoricR
 """
 
+#Aggiornamento di meteoricR
+
+rmeteo = r.meteoricR(SPs, 'inches', 1, 4, ret = True)
+joined = rmeteo.join(R_gen.loc[:, ['indicatore','SP1_1', 'SP2_1']].set_index('indicatore'), on = 'indicatore')
+filtered = joined[~joined['SP1_1'].isnull()].copy()
+filtered['diff1'] = filtered['SP1_1'] - filtered['SP1']
+filtered['diff2'] = filtered['SP2_1'] - filtered['SP2']
+print(f"Numero di celle con diff > 10^-7 (SP1): {sum(filtered['diff1'] > 10E-7)}")
+print(f"Numero di celle con diff > 10^-7 (SP2): {sum(filtered['diff2'] > 10E-7)}")
+
+print(filtered.loc[filtered['diff1'] > 10E-7, 'diff1'])
+#differenze invisibili
+
+# %% Ottimizzazione creazione meteoricR
+
+f = RechargeCalc(swb2path, inputpath, startyear,
+                 endyear, cell_area, uniqueid = 'indicatore', nSP = 153)
+f.load_inputfiles(urb = False)
+rmeteo160sp = f.meteoricR(SPs, 'inches', 1, 4, ret = True)
+
+
+import pandas as pd
+
+x = 20
+y = 60
+
+k, d = divmod(y/x, 1)
+k = round(k)
+
+# sps = r.find_SPcol(rmeteo, 'indicatore', True)
+
+# cc = pd.concat([rmeteo[r.find_SPcol(rmeteo)]]*k, axis = 1).columns
+
+prova = rmeteo.set_index('indicatore').copy()
+sps = r.find_SPcol(rmeteo, 'indicatore', True)
+
+concatenated = pd.concat([prova[r.find_SPcol(prova)]]*k, axis = 1)
+
+df = rmeteo.loc[:, sps[0:round(x*d)+1]].copy()
+joined = concatenated.join(df.set_index('indicatore'), on = 'indicatore', rsuffix = '_new')
+cc = joined.columns
+cc = [f'SP{i+1}' for i in range(len(cc))]
+joined.columns = cc
+joined = joined.reset_index(level = 0)
+print(joined.columns)
+
+
+# %% Confronto tra rtot
+
+
+#carica tabella rmeteo stefano
+#settare come rmeteo dentro rechargecalc
+
+#calcolare rirr
+#sommare
+
+#fare confronto tra rtot stefano ed rtot calcolata da RechargeCalc
+
+r.meteoricR(SPs, 'ms', 1, 4)
+r.irrigationR(coeffs, spath)
+r.totalR()
+rtot = r.get_df('recharge', 'rtot')
+
+import pandas as pd
+Stot = pd.read_excel(f"{bugtrials}/tabelle_ricaricatotale.xlsx")
+Stot = r.insert_ind(Stot, Stot['row'], Stot['column'])
+col = Stot.columns
+col2 = [c for c in col]
+col2[10:] = [f'SP{i+1}' for i in range(20)]
+Stot.columns = col2
+
+compare = rtot.join(Stot.set_index('indicatore'), on = 'indicatore', rsuffix = 'S')
+
+col1 = [f'SP{i+1}' for i in range(20)]
+col2 = [f'SP{i+1}S' for i in range(20)]
+
+diff = compare['SP2'] - compare['SP2S']
+
+rmeteo = r.get_df('recharge', 'rmeteo')
+def op (Stot):
+    Stot = r.insert_ind(Stot, Stot['row'], Stot['column'])
+    col = Stot.columns
+    col2 = [c for c in col]
+    col2[10:] = [f'SP{i+1}' for i in range(20)]
+    Stot.columns = col2
+    return Stot
+
+Smeteo = op(Smeteo)
+
+compare = rmeteo.join(Smeteo.set_index('indicatore'), on = 'indicatore', rsuffix = 'S')
+
+sum(diff > 10E-16)
