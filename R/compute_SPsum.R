@@ -13,6 +13,7 @@
 #Direct path to the netCDF file you want to import
 # netCDFpath = 'C:/E-OBS-SWB2/Data/SWB2_output/0Impervious_net_infiltration.nc'
 netCDFpath = 'C:/E-OBS-SWB2/Data/Calcolo_ricarica_totale/bugtrials/VersioneFINALE_net_infiltration.nc'
+
 #Path where to save the ASCII files created
 # Leave none if you don't want to create ASCII files
 outpath = 'none'

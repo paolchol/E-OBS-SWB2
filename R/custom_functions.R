@@ -51,7 +51,7 @@ SPsum <- function(path, SPs, var,
       sp = year[, , base:SP]
       base = SP+1
       if((leap(y) == 366) & (i == 1)){
-        print('Be careful, when transforming to m/s, consider that SP1 of year ', y, ' has ', dim(sp)[3], ' days')
+        print(paste0('Be careful, when transforming to m/s, consider that SP1 of year ', y, ' has ', dim(sp)[3], ' days'))
       }
       for(j in seq_len(dim(sp)[3])) var3d[k, , ] = var3d[k, , ] + sp[, , j]
       if (outpath != 'none'){
