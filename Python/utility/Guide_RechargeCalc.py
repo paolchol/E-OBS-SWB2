@@ -55,7 +55,10 @@ SP3 = 92   #days, 13/06 - 15/09
 SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
 
-r.meteoricR(SPs)
+#Launch meteoricR() by providing the SPs, the units wanted and the starting row and column
+#of the "indicatori" file to correctly associate the cells from the SWB2 output to the 
+#cells of the desired area
+r.meteoricR(SPs, 'ms', 1, 4)
 
 #3. Create irrigation recharge dataframe
 
