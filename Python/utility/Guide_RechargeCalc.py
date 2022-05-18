@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Guide to the use of class "RechargeCalc"
@@ -36,7 +37,7 @@ r = RechargeCalc(swb2path, inputpath, startyear,
 
 #Load the input files needed
 r.load_inputfiles()
-#if no irrigation or urban recharges are needed, set urb or irr to False
+#if no irrigation or urban recharges are needed, set meteo, urb or irr to False
 r.load_inputfiles(urb = False)
 
 #Once you loaded the input files, you can access them via
