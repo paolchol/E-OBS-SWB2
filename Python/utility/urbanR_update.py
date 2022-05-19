@@ -57,7 +57,35 @@ c3 = r.input['ind']['land_cover'] == 124
 sum(c1 & (c2 | c3))
 sum(cond)
 
-rurb = r.urbanR(0.15, False, True,
-                col = ['land_cover', 'land_cover', 'zona_urbana'],
+# %% Final version
+
+r.urbanR(0.15,  col = ['land_cover', 'land_cover', 'zona_urbana'],
                 valcol = [123, 124, 1],
-                option = [0, 1])
+                option = [0, 1], areas = True)
+
+urb = r.get_df('input', 'urb')
+rurb = r.get_df('recharge', 'rurb')
+
+# %% Check rtot
+SP1 = 90   #days, 01/01 - 30/03
+SP2 = 76   #days, 01/04 - 12/06
+SP3 = 92   #days, 13/06 - 15/09
+SP4 = 107  #days, 16/09 - 31/12
+SPs = [SP1, SP2, SP3, SP4]
+r.meteoricR(SPs, 'ms', 1, 4)
+
+coeffs = {
+    'E': 0.3,  #Irrigation technique efficiency
+    'R': 0.05, #Residual runoff
+    'RISP': 1, #1 - fraction of water saved by a change of irrigation technique
+    'P': 1     #Percentage of the cell covered by the irrigation
+    }
+#Path to the input file related to the "special" irrigation district
+#Leave it as 'none' if you don't have one
+spath = f'{inputpath}/rirrigua_speciale.csv'
+
+r.irrigationR(coeffs, spath)
+
+r.totalR()
+
+rtot = r.get_df('recharge', 'rtot')

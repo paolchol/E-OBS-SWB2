@@ -51,6 +51,7 @@ class RechargeCalc():
     def load_inputfiles(self, meteo = True, irr = True, urb = True):
         #Load the files needed
         print('Loading the input files')
+        print('-----------------------')
         inpath = self.paths['input_folder']
         fls = glob.glob(f'{inpath}/*.csv')
         names = ['indicatori', 'ricarica_irrigua', 'extractions']
@@ -68,7 +69,7 @@ class RechargeCalc():
         self.input = { 'ind': ind }
         if (irr): self.input['irr'] = pd.read_csv(fls[k[1]])
         if (urb): self.input['urb'] = pd.read_csv(fls[k[2]])
-        self.conditions['rmeteo'] = meteo
+        self.conditions['meteo'] = meteo
         self.conditions['irr'] = irr
         self.conditions['urb'] = urb
     
@@ -186,22 +187,27 @@ class RechargeCalc():
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export: self.export('recharge', 'rirr')
     
-    def urbanR(self, coeff, single_cond = True, multi_cond = False, col = None,
-               valcol = None, option = None, areas = False, export = False):
+    def urbanR(self, coeff, col = None, valcol = None, option = None,
+               areas = False, export = False):
         """
         Compute the urban recharge dataframe
         The urban recharge is calculated as a fraction of the pumped volumes. It
         is due to the losses from the extraction pumps and pipes.
         
         coeff: coefficient to apply to the extractions
-        
+        col: list object, containing strings
+        valcol: list object, containing any format compatible with the values
+                to check
+        option: list object, containing 1 if the condition wanted is AND, or
+                0 if the condition wanted is OR
         """
         print('Urban recharge dataframe creation')
+        print('---------------------------------')
         start = time.time()
-        
+        single_cond = False if len(col) > 1 else True
         if single_cond:
-            cond = self.input['ind'][col] == valcol
-        elif multi_cond:
+            cond = self.input['ind'][col[0]] == valcol[0]
+        else:
             cond = self.input['ind'][col[0]] == valcol[0]
             for i in range(1, len(col)):                
                 if option[i-1] == 1:
@@ -209,15 +215,11 @@ class RechargeCalc():
                 else:                    
                     cond = (cond) | (self.input['ind'][col[i]] == valcol[i])
         
-        
-        #Compute the area
         urb = self.input['urb'].copy()
-        
         rurb = self.input['ind'].loc[:, [self.info['id'], 'nome_com'] + list(set(col))]
         tool = pd.DataFrame(np.zeros((len(rurb), self.info['nSP'])), index = rurb[self.info['id']])
         tool.columns = [f'SP{i+1}' for i in range(self.info['nSP'])]
         rurb = rurb.join(tool, on = self.info['id'])
-        
         
         for com in urb['nome_com']:
             idx = (cond) & (self.input['ind']['nome_com'] == com)
@@ -228,44 +230,11 @@ class RechargeCalc():
         
         if areas:
             area = [sum((cond) & (self.input['ind']['nome_com'] == com)) * self.info['cell_area_m2'] for com in urb['nome_com']]
+            urb.insert(1, 'area', area)
+            self.input['urb'] = urb
         
-        return rurb
-        
-        #check che tutto sia ok con totalR
-        #aggiornare la guida
-    
-        # df = self.get_df(var, tag)
-        # idx = self.input['ind'].loc[cond, self.info['id']]
-        # idx2 = df[self.info['id']].isin(idx)
-        # df.loc[idx2, self.find_SPcol(df)] = df.loc[idx2, self.find_SPcol(df)] * coeff
-        # self.recharges[tag] = df
-        
-        
-
-        # #Calculate the urban area
-        # if 'area' not in urb.columns:
-        #     urb.insert(1,'area', 0)
-        # for i, com in enumerate(urb['nome_com'], 0):
-        #     cond = #self.double_cond(self.input['ind']['nome_com'] == com, self.input['ind']['zona_urbana'] == 1)
-        #     area = sum(cond) * self.info['cell_area_m2']
-        #     urb.loc[i, 'area'] = area
-        
-        # #Calculate the urban recharge and assign it to each cell
-        # rurb = self.input['ind'].loc[:, (self.info['id'], 'nome_com', 'zona_urbana')]
-        # for i, colname in enumerate(urb.columns[2:], 0):
-        #     for com in urb['nome_com']:
-        #         if f'SP{i+1}' not in rurb.columns:
-        #             rurb.insert(len(rurb.columns), f'SP{i+1}', 0)
-        #         Q = urb.loc[urb['nome_com'] == com, colname].values.item()
-        #         A = urb.loc[urb['nome_com'] == com, 'area'].values.item()
-                
-        #         #idx = (cond) & urb['nome_com'] == com
-                
-        #         cond = self.double_cond(rurb['nome_com'] == com, rurb['zona_urbana'] == 1)
-        #         rurb.loc[cond, f'SP{i+1}'] = (Q / A) * coeff_urb
-        
-        #Save the variables
-        self.recharges['rurb'] = rurb
+        #Store the variables
+        self.recharges['rurb'] = rurb.copy()
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export: self.export('recharge', 'rurb')
@@ -290,7 +259,7 @@ class RechargeCalc():
         if self.conditions['urb']:
             keys += ['rurb']
             if 'rurb' not in self.recharges:
-                self.urbanR(urbpar['coeff_urb'])
+                self.urbanR(urbpar['coeff'], urbpar['col'])
         #Sum the recharges
         tool = self.input['ind'].loc[:, self.info['id']]
         tool3d = np.zeros((len(keys), len(tool), self.info['nSP']))

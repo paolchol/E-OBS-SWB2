@@ -92,16 +92,37 @@ r.irrigationR(multicoeffs, spath, multicoeff = True, splist = splist)
 
 #4. Create urban recharge dataframe
 
+#The class gives the possibility to compute the urban recharge as a fraction
+#of the pumped volumes. It is due to the losses from the extraction pumps and pipes.
+#To generate the urban recharge dataframe you can set up custom conditions
+#to identify in which cells you want to compute the urban recharge.
+#You have to specify the coefficient to apply to the extraction
 coeff_urb = 0.15
+#Then, you have to specify the condition you want to apply by providing the
+#columns you want to consider (col) and which values they need (valcol). In options
+#you have to specify which operation you want to check between the conditions
+#0 if OR (| in python), 1 if AND (& in python). col and valcol need to be lists
+#even if they contain a single value, while option it's not needed in this case
+#The example below means:
+# (indicatori['land_cover'] == 123) OR (indicatori['land_cover'] == 123) AND (indicatori['zona_urbana'] == 1)
+col = ['land_cover', 'land_cover', 'zona_urbana']
+valcol = [123, 124, 1]
+option = [0, 1] #0: OR, 1: AND
 
-r.urbanR(coeff_urb)
+#Call urbanR()
+r.urbanR(coeff_urb, col = col, valcol = valcol, option = option)
+
+#If you want to return the areas of the cells in the specified condition
+#you can add areas = True to the function
+r.urbanR(coeff_urb, col = col, valcol = valcol, option = option, areas = True)
+urb = r.get_df('input', 'urb')
 
 #5. Create total recharge dataframe
 
 #Launch after computing all the needed partial recharges
 r.totalR()
 
-#Launch directly
+#Launch directly without computing the partial recharges one by one.
 #needs the parameters defined before, inside a dictionary or a dataframe
 meteopar = {
     'SPs': SPs
@@ -111,7 +132,10 @@ irrpar = {
     'spath': spath
     }
 urbpar = {
-    'coeff_urb': coeff_urb
+    'coeff': coeff_urb,
+    'col': col,
+    'valcol': valcol,
+    'option': option
     }
 
 r.totalR(meteopar, irrpar, urbpar)
@@ -161,7 +185,7 @@ r.modify_recharge('recharge', 'rtot', 4,
                   single_cond = False, multi_cond = True,
                   col = ['zona_urbana', 'nome_com', 'land_cover'], valcol = [1, 'MILANO', 121])
 
-#You can then export the desired modified dataframe in the same ways
+#You can then export the desired modified dataframe in the same ways as
 # explained in Section 6
 outpath = "./Stefano"
 r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
