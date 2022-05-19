@@ -43,13 +43,12 @@ r.load_inputfiles(urb = False)
 #Once you loaded the input files, you can access them via
 r.input['ind']
 r.input['irr']
-#You can then perform any operation you would on dataframes,
-#for example correct a wrong value provided
+#You can then perform any operation you would on pandas DataFrames for example correct a wrong value provided
 r.input['ind'].loc[r.input['ind']['distretto'] == 'Muzza', 'distretto'] = 'MUZZA'
 
 #2. Create meteoric recharge dataframe
 
-#Define the stress periods
+#Define the stress periods lengths
 SP1 = 90   #days, 01/01 - 30/03
 SP2 = 76   #days, 01/04 - 12/06
 SP3 = 92   #days, 13/06 - 15/09

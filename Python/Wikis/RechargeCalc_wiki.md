@@ -2,11 +2,13 @@
 
 ## Introduction
 
-What this class does
+### What this class does
+It calculates a total groundwater recharge starting from three possible components: meteoric, irrigation and urban.
+The meteoric recharge has to be provided as a NetCDF output file of SWB2 [link to SWB2 reference].
 
 ### 0. Set up your input files
 
-In the folder *./Data/Calcolo_ricarica_irrigua/template* in this repository you can find the templates needed to be able to use the RechargeCalc class. The files are in the CSV format and should remain in that format. To modify them you can use a spreadsheet software as MS Excel or LibreOffice Calc, then save them as CSV being sure that the separator is the comma. Below the instructions on how to fill them.
+In the folder *./Data/Calcolo_ricarica_irrigua/template* in this repository you can find the templates needed to be able to use the RechargeCalc class. The files are in the CSV format and should remain in that format. To modify them you can use a spreadsheet software as MS Excel or LibreOffice Calc, then save them as CSV being sure that the separator is the comma. Below the instructions on how to fill them. It is important that the original name remains in the final file you create. For example *"indicatori_v1.csv"* is ok, but *"ind_v1.csv"* will not work. The folder where you save the input files should not have files with duplicated names, as the class will then load only the first one (e.g. *"indicatori_v1.csv"* and *"indicatori_v2.csv"* should not be in the same folder).
 
 *indicatori.csv*
 | Variable | Description |
@@ -20,6 +22,34 @@ In the folder *./Data/Calcolo_ricarica_irrigua/template* in this repository you 
 | zona_agricola | 1 if the point is in an agricoltural zone, 0 otherwise. `int` |
 | zona_urbana | 1 if the point is in an urban zone, 0 otherwise. `int` |
 | distretto | Name of the district the point falls in. `string` |
+
+*ricarica_irrigua.csv*
+| Variable | Description |
+| -------- | ----------- |
+| distretto |  |
+| code |  |
+| SPi |  |
+
+*rirrigua_speciale.csv*
+| Variable | Description |
+| -------- | ----------- |
+| distretto |  |
+| SPi |  |
+
+*extractions.csv*
+| Variable | Description |
+| -------- | ----------- |
+| nome_com |  |
+| SPi |  |
+
+*coord.csv*
+| Variable | Description |
+| -------- | ----------- |
+| row |  |
+| column |  |
+| indicatore |  |
+| X |  |
+| Y |  |
 
 ## Code
 
@@ -44,45 +74,66 @@ from Python.RechargeCalc import RechargeCalc
 
 ### 1. Initialize the class
 
-#Define the variables
+Define the variables
+```python
 startyear = 2014
 endyear = 2018
 cell_area = 100*100 #m2
+```
+
+Define the paths
+```python
 #Path to the SWB2 output
 swb2path = "./Data/SWB2_output/1Speranza_netinfiltration.nc"
 #Path to the input .csv files folder
 inputpath = "./Data/Calcolo_ricarica_totale"
+```
 
+Create the object
+```python
 r = RechargeCalc(swb2path, inputpath, startyear,
                  endyear, cell_area, uniqueid = 'indicatore', nSP = 20)
+```
 
-#Load the input files needed
+Load the input files needed
+```python
 r.load_inputfiles()
-#if no irrigation or urban recharges are needed, set urb or irr to False
-r.load_inputfiles(urb = False)
+```
 
-#Once you loaded the input files, you can access them via
-r.input['ind']
-r.input['rmeteo']
-r.input['rirr']
-#You can then perform any operation you would on dataframes,
-#for example correct a wrong value provided
+Here you have to select the recharge components you want to consider. If you don't want to consider a component, set its parameter (`meteo`, `urb` or `irr`) as `False`.
+```python
+r.load_inputfiles(urb = False) #Not consider the urban recharge
+```
+
+Once you loaded the input files, you can access them via `r.get_df()` by specifying `'input'` and the desired dataframe tag (`'ind'`, `'irr'` or `'urb'`). The meteoric input file can not be accessed in this way.
+```python
+r.get_df('input', 'ind') #Extract "indicatori.csv"
+```
+
+You can then perform any operation you would on pandas DataFrames for example correct a wrong value provided
+```python
 r.input['ind'].loc[r.input['ind']['distretto'] == 'Muzza', 'distretto'] = 'MUZZA'
+```
 
-#2. Create meteoric recharge dataframe
+### 2. Create meteoric recharge dataframe
 
-#Define the stress periods
+Define the stress periods lengths
+```python
 SP1 = 90   #days, 01/01 - 30/03
 SP2 = 76   #days, 01/04 - 12/06
 SP3 = 92   #days, 13/06 - 15/09
 SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
+```
 
-r.meteoricR(SPs)
+Launch `meteoricR()` by providing the SPs, the units wanted and the starting row and column of *"indicatori.csv"* file to correctly associate the cells from the SWB2 output to the cells of the desired area.
+```python
+r.meteoricR(SPs, 'ms', 1, 4)
+```
 
-#3. Create irrigation recharge dataframe
+### 3. Create irrigation recharge dataframe
 
-#Define the coefficients needed
+Define the coefficients needed
 coeffs = {
     'E': 0.3,  #Irrigation technique efficiency
     'R': 0.05, #Residual runoff
@@ -95,19 +146,23 @@ spath = f'{inputpath}/rirrigua_speciale.csv'
 
 r.irrigationR(coeffs, spath)
 
-#4. Create urban recharge dataframe
+### 4. Create urban recharge dataframe
 
 coeff_urb = 0.15
 
 r.urbanR(coeff_urb)
 
-#5. Create total recharge dataframe
+### 5. Create total recharge dataframe
 
-#Launch after computing all the partial recharges
+#### 5.1 After computing the needed partial recharges
+Launch after computing the needed partial recharges. You don't need to have computed all the recharges, just the ones you need.
+```python
 r.totalR()
+```
 
-#Launch directly
-#needs the parameters defined before, inside a dictionary or a dataframe
+#### 5.2 Launch directly
+Needs the parameters defined before, inside a dictionary or a dataframe as below. The recharges that will be computed are the ones that have its parameter in `load_inputfiles()` set as `True`.
+```python
 meteopar = {
     'SPs': SPs
     }
@@ -120,8 +175,9 @@ urbpar = {
     }
 
 r.totalR(meteopar, irrpar, urbpar)
+```
 
-#6. Export
+### 6. Export
 
 #as .csv
 outpath = "./Data/Calcolo_ricarica_totale"
