@@ -79,7 +79,7 @@ class EOBSobject():
             }
         if save:
             if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_space')
-            elif saveformat == 'ASCII': self.save_arcgrid(res, method = 'cut_space')
+            elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_space')
         if internal: return res
     
     def cut_time(self, start, end, save = True, internal = False,
@@ -136,7 +136,7 @@ class EOBSobject():
                 }
             if save:
                 if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_time')
-                elif saveformat == 'ASCII': self.save_arcgrid(res, method = 'cut_time')
+                elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_time')
             if internal: return res
         else:
             print('Wrong option inserted')
@@ -161,7 +161,7 @@ class EOBSobject():
                     }
                 if save:
                     if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime')
-                    elif saveformat == 'ASCII': self.save_arcgrid(res, method = 'cut_spacetime')
+                    elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_spacetime')
                 if internal: return res
         elif option == 'bundle':
             res_ct = self.cut_time(start, end, False, True, option, day)
@@ -176,7 +176,7 @@ class EOBSobject():
                 }
             if save:
                 if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime')
-                elif saveformat == 'ASCII': self.saver_arcgrid(res, method = 'cut_spacetime')
+                elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_spacetime')
             if internal: return res
         else:
             print('Wrong option inserted')
@@ -280,13 +280,10 @@ class EOBSobject():
     #----------------------------------------------------------
     #ArcGRID section
     
-    def save_arcgrid(self, res = None, method = 'raw', createfolder = True): #coord = None, start = None, end = None, save = True, internal = False,
-                      # loncol = 'lon', latcol = 'lat', contourcell = 0,
-                      # option = 'singleyear', day = False, createfolder = True):
+    def save_arcgrid(self, res = None, method = 'raw', createfolder = True):
         """
         Save the E-OBS dataset as daily ArcGRID files
         """
-        
         if method == 'raw':
             la = self.get_lat(method)
             lo = self.get_lon(method)

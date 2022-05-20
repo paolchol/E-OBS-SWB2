@@ -88,7 +88,6 @@ for fl in fls:
     df[columns[1]] = (df[columns[1]] - 32) * 5/9 #°C
     df[columns[2]] = (df[columns[2]] - 32) * 5/9 #°C
     df.columns = [f'{i}_{station}' for i in df.columns]
-    
     if fl == fls[0]:
         tool = df.copy()
     else:
@@ -114,7 +113,11 @@ for i, var in enumerate(columns):
             save_ArcGRID(pd.DataFrame(grid), fname, xll, yll, cellsize, nodata)
 
 end = time.time()
-print(f'Creazione dei file ASCII fino al 2100: {round(end-start, 2)}')
+print(f'Creazione dei file ASCII fino al 2100: {round(end-start, 2)} s')
+#26 minuti
+
+#grid può essere salvato in una variabile 3d e poi inserito in un netCDF
+#salvare poi un netcdf per ogni anno come necessario a SWB2
 
 # %% Add the files from E-OBS
 
@@ -135,13 +138,14 @@ outnames = ['precip', 'tmax', 'tmin']
 for i, v in enumerate(var):
     f = EOBSobject(inpath, v, outpatheobs, swb2 = True)
     f.load()
-    f.set_outname(outnames[i])   
-    f.cut_spacetime(coord, start, end, saveformat = 'ASCII')
-    f.close()
+    f.set_outname(outnames[i])
+    f.cut_spacetime(coord, start, end, saveformat = 'arcgrid')
+    f.close_netcdf()
 
 nd = time.time()
 
-print(f'Creazione dei file ASCII da E-OBS: {round(end-start, 2)}')
+print(f'Creazione dei file ASCII da E-OBS: {round(nd-st, 2)} s')
+#41.7 s
 
 # %% zip up everything
 
