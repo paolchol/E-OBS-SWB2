@@ -125,8 +125,7 @@ f.save_netcdf(method = 'raw')
 Specify the method: `'cut_space'`, `'cut_time'`, `'cut_spacetime'`. \
 Provide the necessary information: `coord`, `start`, `end`. All the possible information you can provide to obtain a NetCDF you can also apply to this method (for example, the `contourcell` parameter)
 ```python
-g = f.save_arcgrid('cut_spacetime', coord, start, end)
-g.shape
+f.save_arcgrid('cut_spacetime', coord, start, end)
 ```
 ### 4. Perform the operation on multiple E-OBS .nc files
 

@@ -103,7 +103,7 @@ coeff_urb = 0.15
 #0 if OR (| in python), 1 if AND (& in python). col and valcol need to be lists
 #even if they contain a single value, while option it's not needed in this case
 #The example below means:
-# (indicatori['land_cover'] == 123) OR (indicatori['land_cover'] == 123) AND (indicatori['zona_urbana'] == 1)
+# (indicatori['land_cover'] == 123) OR (indicatori['land_cover'] == 124) AND (indicatori['zona_urbana'] == 1)
 col = ['land_cover', 'land_cover', 'zona_urbana']
 valcol = [123, 124, 1]
 option = [0, 1] #0: OR, 1: AND

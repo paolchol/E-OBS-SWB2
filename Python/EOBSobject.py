@@ -295,8 +295,10 @@ class EOBSobject():
             la = self.get_lat(method, res['idx_lat'])
             lo = self.get_lon(method, res['idx_lon'])
             t = self.get_time(method, res)
-    
+        
         namefolder = self.info['outname']
+        namefile = namefolder.upper() if self.info['for_swb2'] else namefolder
+        if (namefolder == 'precip') & (self.info['for_swb2']): namefile = 'PRCP'
         outpath = self.paths['outpath']
         if createfolder:
             if not os.path.exists(outpath):
@@ -312,7 +314,7 @@ class EOBSobject():
 
         for i in range(0, len(t)):
             y, m, d = self.transf_eobsdate(t[i], number = True)
-            fname = f'{outpath}/{namefolder}_{y}_{m}_{d}.asc'
+            fname = f'{outpath}/{namefile}_{y}_{m}_{d}.asc'
             if method != 'raw':
                 tool = round(pd.DataFrame(df[i, :, :]), 1)
             else:
