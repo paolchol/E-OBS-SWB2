@@ -122,6 +122,8 @@ f.save_netcdf(method = 'raw')
 
 ### 3. Generate daily ArcGRID files
 
+Updated, now it is the same procedure as netcdf
+
 Specify the method: `'cut_space'`, `'cut_time'`, `'cut_spacetime'`. \
 Provide the necessary information: `coord`, `start`, `end`. All the possible information you can provide to obtain a NetCDF you can also apply to this method (for example, the `contourcell` parameter)
 ```python
