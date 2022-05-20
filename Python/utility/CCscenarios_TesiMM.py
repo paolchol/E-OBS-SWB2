@@ -5,6 +5,8 @@ Created on Fri May 20 17:35:29 2022
 @author: paolo
 """
 
+# %% Setup
+
 import pandas as pd
 import numpy as np
 import os
@@ -38,8 +40,9 @@ dd = pd.date_range("2006-01-01", "2100-12-31")
 idx = np.where(np.invert((dd.month == 2) & (dd.day == 29)))
 dd = dd[idx]
 
-#A noi interessa la proiezione dal 2019 al 2100,
-#ma inserisco 2014 per avere corrispondenza di area
+#A noi interessa la proiezione dal 2019 al 2100 (tra 2014 e 2018 abbiamo i dati E-OBS),
+#ma inserisco 2014 per avere corrispondenza di area su tutta la serie,
+#nel caso SWB2 dia problemi utilizzando due aree diverse
 wd = pd.date_range("2014-01-01", "2100-12-31")
 idx_date = np.where(dd.isin(wd))[0]
 
@@ -111,11 +114,13 @@ for i, var in enumerate(columns):
             save_ArcGRID(pd.DataFrame(grid), fname, xll, yll, cellsize, nodata)
 
 end = time.time()
-print(f'Creazione dei file ASCII: {round(end-start, 2)}')
+print(f'Creazione dei file ASCII fino al 2100: {round(end-start, 2)}')
 
 # %% Add the files from E-OBS
 
 from Python.EOBSobject import EOBSobject
+
+st = time.time()
 
 inpath = './Data/E-OBS'
 var = ['rr', 'tx', 'tn']
@@ -130,17 +135,13 @@ outnames = ['precip', 'tmax', 'tmin']
 for i, v in enumerate(var):
     f = EOBSobject(inpath, v, outpatheobs, swb2 = True)
     f.load()
-    f.set_outname(outnames[i])
-    df, res = f.save_arcgrid('cut_space', coord, start, end,
-                   createfolder = True)
-    
-    df = f.cut_space(coord, internal = True)
-    df = f.cut_time(start, end, save = True)
-    
-    
-    #far diventare save_arcgrid un clone di save_netcdf
-    
+    f.set_outname(outnames[i])   
+    f.cut_spacetime(coord, start, end, saveformat = 'ASCII')
     f.close()
+
+nd = time.time()
+
+print(f'Creazione dei file ASCII da E-OBS: {round(end-start, 2)}')
 
 # %% zip up everything
 

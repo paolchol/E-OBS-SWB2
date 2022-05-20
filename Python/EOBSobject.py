@@ -55,7 +55,8 @@ class EOBSobject():
     #NETCDF section
     
     def cut_space(self, coord, save = True, internal = False,
-                 loncol = 'lon', latcol = 'lat', contourcell = 0):
+                 loncol = 'lon', latcol = 'lat', contourcell = 0,
+                 saveformat = 'netcdf'):
         """
         coord: extremes of desired area
             provided as a pandas dataframe with loncol as the column containing
@@ -76,11 +77,13 @@ class EOBSobject():
             'idx_lat': idx_lat,
             'idx_lon': idx_lon
             }
+        if save:
+            if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_space')
+            elif saveformat == 'ASCII': self.save_arcgrid(res, method = 'cut_space')
         if internal: return res
-        if save: self.save_netcdf(res, 'cut_space')
     
     def cut_time(self, start, end, save = True, internal = False,
-                 option = 'singleyear', day = False):
+                 option = 'singleyear', day = False, saveformat = 'netcdf'):
         """
         start, end: years (int) if day = False
            if day = True, they have to be in datetime.date format, ex: date(2014, 7, 20)
@@ -131,7 +134,9 @@ class EOBSobject():
                 'idx_lon': 0,
                 'option': option
                 }
-            if save: self.save_netcdf(res, method = 'cut_time')
+            if save:
+                if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_time')
+                elif saveformat == 'ASCII': self.save_arcgrid(res, method = 'cut_time')
             if internal: return res
         else:
             print('Wrong option inserted')
@@ -139,7 +144,7 @@ class EOBSobject():
     
     def cut_spacetime(self, coord, start, end, save = True, internal = False,
                       loncol = 'lon', latcol = 'lat', contourcell = 0,
-                      option = 'singleyear', day = False):
+                      option = 'singleyear', day = False, saveformat = 'netcdf'):
         res_cs = self.cut_space(coord, False, True,
                                 loncol, latcol, contourcell)
         if option == 'singleyear':
@@ -154,7 +159,9 @@ class EOBSobject():
                     'idx_lon': res_cs['idx_lon'],
                     'option': option
                     }
-                if save: self.save_netcdf(res, method = 'cut_spacetime')
+                if save:
+                    if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime')
+                    elif saveformat == 'ASCII': self.save_arcgrid(res, method = 'cut_spacetime')
                 if internal: return res
         elif option == 'bundle':
             res_ct = self.cut_time(start, end, False, True, option, day)
@@ -167,7 +174,9 @@ class EOBSobject():
                 'idx_lon': res_cs['idx_lon'],
                 'option': option
                 }
-            if save: self.save_netcdf(res, method = 'cut_spacetime')
+            if save:
+                if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime')
+                elif saveformat == 'ASCII': self.saver_arcgrid(res, method = 'cut_spacetime')
             if internal: return res
         else:
             print('Wrong option inserted')
@@ -271,25 +280,18 @@ class EOBSobject():
     #----------------------------------------------------------
     #ArcGRID section
     
-    def save_arcgrid(self, method, coord = None, start = None, end = None, save = True, internal = False,
-                      loncol = 'lon', latcol = 'lat', contourcell = 0,
-                      option = 'singleyear', day = False, createfolder = True):
+    def save_arcgrid(self, res = None, method = 'raw', createfolder = True): #coord = None, start = None, end = None, save = True, internal = False,
+                      # loncol = 'lon', latcol = 'lat', contourcell = 0,
+                      # option = 'singleyear', day = False, createfolder = True):
         """
         Save the E-OBS dataset as daily ArcGRID files
         """
+        
         if method == 'raw':
             la = self.get_lat(method)
             lo = self.get_lon(method)
             t = self.get_time(method)
         else:
-            if method == 'cut_space':
-                res = self.cut_space(coord, False, True,
-                                    loncol, latcol, contourcell)
-            elif method == 'cut_time':
-                res = self.cut_time(start, end, False, True, option, day)
-            elif method == 'cut_spacetime':
-                res = self.cut_spacetime(coord, start, end, False, True, loncol,
-                                         latcol, contourcell, option, day)
             df = self.get_var(method, res['idx_time'], res['idx_lat'], res['idx_lon'])
             df = np.flip(df, axis = 1)
             la = self.get_lat(method, res['idx_lat'])
@@ -427,7 +429,7 @@ class EOBSobject():
         If x is a plain number (not a variable), "number" must be set to True
         """
         from datetime import date, timedelta
-        start = date(1950, 1, 1)
+        start = date(1980, 1, 1) if self.info['for_swb2'] else date(1950, 1, 1)
         days = x.item() if number else x
         end = start + timedelta(days = days)
         return end.year, end.strftime('%m'), end.strftime('%d')
