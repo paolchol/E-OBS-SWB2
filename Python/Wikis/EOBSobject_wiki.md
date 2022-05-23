@@ -153,6 +153,7 @@ for v in var:
 #### Working example to generate SWB2 ArcGRID input files
 
 ```python
+import pandas as pd
 inpath = './Data/E-OBS'
 var = ['rr', 'tx', 'tn']
 outpatheobs = './Export/ASCII/eobs'
