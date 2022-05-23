@@ -139,7 +139,7 @@ for i, v in enumerate(var):
     f = EOBSobject(inpath, v, outpatheobs, swb2 = True)
     f.load()
     f.set_outname(outnames[i])
-    f.cut_spacetime(coord, start, end, saveformat = 'arcgrid')
+    f.cut_spacetime(coord, start, end, saveformat = 'arcgrid', contourcell = 2)
     f.close_netcdf()
 
 nd = time.time()

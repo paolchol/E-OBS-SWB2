@@ -128,67 +128,63 @@ class RechargeCalc():
         if export: self.export('recharge', 'rmeteo')
         if ret: return rmeteo
     
-    def irrigationR(self, coeffs, specialpath = 'none', export = False,
-                    multicoeff = False, splist = None):
+    def irrigationR(self, coeffs, specialpath = 'none', multicoeff = False,
+                    splist = None, areas = False, export = False, ret = False):
         """
-        coeffs: dictionary if multicoeff is False
-                pandas.DataFrame if multicoeff is True
+        coeffs: dictionary
+                Contains the coefficients needed to calculate the irrigation
+                recharge from the provided discharge in each SP
         splist: list of SPs in which to use the second line of coefficients
         """
         print('Irrigation recharge dataframe creation')
         print('--------------------------------------')
         start = time.time()
-        irr = self.input['irr']
+        #Load input and parameters
+        irr = self.input['irr'].copy()
         if specialpath != 'none':
             sp_irr = pd.read_csv(specialpath)
             self.input['special_irr'] = sp_irr
-        
-        #Calculate the irrigated area
-        if 'area' not in irr.columns:
-            irr.insert(len(irr.columns),'area', 0)
+        if not multicoeff:    
+            RISP = coeffs['RISP']
+            P = coeffs['P']
+            K = 1 - coeffs['E'] - coeffs['R']
+        #Create the output dataframe
+        cond = self.input['ind']['zona_agricola'] == 1
+        rirr = self.input['ind'].loc[:, [self.info['id'], 'distretto', 'zona_agricola']]
+        tool = pd.DataFrame(np.zeros((len(rirr), self.info['nSP'])), index = rirr[self.info['id']])
+        tool.columns = [f'SP{i+1}' for i in range(self.info['nSP'])]
+        rirr = rirr.join(tool, on = self.info['id'])
+        #Calculate the irrigation recharge for each district and SP
         for distr in irr['distretto']:
-            cond = (self.input['ind']['distretto'] == distr) & (self.input['ind']['zona_agricola'] == 1)
-            area = sum(cond) * self.info['cell_area_m2']
-            irr.loc[irr['distretto'] == distr, 'area'] = area
-        
-        #Calculate the irrigation recharge and assign it to each cell
-        rirr = self.input['ind'].loc[:, (self.info['id'], 'distretto', 'zona_agricola')]
-        # tool = pd.DataFrame(np.zeros(len(rirr.index), len(self.find_SPcol(irr.columns))))
-        for sp in self.find_SPcol(irr.columns):
-            if sp not in rirr.columns:
-                rirr.insert(len(rirr.columns), sp, 0)
-                
-                # rirr.join(pd.DataFrame({sp: [0 for x in range(len(rirr.index)]}))
-                # pd.concat((rirr, pd.DataFrame({sp: [0 for x in range(0, len(rirr.index))]})), axis = 1)
-            if multicoeff:
-                x = 1 if sp in splist else 0
-                RISP = coeffs['RISP'][x]
-                P = coeffs['P'][x]
-                K = 1 - coeffs['E'][x] - coeffs['R'][x]
-            else:
-                RISP = coeffs['RISP']
-                P = coeffs['P']
-                K = 1 - coeffs['E'] - coeffs['R']
-            for distr in irr['distretto']:
-                code = irr.loc[irr['distretto'] == distr, 'code'].values[0]
-                cond = (rirr['distretto'] == distr) & (rirr['zona_agricola'] == 1)
+            code = irr.loc[irr['distretto'] == distr, 'code'].values[0]
+            idx = (cond) & (self.input['ind']['distretto'] == distr)
+            if code != 1: A = sum(idx) * self.info['cell_area_m2']
+            for sp in self.find_SPcol(irr):
+                if multicoeff:
+                    x = 1 if sp in splist else 0
+                    RISP = coeffs['RISP'][x]
+                    P = coeffs['P'][x]
+                    K = 1 - coeffs['E'][x] - coeffs['R'][x]
                 if code != 1:
                     Q = float(irr.loc[irr['distretto'] == distr, sp].values[0])
-                    A = irr.loc[irr['distretto'] == distr, 'area'].values[0]
-                    rirr.loc[cond, sp] = (Q * RISP)/(A * P) * K
+                    rirr.loc[idx, sp] = (Q * RISP)/(A * P) * K
                 else:
                     Q = float(sp_irr.loc[sp_irr['distretto'] == distr, sp].values[0])
-                    rirr.loc[cond, sp] = Q
-        
+                    rirr.loc[idx, sp] = Q
         #Store the variables
-        self.recharges['rirr'] = rirr.copy() #save a de-fragmented dataframe
+        if areas:
+            area = [sum((cond) & (self.input['ind']['distretto'] == distr)) * self.info['cell_area_m2'] for distr in irr['distretto']]
+            irr.insert(1, 'area', area)
+            self.input['irr'] = irr
+        self.recharges['rirr'] = rirr.copy()
         self.paths['special_irr'] = specialpath
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export: self.export('recharge', 'rirr')
+        if ret: return rirr
     
     def urbanR(self, coeff, col = None, valcol = None, option = None,
-               areas = False, export = False):
+               areas = False, export = False, ret = False):
         """
         Compute the urban recharge dataframe
         The urban recharge is calculated as a fraction of the pumped volumes. It
@@ -227,17 +223,16 @@ class RechargeCalc():
             for sp in self.find_SPcol(urb):
                 E = abs(urb.loc[urb['nome_com'] == com, sp].values.item())
                 rurb.loc[idx, sp] = E / A * coeff
-        
         if areas:
             area = [sum((cond) & (self.input['ind']['nome_com'] == com)) * self.info['cell_area_m2'] for com in urb['nome_com']]
             urb.insert(1, 'area', area)
             self.input['urb'] = urb
-        
         #Store the variables
         self.recharges['rurb'] = rurb.copy()
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
         if export: self.export('recharge', 'rurb')
+        if ret: return rurb
     
     def totalR(self, meteopar = None, irrpar = None, urbpar = None, export = False):
         """
@@ -281,14 +276,27 @@ class RechargeCalc():
     
     #-----------------------------------------------------------------------
     #Operations on the recharges
-    
-    # def modify_recharge(self, var, tag, cond, operation):
-    #     """
-    #     Mock-up of a possible function to operate directly on the recharges
-    #     """
-    #     df = self.get_df(var, tag)
-    #     df[cond] = operation(df[cond])
-    #     self.recharges[tag] = df
+        
+    def join_external(self, var, tag, extdf, on = 'none', rsuffix = 'none'):
+        """
+        Function to join external dataframes to the ones stored in the object.
+        For example, join the total recharge dataframes of two different periods
+        to obtain a single dataframe.
+        
+        Parameters
+        ----------
+        var : str
+        tag : str
+            as defined in get_df
+        extdf : pandas.DataFrame object
+            the dataframe you want to join to the one extracted from
+            RechargeCalc
+        """       
+        on = self.info['id'] if on == 'none' else on
+        df = self.get_df(var, tag)
+        if rsuffix != 'none': df = df.join(extdf, on = on, rsuffix = rsuffix)
+        else: df = df.join(extdf, on = on)
+        return df
     
     def modify_recharge(self, var, tag, coeff, single_cond = True,
                         multi_cond = False, col = None, valcol = None):
@@ -329,12 +337,8 @@ class RechargeCalc():
                withcoord = False, coordpath = None):
         """
         Exports the recharges or other data of the class        
-        var: 'input', 'recharge'
-        tag:
-         if var = input
-         - 'ind', 'irr', 'urb'
-         if var = recharge
-         - 'rmeteo', 'rirr', 'rurb', 'rtot'
+        var (str): as defined in get_df
+        tag (str): as defined in get_df
         fileext: file extention wanted. Default: csv
         outpath: path to a wanted output folder. Default: variable 'outpath'
          defined previously
@@ -362,6 +366,16 @@ class RechargeCalc():
         return names
     
     def get_df(self, var, tag):
+        """
+        Returns the selected dataframe from the RechargeCalc object
+        
+        var (str): 'input', 'recharge'
+        tag (str):
+         if var: input
+         - 'ind', 'irr', 'urb'
+         if var: recharge
+         - 'rmeteo', 'rirr', 'rurb', 'rtot'
+        """
         #Get the df
         if var == 'input':
             df = self.input[tag]
@@ -373,12 +387,9 @@ class RechargeCalc():
                outname = 'none', dropcoord = False):
         """
         Export a shapefile of the selected dataframe
-        var (str): 'input', 'recharge'
-        tag (str):
-         if var: input
-         - 'ind', 'irr', 'urb'
-         if var: recharge
-         - 'rmeteo', 'rirr', 'rurb', 'rtot'
+        
+        var (str): as defined in get_df
+        tag (str): as defined in get_df
         coordpath:
          path to a .csv file with columns 'row', 'column', self.info['id'], 'x', 'y'
         outpath: path to a wanted output folder. Default: variable 'outpath'

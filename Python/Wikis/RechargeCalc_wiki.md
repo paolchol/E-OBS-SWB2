@@ -134,6 +134,8 @@ r.meteoricR(SPs, 'ms', 1, 4)
 
 ### 3. Create irrigation recharge dataframe
 
+**inserire la formula utilizzata per ottenere la ricarica irrigua**
+
 Define the coefficients needed
 coeffs = {
     'E': 0.3,  #Irrigation technique efficiency

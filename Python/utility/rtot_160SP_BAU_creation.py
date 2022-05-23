@@ -52,6 +52,7 @@ geodf = r.georef('recharge', 'rtot', f'{inputpath}/coord.csv',
                  # proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs'
                  outpath = inputpath, outname = 'rtot_360SP_BAU', dropcoord = True)
 #35 minutes needed for 160-sp
+#3 hours for 360 SP
 
 geodf.drop(['X', 'Y'], 1, inplace = True)
 
