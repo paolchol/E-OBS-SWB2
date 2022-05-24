@@ -140,7 +140,13 @@ r.meteoricR(SPs, 'ms', 1, 4)
 ### 3. Create irrigation recharge dataframe
 
 Define the coefficients needed to calculate the irrigation recharge from the district's provided discharge. The irrigation recharge will be calculated as shown in the equation below:
-$$Ric ^{cella} _{ distretto, irr } = {Q_{distretto} cdot RISP_{ irr }} over { A_{distretto} cdot P_{distretto, irr} } cdot K_{irr}$$
+$$
+rirr^{point}_{distr, irr} = \dfrac{Q_{distr} \cdot RISP_{irr}}{A_{distr} \cdot P_{distr, irr}} \cdot K_{irr}
+$$
+$$
+K =
+$$
+
 Where:
 - 
 These last four coefficients are the ones needed for `irrigationR()` to work.
