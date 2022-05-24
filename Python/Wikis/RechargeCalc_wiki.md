@@ -16,19 +16,20 @@ In the folder *./Data/Calcolo_ricarica_irrigua/template* in this repository you 
 | FID      | Number of the point. Not used, you can place arbitrary numbers |
 | row      | Row of the point. `int` |
 | column   | Column of the point. `int` |
+| indicatore | Unique indicator to each point. You can provide your own indicator. The standard indicator is *'rowXcolumn'*. `str` |
 | nome_com | Name of the municipality the point falls in. `string`|
-| sig_pro  | Abbreviation of the province the point falls in. `string`|
-| land_cover | Land cover classification. Not used, you can place arbitrary numbers |
+| sig_pro  | (optional) Abbreviation of the province the point falls in. `string`|
+| land_cover | (optional) Land cover classification. Useful to identify different types of cells. `int` |
 | zona_agricola | 1 if the point is in an agricoltural zone, 0 otherwise. `int` |
 | zona_urbana | 1 if the point is in an urban zone, 0 otherwise. `int` |
-| distretto | Name of the district the point falls in. `string` |
+| distretto | Name of the irrigation district the point falls in. `string` |
 
 *ricarica_irrigua.csv*
 | Variable | Description |
 | -------- | ----------- |
-| distretto |  |
-| code |  |
-| SPi |  |
+| distretto | Name of the irrigation district. `string` |
+| code | 0: standard procedure, the discharge provided will be divided by the agricultural area in the district and multiplied by the coefficient provided later to irrigationR(). 1: the discharge provided will be used directly as it is. `int` |
+| SPi | Total discharge provided to the irrigation district in each stress period. Can be in inches or in m/s. `float` |
 
 *rirrigua_speciale.csv*
 | Variable | Description |
@@ -53,7 +54,7 @@ In the folder *./Data/Calcolo_ricarica_irrigua/template* in this repository you 
 
 ### 1. Pay attention to the unique indicator
 
-**explain how the unique indicator is contructed**
+A unique indicator is needed to combine the different components of the recharge. If you have a custom indicator associated with the points in which you want to obtain the recharge, you have to specify it when creating the RechargeCalc object (`customid = True`). Otherwise, inside the class the indicator used will be constructed by combining the row and column number of each point provided like this: *'rowXcolumn'*.
 
 ## Code
 
@@ -105,7 +106,7 @@ Load the input files needed
 r.load_inputfiles()
 ```
 
-Here you have to select the recharge components you want to consider. If you don't want to consider a component, set its parameter (`meteo`, `urb` or `irr`) as `False`.
+Here you can select the recharge components you want to consider. If you don't want to consider a component, set its parameter (`meteo`, `urb` or `irr`) as `False`.
 ```python
 r.load_inputfiles(urb = False) #Not consider the urban recharge
 ```
@@ -138,20 +139,42 @@ r.meteoricR(SPs, 'ms', 1, 4)
 
 ### 3. Create irrigation recharge dataframe
 
-**inserire la formula utilizzata per ottenere la ricarica irrigua**
-
-Define the coefficients needed
+Define the coefficients needed to calculate the irrigation recharge from the district's provided discharge. The irrigation recharge will be calculated as shown in the equation below:
+$$Ric ^{cella} _{ distretto, irr } = {Q_{distretto} cdot RISP_{ irr }} over { A_{distretto} cdot P_{distretto, irr} } cdot K_{irr}$$
+Where:
+- 
+These last four coefficients are the ones needed for `irrigationR()` to work.
+```python
 coeffs = {
     'E': 0.3,  #Irrigation technique efficiency
     'R': 0.05, #Residual runoff
     'RISP': 1, #1 - fraction of water saved by a change of irrigation technique
     'P': 1     #Percentage of the cell covered by the irrigation
     }
-#Path to the input file related to the "special" irrigation district
-#Leave it as 'none' if you don't have one
+```
+Define the path to the input file related to the "special" irrigation districts. Leave it as 'none' if you don't need it (if all irrigation districts have code = 0).
+```python
 spath = f'{inputpath}/rirrigua_speciale.csv'
-
+```
+Launch `irrigationR()`
+```python
 r.irrigationR(coeffs, spath)
+```
+
+#Multiple coefficients
+#Apply a different set of coefficients to a selected list of stress periods. In
+#this example, E = 0, R = 0, RISP = 0 and P = 1 are applied to the stress periods
+#SP3 and SP4
+multicoeffs = {
+    'E': [0.3, 0],  #Irrigation technique efficiency
+    'R': [0.05, 0], #Residual runoff
+    'RISP': [1, 0], #1 - fraction of water saved by a change of irrigation technique
+    'P': [1, 1]     #Percentage of the cell covered by the irrigation
+    }
+splist = ['SP3', 'SP4']
+
+r.irrigationR(multicoeffs, spath, multicoeff = True, splist = splist)
+
 
 ### 4. Create urban recharge dataframe
 

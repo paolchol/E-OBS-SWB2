@@ -21,7 +21,8 @@ from Python.SWB2output import SWB2output
 
 class RechargeCalc():
     
-    def __init__(self, swb2path, inputpath, sy, ey, cell_area, uniqueid, nSP):
+    def __init__(self, swb2path, inputpath, sy, ey, cell_area, uniqueid, nSP,
+                customid = False):
         """
         Initialize the class
         Provide the paths to:
@@ -43,7 +44,8 @@ class RechargeCalc():
             "end_year": ey,
             "cell_area_m2": cell_area,
             "id": uniqueid,
-            "nSP": nSP
+            "nSP": nSP,
+            "customid": customid
             }
         self.recharges = {}
         self.conditions = {}
@@ -64,7 +66,7 @@ class RechargeCalc():
                     k += [i]
         #Get the main indicator file and insert the custom indicator column
         ind = pd.read_csv(fls[k[0]])
-        ind = self.insert_ind(ind, ind['row'], ind['column'])
+        if not self.info['customid']: ind = self.insert_ind(ind, ind['row'], ind['column'])
         #Store the input files inside the object
         self.input = { 'ind': ind }
         if (irr): self.input['irr'] = pd.read_csv(fls[k[1]])
