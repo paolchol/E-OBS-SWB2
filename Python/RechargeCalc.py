@@ -435,7 +435,7 @@ class RechargeCalc():
         return df
     
     def load_component(self, var, tag, df = None, read = False, path = None):
-        #Get the df
+        #Insert the df
         if read: df = pd.read_csv(path)
         if var == 'input':
             self.input[tag] = df
