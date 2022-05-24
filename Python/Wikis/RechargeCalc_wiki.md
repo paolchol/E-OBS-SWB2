@@ -140,12 +140,9 @@ r.meteoricR(SPs, 'ms', 1, 4)
 ### 3. Create irrigation recharge dataframe
 
 Define the coefficients needed to calculate the irrigation recharge from the district's provided discharge. The irrigation recharge will be calculated as shown in the equation below:
+$rirr^{point}_{distr, irr} = \dfrac{Q_{distr}\cdot RISP_{irr}}{A_{distr} \cdot P_{distr, irr}} \cdot K_{irr}$
 
-$$rirr^{point}_{distr, irr} = \dfrac{Q_{distr}\cdot RISP_{irr}}{A_{distr} \cdot P_{distr, irr}} \cdot K_{irr}$$
-
-Where:
-bulleted list
-These last four coefficients are the ones needed for `irrigationR()` to work.
+Where: bulleted list. These last four coefficients are the ones needed for `irrigationR()` to work.
 ```python
 coeffs = {
     'E': 0.3,  #Irrigation technique efficiency
@@ -163,10 +160,11 @@ Launch `irrigationR()`
 r.irrigationR(coeffs, spath)
 ```
 
-#Multiple coefficients
-#Apply a different set of coefficients to a selected list of stress periods. In
-#this example, E = 0, R = 0, RISP = 0 and P = 1 are applied to the stress periods
-#SP3 and SP4
+#### 3.1 Multiple coefficients
+
+Apply a different set of coefficients to a selected list of stress periods. In
+this example, E = 0, R = 0, RISP = 0 and P = 1 are applied to the stress periods SP3 and SP4
+```python
 multicoeffs = {
     'E': [0.3, 0],  #Irrigation technique efficiency
     'R': [0.05, 0], #Residual runoff
@@ -176,7 +174,7 @@ multicoeffs = {
 splist = ['SP3', 'SP4']
 
 r.irrigationR(multicoeffs, spath, multicoeff = True, splist = splist)
-
+```
 
 ### 4. Create urban recharge dataframe
 
