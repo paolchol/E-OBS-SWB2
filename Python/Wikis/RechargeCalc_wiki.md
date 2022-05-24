@@ -132,7 +132,7 @@ SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
 ```
 
-Launch `meteoricR()` by providing the SPs, the units wanted and the starting row and column of *"indicatori.csv"* file to correctly associate the cells from the SWB2 output to the cells of the desired area.
+Launch `meteoricR()` by providing the SPs, the units wanted and the starting row and column of *"indicatori.csv"* file to correctly associate the cells from the SWB2 output to the cells of the desired area. $\sqrt{3x-1}+(1+x)^2$
 ```python
 r.meteoricR(SPs, 'ms', 1, 4)
 ```
@@ -140,7 +140,7 @@ r.meteoricR(SPs, 'ms', 1, 4)
 ### 3. Create irrigation recharge dataframe
 
 Define the coefficients needed to calculate the irrigation recharge from the district's provided discharge. The irrigation recharge will be calculated as shown in the equation below:
-$rirr^{point}_{distr, irr} = \dfrac{Q_{distr}\cdot RISP_{irr}}{A_{distr} \cdot P_{distr, irr}} \cdot K_{irr}$
+$$rirr^{point}_{distr, irr} = \dfrac{Q_{distr}\cdot RISP_{irr}}{A_{distr} \cdot P_{distr, irr}} \cdot K_{irr}$$
 
 Where: bulleted list. These last four coefficients are the ones needed for `irrigationR()` to work.
 ```python
