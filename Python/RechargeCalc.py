@@ -104,7 +104,7 @@ class RechargeCalc():
                 rmeteo = rmeteo.join(df.loc[:,[self.info['id'], f'SP{i+1}']].set_index(self.info['id']), on = self.info['id'])
                 
         lastSP = i+1
-        if lastSP != self.info['nSP']:
+        if lastSP < self.info['nSP']:
             print(f"Replicating columns to create a dataframe of {self.info['nSP']} SPs")           
             x = lastSP
             y = self.info['nSP']
@@ -434,6 +434,14 @@ class RechargeCalc():
             df[name] = newc
         return df
     
+    def load_component(self, var, tag, df = None, read = False, path = None):
+        #Get the df
+        if read: df = pd.read_csv(path)
+        if var == 'input':
+            self.input[tag] = df
+        elif var == 'recharge':
+            self.recharges[tag] = df
+
     def set_SPs(self, SPs, c = None):
         """
         Sets the stress periods duration as a variable of the class

@@ -197,3 +197,8 @@ r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
          outpath = outpath, outname = 'rtot_noXY', dropcoord = True)
 
 
+### 7. Use external files
+
+If you already have one component of the total recharge ready, you can load it in the object and then perform the operations available from the class, like summing it with other components or modifying it.
+
+r.load_component()
