@@ -121,7 +121,7 @@ You can then perform any operation you would on pandas DataFrames for example co
 r.input['ind'].loc[r.input['ind']['distretto'] == 'Muzza', 'distretto'] = 'MUZZA'
 ```
 
-### 2. Create meteoric recharge dataframe
+### 2. Create the meteoric recharge dataframe
 
 Define the stress periods lengths
 ```python
@@ -132,12 +132,12 @@ SP4 = 107  #days, 16/09 - 31/12
 SPs = [SP1, SP2, SP3, SP4]
 ```
 
-Launch `meteoricR()` by providing the SPs, the units wanted and the starting row and column of *"indicatori.csv"* file to correctly associate the cells from the SWB2 output to the cells of the desired area. $\sqrt{3x-1}+(1+x)^2$
+Launch `meteoricR()` by providing the SPs, the units wanted and the starting row and column of *"indicatori.csv"* file to correctly associate the cells from the SWB2 output to the cells of the desired area.
 ```python
 r.meteoricR(SPs, 'ms', 1, 4)
 ```
 
-### 3. Create irrigation recharge dataframe
+### 3. Create the irrigation recharge dataframe
 
 Define the coefficients needed to calculate the irrigation recharge from the district's provided discharge. The irrigation recharge will be calculated as shown in the equation below:
 $$rirr^{point}_{distr, irr} = \dfrac{Q_{distr}\cdot RISP_{irr}}{A_{distr} \cdot P_{distr, irr}} \cdot K_{irr}$$
@@ -176,7 +176,7 @@ splist = ['SP3', 'SP4']
 r.irrigationR(multicoeffs, spath, multicoeff = True, splist = splist)
 ```
 
-### 4. Create urban recharge dataframe
+### 4. Create the urban recharge dataframe
 
 coeff_urb = 0.15
 
