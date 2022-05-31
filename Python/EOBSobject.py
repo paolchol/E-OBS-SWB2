@@ -280,7 +280,8 @@ class EOBSobject():
     #----------------------------------------------------------
     #ArcGRID section
     
-    def save_arcgrid(self, res = None, method = 'raw', createfolder = True):
+    def save_arcgrid(self, res = None, method = 'raw', createfolder = True,
+                     custom = False, customdf = None, customname = None):
         """
         Save the E-OBS dataset as daily ArcGRID files
         """
@@ -289,11 +290,14 @@ class EOBSobject():
             lo = self.get_lon(method)
             t = self.get_time(method)
         else:
-            df = self.get_var(method, res['idx_time'], res['idx_lat'], res['idx_lon'])
-            df = np.flip(df, axis = 1)
+            if not custom:
+                df = self.get_var(method, res['idx_time'], res['idx_lat'], res['idx_lon'])
+                df = np.flip(df, axis = 1)
+                t = self.get_time(method, res)
+            else:
+                t = [0 for i in range(customdf.shape[0])]
             la = self.get_lat(method, res['idx_lat'])
             lo = self.get_lon(method, res['idx_lon'])
-            t = self.get_time(method, res)
         
         namefolder = self.info['outname']
         namefile = namefolder.upper() if self.info['for_swb2'] else namefolder
@@ -310,20 +314,81 @@ class EOBSobject():
         xll = lo[0] - size/2
         yll = la[0] - size/2
         nodata = self.info['missing_value']
-
-        for i in range(0, len(t)):
-            y, m, d = self.transf_eobsdate(t[i], number = True)
-            fname = f'{outpath}/{namefile}_{y}_{m}_{d}.asc'
-            if method != 'raw':
-                tool = round(pd.DataFrame(df[i, :, :]), 1)
+        
+        for i in range(len(t)):
+            if not custom:
+                y, m, d = self.transf_eobsdate(t[i], number = True)
+                fname = f'{outpath}/{namefile}_{y}_{m}_{d}.asc'
+                if method != 'raw':
+                    tool = round(pd.DataFrame(df[i, :, :]), 1)
+                else:
+                    tool = round(pd.DataFrame(np.flip(np.ma.getdata(self.netcdf[self.info['var']][i, :, :]), 0)), 1)
             else:
-                tool = round(pd.DataFrame(np.flip(np.ma.getdata(self.netcdf[self.info['var']][i, :, :]), 1)))
+                tool = pd.DataFrame(np.flip(customdf[i, :, :], 0))
+                fname = f'{outpath}/{customname}_{i+1}.asc'
             tool.to_csv(fname, sep = ' ', header = False, index = False)
-            header = f'ncols         {df.shape[2]}\nnrows         {df.shape[1]}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
+            header = f'ncols         {tool.shape[1]}\nnrows         {tool.shape[0]}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
             with open(fname, 'r+') as f:
                 content = f.read()
                 f.seek(0, 0)
                 f.write(header + '\n' + content)
+    
+    #----------------------------------------------------------
+    #Generation of statistics or additional information
+    
+    def SP_sum(self, SPs, checkleap = True, export = True, store = True,
+               outpath = None, units = 'none', method = 'raw',
+               coord = None, start = None, end = None,
+               loncol = 'lon', latcol = 'lat', contourcell = 0, option = 'bundle'):
+        
+        if method == 'cut_space':
+            res = self.cut_space(coord, False, True, loncol, latcol, contourcell = 0)
+        elif method == 'cut_time':
+            res = self.cut_time(start, end, False, True, option)
+        elif method == 'cut_spacetime':
+            res = self.cut_spacetime(coord, start, end, False, True, 
+                                     loncol, latcol, contourcell, option)
+        if method == 'raw':
+            df = np.ma.getdata(self.netcdf[self.info['var']][:, :, :])
+        else:
+            df = self.get_var(method, res['idx_time'], res['idx_lat'], res['idx_lon'])
+        
+        SPs = np.cumsum(SPs)
+        units = units if units != 'none' else self.info['units']
+        if start is None: start = self.get_dates()[1].year
+        if end is None: end = self.get_dates()[2].year
+        period = range(start, end+1)
+        s, e, k = 0, 0, 0
+        #Create the 3D variable
+        var3d = np.zeros((len(period)*len(SPs), df.shape[1], df.shape[2]))
+        
+        for y in period:
+            #Extract a single year
+            e += self.leap(y) if checkleap else 365
+            year = df[s:e, :, :]
+            #Set up a counter
+            base = 0
+            for i, SP in enumerate(SPs, start = 1):
+                if (checkleap) & (self.leap(y) == 366): SP = SP+1 #& (i == 1)
+                #Extract the variable in the Stress Period
+                sp = year[base:SP, :, :]
+                base = SP
+                #Sum the variable in the stress period
+                if units == self.info['units']:
+                    #Keep the E-OBS original units (mm)
+                    sp = np.sum(sp, axis = 0) #mm
+                elif units == 'ms':
+                    #Transform from mm into m/s
+                    sp = np.sum(sp, axis = 0)*1000/(60*60*24*sp.shape[0]) #m/s
+                else:
+                    return print('Unrecognised unit. The available units are:\
+                                 ms (for meters/second)')
+                #Save in the 3D variable
+                var3d[k, :, :] = sp
+                k += 1
+            s = e #It will get the subsequent day
+        if export: self.save_arcgrid(res, method, False, True, var3d, f'E-OBS_SP_sum_{units}')
+        if store: self.SP_sum_df = var3d
     
     #----------------------------------------------------------
     #General operations
@@ -386,6 +451,14 @@ class EOBSobject():
             return np.ma.getdata(self.netcdf[self.info['var']][idx_time, :, :])
         elif method == 'cut_spacetime':
             return np.ma.getdata(self.netcdf[self.info['var']][idx_time, idx_lat, idx_lon])
+        
+    def leap(self, y):
+        #input: year (int)
+        #output: number of days (int)
+        if((y%4 == 0) | (y%400 == 0)):
+            return 366
+        else:
+            return 365
     
     def set_fname(self, fname):
         self.info['fname'] = fname
