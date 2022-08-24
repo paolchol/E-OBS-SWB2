@@ -15,7 +15,7 @@ Functions are divided in four sections:
 def leap(y):
     #input: year (int)
     #output: number of days (int)
-    if((y%4 == 0) | (y%400 == 0)):
+    if (y%4 == 0) | (y%400 == 0):
         return 366
     else:
         return 365
@@ -27,6 +27,13 @@ def getkeys(dict):
     #Other method
     # return list(dict.keys())
     return [*dict]
+
+def get_MMDD(m, d):
+    if m < 10:
+        m = f'0{m}'
+    if d < 10:
+        d = f'0{d}'
+    return m, d
 
 def repeat_list(l, nrep, array = False):
     #Returns l repeated nrep times

@@ -12,27 +12,27 @@ import numpy as np
 import os
 import glob
 from PIL import Image
+import time
 
 os.chdir('C:/E-OBS-SWB2')
 
 # %% Functions 
 
-def get_MMDD(m, d):
-    if m < 10:
-        m = f'0{m}'
-    if d < 10:
-        d = f'0{d}'
-    return m, d
-
+from Python.custom_functions import get_MMDD
 from Python.custom_functions import save_ArcGRID
+from Python.custom_functions import leap
 
 # %% Get the files path
 
-folderpath = './Data/CCscenarios/Tesi_MM/ichec-rca4/excel_files'
+# folderpath = './Data/CCscenarios/Tesi_MM/ichec-rca4/excel_files'
+folderpath = './Data/CCscenarios/Tesi_MM/mohc-rca4/excel_files'
+# folderpath = './Data/CCscenarios/Tesi_MM/mpi-rca4/excel_files'
 
 fls = glob.glob(f'{folderpath}/*.xlsx')
 
-outpath = './Export/ASCII/CCscenarios/stefano_ichec-rca4'
+# outpath = './Export/ASCII/CCscenarios/stefano_ichec-rca4'
+outpath = './Export/ASCII/CCscenarios/stefano_mohc-rca4'
+# outpath = './Export/ASCII/CCscenarios/stefano_mpi-rca4'
 
 #Definisco il range di date della proiezione
 #Per automatizzarlo lo potrei leggere da 
@@ -76,7 +76,6 @@ nodata = -9999
 
 # %% ASCII creation
 
-import time
 start = time.time()
 
 for fl in fls:
@@ -111,9 +110,13 @@ for i, var in enumerate(columns):
             MM, DD = get_MMDD(tool2.index[day].month, tool2.index[day].day)
             fname = f'{savepath}/{outvars[i]}_{tool2.index[day].year}_{MM}_{DD}.asc'
             save_ArcGRID(pd.DataFrame(grid), fname, xll, yll, cellsize, nodata)
+            if leap(tool2.index[day].year) == 366:
+                if (tool2.index[day].month == 2) & (tool2.index[day].day == 28):
+                    fname = f'{savepath}/{outvars[i]}_{tool2.index[day].year}_02_29.asc'
+                    save_ArcGRID(pd.DataFrame(grid), fname, xll, yll, cellsize, nodata)
 
 end = time.time()
-print(f'Creazione dei file ASCII fino al 2100: {round(end-start, 2)} s')
+print(f'Creazione dei file ASCII fino al 2100:\n{round(end-start, 2)} s\n{round(end-start, 2)/60} m')
 #26 minuti
 
 #grid può essere salvato in una variabile 3d e poi inserito in un netCDF
