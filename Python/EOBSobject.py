@@ -330,10 +330,7 @@ class EOBSobject():
             with open(fname, 'r+') as f:
                 content = f.read()
                 f.seek(0, 0)
-                f.write(header + '\n' + content)
-    
-    def save_table(self):
-        pass
+                f.write(header + '\n' + content)   
 
     #----------------------------------------------------------
     #Generation of statistics or additional information
@@ -394,6 +391,13 @@ class EOBSobject():
         if export: self.save_arcgrid(res, method, False, True, var3d, f'E-OBS_SP_sum_{units}')
         if store: self.SP_sum_df = var3d
     
+    def print_readme(self, res, method):
+        f = open(f"readme_{self.info['outname']}", "w")
+        header = f"Source of the data: E-OBS, version"
+        f.write(header)
+
+
+
     #----------------------------------------------------------
     #General operations
     
