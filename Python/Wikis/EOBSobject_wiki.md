@@ -46,7 +46,7 @@ The files in the inpath folder which are not the one you want to load shouldn't 
 
 #### Create the object
 ```python
-f = EOBSobject(inpath, var, outpath)
+f = EOBSobject(var, inpath, outpath)
 ```
 
 If you want to provide directly the path to a single file, set `folder` to `False` when creating the object.
@@ -89,6 +89,12 @@ It is possible to keep more cells than the area you want to cut. This could be u
 ```python
 f.set_fname(f'{outpath}/rr_morecells.nc') #just to provide a custom name to distinguish the files, not needed for the code to work
 f.cut_space(coord, contourcell = 2)
+```
+
+For this and also all the other methods in this second section the standard is set to "autosave", meaning that it will automatically save the clipped file. If you want to do it yourself, you can set `autosave = False` and `ext = True`. This will return a dictionary than you can then provide to the "save" functions (save_netcdf, save_arcgrid and save_table).
+```python
+cutinfo = f.cut_space(coord, contourcell = 2, autosave = False, ext = True)
+f.save_netcdf(cutinfo, method = 'cut_space')
 ```
 
 #### 2.2 Cut in time

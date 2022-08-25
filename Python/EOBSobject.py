@@ -14,10 +14,10 @@ import pandas as pd
 
 class EOBSobject():
     
-    def __init__(self, inpath, var, outpath = 'none', outname = 'none',
-                 fname = 'none', API = False, folder = True, swb2 = False):
-        #folder condition: default is True, path to a folder
-        #   False if path to a single file
+    def __init__(self, var, inpath = None, outpath = None, outname = None,
+                 fname = None, API = False, folder = False, swb2 = False):
+        #var: name of the variable inside the netcdf file
+        #folder: default is False (path to a single file). True, path to a folder
         
         #Store the info
         self.info = {
@@ -52,9 +52,9 @@ class EOBSobject():
         # print('These are selected E-OBS metadata:')
         
     #---------------------------------------------------------
-    #NETCDF section
+    #Perform operations on the original content
     
-    def cut_space(self, coord, save = True, internal = False,
+    def cut_space(self, coord, autosave = True, ext = False,
                  loncol = 'lon', latcol = 'lat', contourcell = 0,
                  saveformat = 'netcdf'):
         """
@@ -77,12 +77,12 @@ class EOBSobject():
             'idx_lat': idx_lat,
             'idx_lon': idx_lon
             }
-        if save:
+        if autosave:
             if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_space')
             elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_space')
-        if internal: return res
+        if ext: return res
     
-    def cut_time(self, start, end, save = True, internal = False,
+    def cut_time(self, start, end, autosave = True, ext = False,
                  option = 'singleyear', day = False, saveformat = 'netcdf'):
         """
         start, end: years (int) if day = False
@@ -115,8 +115,8 @@ class EOBSobject():
                     'idx_lon': 0,
                     'option': option
                     }
-                if save: self.save_netcdf(res, method = 'cut_time')
-                if internal: return res
+                if autosave: self.save_netcdf(res, method = 'cut_time')
+                if ext: return res
         elif option == 'bundle':
             if day:
                 idx_time = [*range(np.where(dt.date == start)[0].item() - 1, np.where(dt.date == end)[0].item() + 1)]
@@ -134,22 +134,21 @@ class EOBSobject():
                 'idx_lon': 0,
                 'option': option
                 }
-            if save:
+            if autosave:
                 if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_time')
                 elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_time')
-            if internal: return res
+            if ext: return res
         else:
             print('Wrong option inserted')
             return
     
-    def cut_spacetime(self, coord, start, end, save = True, internal = False,
+    def cut_spacetime(self, coord, start, end, autosave = True, ext = False,
                       loncol = 'lon', latcol = 'lat', contourcell = 0,
                       option = 'singleyear', day = False, saveformat = 'netcdf'):
-        res_cs = self.cut_space(coord, False, True,
-                                loncol, latcol, contourcell)
+        res_cs = self.cut_space(coord, False, True, loncol, latcol, contourcell)
         if option == 'singleyear':
             for year in range(start, end + 1):
-                res_ct = self.cut_time(year, year, save = False, internal = True)
+                res_ct = self.cut_time(year, year, autosave = False, ext = True)
                 res = {
                     'start_day': res_ct['start_day'],
                     'end': end,
@@ -159,10 +158,10 @@ class EOBSobject():
                     'idx_lon': res_cs['idx_lon'],
                     'option': option
                     }
-                if save:
+                if autosave:
                     if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime')
                     elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_spacetime')
-                if internal: return res
+                if ext: return res
         elif option == 'bundle':
             res_ct = self.cut_time(start, end, False, True, option, day)
             res = {
@@ -174,14 +173,17 @@ class EOBSobject():
                 'idx_lon': res_cs['idx_lon'],
                 'option': option
                 }
-            if save:
+            if autosave:
                 if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime')
                 elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_spacetime')
-            if internal: return res
+            if ext: return res
         else:
             print('Wrong option inserted')
             return
     
+    #---------------------------------------------------------
+    #Export the results
+
     def save_netcdf(self, res = None, method = 'raw'):
         #Check the 	Climate and Forecast Metadata Convention v1.4 (CF-v1.4)
         #and try to keep the metadata as they are defined there
@@ -276,10 +278,7 @@ class EOBSobject():
         
         #Close the file
         ds.close()
-    
-    #----------------------------------------------------------
-    #ArcGRID section
-    
+
     def save_arcgrid(self, res = None, method = 'raw', createfolder = True,
                      custom = False, customdf = None, customname = None):
         """
@@ -333,13 +332,18 @@ class EOBSobject():
                 f.seek(0, 0)
                 f.write(header + '\n' + content)
     
+    def save_table(self):
+        pass
+
     #----------------------------------------------------------
     #Generation of statistics or additional information
     
     def SP_sum(self, SPs, checkleap = True, export = True, store = True,
-               outpath = None, units = 'none', method = 'raw',
-               coord = None, start = None, end = None,
+               units = None, method = 'raw', coord = None, start = None, end = None,
                loncol = 'lon', latcol = 'lat', contourcell = 0, option = 'bundle'):
+        '''
+        Sum of the variable in provided "stress periods" (SPs)
+        '''
         
         if method == 'cut_space':
             res = self.cut_space(coord, False, True, loncol, latcol, contourcell = 0)
@@ -354,7 +358,7 @@ class EOBSobject():
             df = self.get_var(method, res['idx_time'], res['idx_lat'], res['idx_lon'])
         
         SPs = np.cumsum(SPs)
-        units = units if units != 'none' else self.info['units']
+        units = units if units else self.info['units']
         if start is None: start = self.get_dates()[1].year
         if end is None: end = self.get_dates()[2].year
         period = range(start, end+1)
@@ -451,7 +455,7 @@ class EOBSobject():
             return np.ma.getdata(self.netcdf[self.info['var']][idx_time, :, :])
         elif method == 'cut_spacetime':
             return np.ma.getdata(self.netcdf[self.info['var']][idx_time, idx_lat, idx_lon])
-        
+    
     def leap(self, y):
         #input: year (int)
         #output: number of days (int)
@@ -464,7 +468,7 @@ class EOBSobject():
         self.info['fname'] = fname
     
     def set_outname(self, outname):
-        self.info['outname'] = outname if outname != 'none' else self.info['var']
+        self.info['outname'] = outname if outname else self.info['var']
     
     def set_outpath(self, outpath, folder):
         tool = self.paths['inpath']
@@ -472,10 +476,10 @@ class EOBSobject():
             tool = tool.split('/')[:-1]
             tool = '/'.join(tool)
         else: tool = tool.split('\\')[0]
-        self.paths['outpath'] = outpath if outpath != 'none' else tool
+        self.paths['outpath'] = outpath if outpath else tool
     
-    def set_timeunit(self, units = 'none'):
-        if units == 'none':
+    def set_timeunit(self, units = None):
+        if not units:
             units = self.netcdf['time']['units'] #check if this works
         self.units['time'] = units
     
@@ -508,7 +512,7 @@ class EOBSobject():
         """
         Writes fname for save_netcdf function, starting from the method utilized        
         """
-        if self.info['fname'] != 'none': return self.info['fname']
+        if self.info['fname']: return self.info['fname']
         outpath = self.paths['outpath']
         outname = self.info['outname']
         fname = f'{outpath}/{outname}_EOBS_{method}'
