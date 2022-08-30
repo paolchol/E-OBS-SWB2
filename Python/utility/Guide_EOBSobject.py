@@ -33,14 +33,13 @@ inpath = './Data/E-OBS'
 #   https://surfobs.climate.copernicus.eu/dataaccess/access_eobs.php
 var = 'rr' #daily precipitation sum
 
-f = EOBSobject(inpath, var, outpath)
+f = EOBSobject(var, inpath, outpath, folder = True)
 
-#If you want to provide directly the path to a single file, set folder to False
+#If you want to provide directly the path to a single file, leave folder to False
 inpath = './Data/E-OBS/file.nc'
-f = EOBSobject(inpath, var, folder = False)
+f = EOBSobject(inpath, var)
 
-
-f = EOBSobject(inpath, var, outpath, swb2 = True)
+f = EOBSobject(var, inpath, outpath, swb2 = True)
 
 # Inserire un'opzione per flippare il dataset e l'asse della latitudine
 # senza però impostare la data daymet ecc

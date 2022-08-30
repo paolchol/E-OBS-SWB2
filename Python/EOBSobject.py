@@ -28,7 +28,8 @@ class EOBSobject():
         self.set_outname(outname)
         self.set_fname(fname)
         #Store the input path
-        if API: pass
+        if API:
+            pass
         elif folder: self.paths = { 'inpath': self.find_path(inpath, var) }
         else: self.paths = { 'inpath': inpath }
         self.set_outpath(outpath, folder)
@@ -56,7 +57,7 @@ class EOBSobject():
     
     def cut_space(self, coord, autosave = True, ext = False,
                  loncol = 'lon', latcol = 'lat', contourcell = 0,
-                 saveformat = 'netcdf'):
+                 saveformat = 'netcdf', readme = False):
         """
         coord: extremes of desired area
             provided as a pandas dataframe with loncol as the column containing
@@ -73,17 +74,22 @@ class EOBSobject():
         idx_lat = np.intersect1d(np.where(la > minlat), np.where(la < maxlat))
         idx_lon = np.intersect1d(np.where(lo > minlon), np.where(lo < maxlon))
         res = {
+            'start_day': self.get_dates()[1],
+            'end': self.get_dates()[2],
+            'time': None,
             'idx_time': 0,
             'idx_lat': idx_lat,
-            'idx_lon': idx_lon
+            'idx_lon': idx_lon,
+            'option': None
             }
         if autosave:
-            if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_space')
-            elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_space')
+            if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_space', readme = readme)
+            elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_space', readme = readme)
         if ext: return res
     
     def cut_time(self, start, end, autosave = True, ext = False,
-                 option = 'singleyear', day = False, saveformat = 'netcdf'):
+                 option = 'singleyear', day = False, saveformat = 'netcdf',
+                 readme = False):
         """
         start, end: years (int) if day = False
            if day = True, they have to be in datetime.date format, ex: date(2014, 7, 20)
@@ -101,7 +107,6 @@ class EOBSobject():
         #Create an array of real-world dates from the origin of the dataset
         t = pd.date_range(start = o, end = ed)
         tyR = t.year
-        
         if option == 'singleyear':
             for year in yU[np.where((yU >= start) & (yU <= end))]:
                 idx_time = np.where(yR == year)[0]
@@ -109,13 +114,14 @@ class EOBSobject():
                 if self.info['for_swb2']: time = self.transf_eobstime(time)
                 res = {
                     'start_day': f"01/01/{year}",
+                    'end': end,
                     'time': time,
                     'idx_time': idx_time,
                     'idx_lat': 0,
                     'idx_lon': 0,
                     'option': option
                     }
-                if autosave: self.save_netcdf(res, method = 'cut_time')
+                if autosave: self.save_netcdf(res, method = 'cut_time', readme = readme)
                 if ext: return res
         elif option == 'bundle':
             if day:
@@ -128,6 +134,7 @@ class EOBSobject():
                 time = np.where((tyR >= start) & (tyR <= end))[0]
             res = {
                 'start_day': f"{start.day}/{start.month}/{start.year}" if day else f"01/01/{start}",
+                'end': end,
                 'time': time,
                 'idx_time': idx_time,
                 'idx_lat': 0,
@@ -135,8 +142,8 @@ class EOBSobject():
                 'option': option
                 }
             if autosave:
-                if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_time')
-                elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_time')
+                if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_time', readme = readme)
+                elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_time', readme = readme)
             if ext: return res
         else:
             print('Wrong option inserted')
@@ -144,7 +151,8 @@ class EOBSobject():
     
     def cut_spacetime(self, coord, start, end, autosave = True, ext = False,
                       loncol = 'lon', latcol = 'lat', contourcell = 0,
-                      option = 'singleyear', day = False, saveformat = 'netcdf'):
+                      option = 'singleyear', day = False, saveformat = 'netcdf',
+                      readme = False):
         res_cs = self.cut_space(coord, False, True, loncol, latcol, contourcell)
         if option == 'singleyear':
             for year in range(start, end + 1):
@@ -159,8 +167,8 @@ class EOBSobject():
                     'option': option
                     }
                 if autosave:
-                    if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime')
-                    elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_spacetime')
+                    if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime', readme = readme)
+                    elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_spacetime', readme = readme)
                 if ext: return res
         elif option == 'bundle':
             res_ct = self.cut_time(start, end, False, True, option, day)
@@ -174,8 +182,8 @@ class EOBSobject():
                 'option': option
                 }
             if autosave:
-                if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime')
-                elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_spacetime')
+                if saveformat == 'netcdf': self.save_netcdf(res, method = 'cut_spacetime', readme = readme)
+                elif saveformat == 'arcgrid': self.save_arcgrid(res, method = 'cut_spacetime', readme = readme)
             if ext: return res
         else:
             print('Wrong option inserted')
@@ -184,9 +192,10 @@ class EOBSobject():
     #---------------------------------------------------------
     #Export the results
 
-    def save_netcdf(self, res = None, method = 'raw'):
+    def save_netcdf(self, res = None, method = 'raw', readme = True):
         #Check the 	Climate and Forecast Metadata Convention v1.4 (CF-v1.4)
         #and try to keep the metadata as they are defined there
+        if readme: self.print_readme(res, method, savedas = 'NetCDF')
         outname = self.info['outname']
         if method == 'raw':
             #Saves the same dataset, just by applying a custom format
@@ -280,10 +289,12 @@ class EOBSobject():
         ds.close()
 
     def save_arcgrid(self, res = None, method = 'raw', createfolder = True,
-                     custom = False, customdf = None, customname = None):
+                     custom = False, customdf = None, customname = None,
+                     readme = False):
         """
         Save the E-OBS dataset as daily ArcGRID files
         """
+        if readme: self.print_readme(res, method, savedas = 'ArcGRID')
         if method == 'raw':
             la = self.get_lat(method)
             lo = self.get_lon(method)
@@ -391,13 +402,40 @@ class EOBSobject():
         if export: self.save_arcgrid(res, method, False, True, var3d, f'E-OBS_SP_sum_{units}')
         if store: self.SP_sum_df = var3d
     
-    def print_readme(self, res, method):
-        f = open(f"readme_{self.info['outname']}", "w")
-        header = f"Source of the data: E-OBS, version"
-        f.write(header)
-
-
-
+    def print_readme(self, res = None, method = None, savedas = None, path = None, outname = None):
+        if not path: path = self.paths['outpath']
+        if not outname: outname = self.info['outname']
+        
+        readme = open(f"{path}/readme_{outname}.txt", "w")
+        header = f"Source of the data: {self.netcdf.ncattrs()[0]} {getattr(self.netcdf, self.netcdf.ncattrs()[0])}\n"
+        readme.write(header)
+        o, s, e = self.get_dates()
+        info = f"Original dates: \n \
+    Origin: {o}\n \
+    First data available: {s}\n \
+    Last data available: {e}\n"
+        readme.write(info)
+        if method:            
+            if method == 'cut_space':
+                op = 'Crop in space'
+            elif method == 'cut_time':
+                op = 'Crop in time'
+            elif method == 'cut_spacetime':
+                op = 'Crop in both time and space' 
+            elif method == 'raw':
+                op = 'No performed operations'
+            readme.write(f"Performed operation: {op}\n")
+        if savedas: readme.write(f"Output format: {savedas}")
+        if res:
+            nrow = len(res['idx_lat']) if (method) and (method != 'cut_time') else self.netcdf['latitude'].shape[0]
+            ncol = len(res['idx_lon']) if (method) and (method != 'cut_time') else self.netcdf['longitude'].shape[0]
+            readme.write(f"Resulting data information:\n \
+    Starting date: {res['start_day']}\n \
+    Ending date (end of year): {res['end']}\n \
+    Number of rows: {nrow}\n \
+    Number of columns: {ncol}\n")
+        readme.close()
+    
     #----------------------------------------------------------
     #General operations
     
@@ -414,6 +452,16 @@ class EOBSobject():
         return fls[pos]
     
     def get_dates(self):
+        """
+        Returns
+        -------
+        origin : datetime.date
+            Origin of the progressive number used as time inside E-OBS
+        start : datetime.date
+            Date of the first data available inside the E-OBS file
+        end : datetime.date
+            Date of the last data available inside the E-OBS file
+        """
         origin = self.netcdf['time'].units.split(" ")[2]
         origin = date.fromisoformat(origin)
         ndays = np.ma.getdata(self.netcdf['time'][0]).item()

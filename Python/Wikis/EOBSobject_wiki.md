@@ -45,14 +45,15 @@ All the E-OBS variable codes are provided at: https://surfobs.climate.copernicus
 The files in the inpath folder which are not the one you want to load shouldn't have the name of the variable (var) at the start of their file name. The code could identify them as the E-OBS file and thus not work. Example: *rr_otherfile.pdf* shouldn't be in the folder.
 
 #### Create the object
+You can provide directly the path to a single file.
 ```python
+inpath = './Data/E-OBS/rr_ens_mean_0.1deg_reg_2011-2021_v24.0e.nc'
 f = EOBSobject(var, inpath, outpath)
 ```
 
-If you want to provide directly the path to a single file, set `folder` to `False` when creating the object.
+If you have multiple E-OBS files (each with a different variable), set `folder` to `True` when creating the object.
 ```python
-inpath = './Data/E-OBS/file.nc'
-f = EOBSobject(inpath, var, folder = False)
+f = EOBSobject(var, inpath, outpath)
 ```
 
 The `swb2` option has to be set to True if the output needs to be used for SWB2.
