@@ -13,7 +13,6 @@ The working directory has to be set in ./E-OBS-SWB2 for this to work
 import glob
 import numpy as np
 import pandas as pd
-# import sys
 import time
 
 #The directory has to be set in ./E-OBS-SWB2 for this to work
@@ -21,25 +20,35 @@ from Python.SWB2output import SWB2output
 
 class RechargeCalc():
     
-    def __init__(self, swb2path, inputpath, sy, ey, cell_area, uniqueid, nSP,
-                customid = False):
+    def __init__(self, sy, ey, cell_area, uniqueid, nSP, customid = False,
+                 meteo = True, irr = True, urb = True):
         """
-        Initialize the class
-        Provide the paths to:
-         - the swb2 'net_infiltration' netCDF4 file (swb2path)
-         - the folder where the needed input files are saved (inputpath)
-        Other variables needed:
-         - sy: initial year
-         - ey: final year
-         - cell_area: area of the cell in m2
-         - uniqueid: name of the unique id column in the "indicatori" file
+        Initialize the class. Creates the dictionaries "info", "recharges" and 
+        "conditions". Select which recharge components to consider.
+
+        Parameters:
+        ----------
+        sy : int
+            Initial year
+        ey : int
+            Final year
+        cell_area : float
+            Area of the cell in square meters
+        uniqueid : str
+            Name of the unique id column in the "indicatori" file
+        nSP : int
+            Number of stress periods
+        customid : bool
+            If you file already has a custom index to address each cell and you
+            want to keep it to use it later set this to True.
+        meteo : bool
+            Consideration of the meteoric recharge component. The default is True.
+        irr : bool
+            Consideration of the irrigation recharge component. The default is True.
+        urb : bool
+            DESCRIPTION. The default is True.
         """
-        
-        self.paths = {
-            "swb2_output": swb2path,
-            "input_folder": inputpath
-            }
-        self.info = { 
+        self.info = {
             "start_year": sy,
             "end_year": ey,
             "cell_area_m2": cell_area,
@@ -49,8 +58,25 @@ class RechargeCalc():
             }
         self.recharges = {}
         self.conditions = {}
+        self.sel_recharge(meteo, irr, urb)
     
-    def load_inputfiles(self, meteo = True, irr = True, urb = True):
+    def load_inputfiles(self, swb2path, inputpath = None):
+        """
+        Load the input files needed
+
+        Parameters
+        ----------
+        swb2path : str
+            Path to SWB2's output 'net_infiltration' NetCDF file.
+        inputpath : str
+            Path to the folder where all the other needed files are stored.
+            These files need to be in the same folder. The default is None.
+        """
+        #Save the paths
+        self.paths = {
+            "swb2_output": swb2path,
+            "input_folder": inputpath
+            }
         #Load the files needed
         print('Loading the input files')
         print('-----------------------')
@@ -69,14 +95,11 @@ class RechargeCalc():
         if not self.info['customid']: ind = self.insert_ind(ind, ind['row'], ind['column'])
         #Store the input files inside the object
         self.input = { 'ind': ind }
-        if (irr): self.input['irr'] = pd.read_csv(fls[k[1]])
-        if (urb): self.input['urb'] = pd.read_csv(fls[k[2]])
-        self.conditions['meteo'] = meteo
-        self.conditions['irr'] = irr
-        self.conditions['urb'] = urb
+        if self.conditions['irr']: self.input['irr'] = pd.read_csv(fls[k[1]])
+        if self.conditions['urb']: self.input['urb'] = pd.read_csv(fls[k[2]])
     
-    #----------------------------------------------------------------------
     #Recharges calculation
+    #---------------------
     
     def meteoricR(self, SPs, units = 'ms', fixrow = 1, fixcol = 1, export = False, ret = False):
         """
@@ -122,6 +145,7 @@ class RechargeCalc():
             joined = joined.reset_index(level = 0)
             rmeteo = joined.copy()
         
+        rmeteo['ncol'] = pd.to_numeric(rmeteo['ncol'])
         #Save the variables
         self.info['SPs'] = SPs
         self.recharges['rmeteo'] = rmeteo
@@ -276,8 +300,8 @@ class RechargeCalc():
         print(f'Elapsed time: {round(end - start, 2)} s')
         if export: self.export('recharge', 'rtot')
     
-    #-----------------------------------------------------------------------
     #Operations on the recharges
+    #---------------------------
         
     def join_external(self, var, tag, extdf, on = 'none', rsuffix = 'none'):
         """
@@ -326,19 +350,16 @@ class RechargeCalc():
         #add attributes from input['ind'] to the selected recharge df
         pass
     
-    #-----------------------------------------------------------------------
-    #General functions
+    #Export functions
+    #----------------
     
-    def double_cond(self, c1, c2):
-        cond = c1
-        for i in range(len(c2)):
-            cond = c1 & c2[i]
-        return cond
-    
-    def export(self, var, tag, fileext = 'csv', outpath = 'none', outname = 'none',
+    def export(self, var, tag, fileext = 'csv', outpath = None, outname = 'none',
                withcoord = False, coordpath = None):
         """
-        Exports the recharges or other data of the class        
+        Exports the recharges or other data of the class
+        
+        Parameters
+        ----------
         var (str): as defined in get_df
         tag (str): as defined in get_df
         fileext: file extention wanted. Default: csv
@@ -359,6 +380,69 @@ class RechargeCalc():
         df.to_csv(f'{outpath}/{outname}.{fileext}', index = False)
         end = time.time()
         print(f'{end-start} s')
+    
+    def georef(self, var, tag, coordpath, crs = 'epsg:4326', outpath = None,
+               fname = None, setindex = False, dropcoord = True, **kwargs):
+        """
+        Writes a dataframe selected from the ones created in any OGR data
+        source supported by Fiona. By default an ESRI shapefile is written.
+        
+        Parameters
+        ----------
+        var : str
+            As defined in get_df
+        tag : str
+            As defined in get_df
+        coordpath : str
+            Path to a .csv file with columns 'row', 'column', self.info['id'], 'x', 'y'
+        crs : str, default 'epsg:4326'
+            Coordinate reference system. The value can be anything accepted
+            by pyproj.CRS.from_user_input()           
+        outpath : str, default None
+            Path to a wanted output folder. Default: variable 'outpath'
+            defined previously
+        fname : str, default None
+            Name of the file to be written. If None, the tag value will be used
+            as name. Here it is needed to specifiy the extension of the file if
+            different from '.shp'.
+        setindex : bool, default False
+            Option to set the dataframe index also in the file created. Default
+            is False as it takes lots of time.
+        dropcoord : bool, default True
+            Drop the coordinates from the DataFrame columns.
+        **kwargs : 
+            Keyword args to be passed to geopandas.GeoDataFrame.to_file(). For
+            example, the file format
+        """
+        import geopandas as gp
+        
+        start = time.time()
+        outpath = self.set_outpath(outpath)
+        fname = fname if fname else f'{tag}.shp'
+        #Get the coordinates from the CSV file and merge them with the dataframe
+        coord = pd.read_csv(coordpath)
+        coord = self.insert_ind(coord, coord['row'], coord['column'], name = self.info['id'])
+        coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
+        tool = pd.merge(coord, self.get_df(var, tag), on = self.info['id'])
+        #Create the GeoDataFrame
+        geodf = gp.GeoDataFrame(tool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
+        geodf.set_crs(crs, inplace = True)
+        if setindex: geodf.set_index(self.info['id'], inplace = True)
+        if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
+        #Save the GeoDataFrame in the format selected. Default: ESRI Shapefile
+        geodf.to_file(f'{outpath}/{fname}', index = setindex, **kwargs)
+        end = time.time()
+        print(f'Shapefile saved in {outpath} as {fname}')
+        print(f'Elapsed time: {round(end-start, 2)} s')
+    
+    #General functions
+    #-----------------
+    
+    def double_cond(self, c1, c2):
+        cond = c1
+        for i in range(len(c2)):
+            cond = c1 & c2[i]
+        return cond
         
     def find_SPcol(self, col, ind = None, indname = False):
         names = [ind] if indname else []
@@ -384,44 +468,7 @@ class RechargeCalc():
         elif var == 'recharge':
             df = self.recharges[tag]
         return df
-    
-    def georef(self, var, tag, coordpath, crs = 'epsg:4326', proj = 'none', outpath = 'none',
-               outname = 'none', dropcoord = False):
-        """
-        Export a shapefile of the selected dataframe
         
-        var (str): as defined in get_df
-        tag (str): as defined in get_df
-        coordpath:
-         path to a .csv file with columns 'row', 'column', self.info['id'], 'x', 'y'
-        outpath: path to a wanted output folder. Default: variable 'outpath'
-         defined previously
-        """
-        #if 'geopandas' not in sys.modules: 
-        import geopandas as gp
-        
-        start = time.time()
-        outpath = self.set_outpath(outpath)
-        outname = outname if outname != 'none' else f'{tag}'
-        coord = pd.read_csv(coordpath)
-        coord = self.insert_ind(coord, coord['row'], coord['column'], name = self.info['id'])
-        coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
-        tool = pd.merge(coord, self.get_df(var, tag), on = self.info['id'])
-        # newtool = tool.copy()
-        geodf = gp.GeoDataFrame(tool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
-        # geodf.crs = proj if proj != 'none' else '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-        geodf.set_crs(crs, inplace = True)
-        geodf.index = geodf[self.info['id']]
-        geodf.drop(self.info['id'], axis = 1, inplace = True)
-        if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
-
-        #This operation (to_file) takes too much time, try to address the issues that causes it and
-        #fix them
-        geodf.to_file(f'{outpath}/{outname}.shp')
-        end = time.time()
-        print(f'Shapefile saved in {outpath} as {outname}.shp')
-        print(f'Elapsed time: {round(end-start, 2)} s')
-    
     def insert_ind(self, df, r, c, fixrow = 0, fixcol = 0, pos = 0, name = 'none'):
         name = self.info['id'] if name == 'none' else name
         if (fixrow != 0) | (fixcol != 0):
@@ -443,7 +490,12 @@ class RechargeCalc():
             self.input[tag] = df
         elif var == 'recharge':
             self.recharges[tag] = df
-
+    
+    def sel_recharge(self, meteo, irr, urb):
+        self.conditions['meteo'] = meteo
+        self.conditions['irr'] = irr
+        self.conditions['urb'] = urb
+    
     def set_SPs(self, SPs, c = None):
         """
         Sets the stress periods duration as a variable of the class
@@ -458,8 +510,8 @@ class RechargeCalc():
     def set_tags(self, district = None, agr_zone = None, urb_zone = None):
         pass
     
-    def set_outpath(self, outpath):
-        if outpath == 'none':
+    def set_outpath(self, outpath = None):
+        if not outpath:
             outpath = self.paths['outpath'] if 'outpath' in self.paths else self.paths['input_folder']
         else:
             self.paths['outpath'] = outpath
