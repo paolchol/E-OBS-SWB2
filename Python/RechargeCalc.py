@@ -302,7 +302,7 @@ class RechargeCalc():
     
     #Operations on the recharges
     #---------------------------
-        
+    
     def join_external(self, var, tag, extdf, on = 'none', rsuffix = 'none'):
         """
         Function to join external dataframes to the ones stored in the object.
@@ -324,6 +324,14 @@ class RechargeCalc():
         else: df = df.join(extdf, on = on)
         return df
     
+    def load_component(self, var, tag, df = None, read = False, path = None):
+        #Insert the df
+        if read: df = pd.read_csv(path)
+        if var == 'input':
+            self.input[tag] = df
+        elif var == 'recharge':
+            self.recharges[tag] = df
+
     def modify_recharge(self, var, tag, coeff, single_cond = True,
                         multi_cond = False, col = None, valcol = None):
         """
@@ -360,11 +368,21 @@ class RechargeCalc():
         
         Parameters
         ----------
-        var (str): as defined in get_df
-        tag (str): as defined in get_df
-        fileext: file extention wanted. Default: csv
-        outpath: path to a wanted output folder. Default: variable 'outpath'
-         defined previously
+        var : str
+            As defined in get_df
+        tag : str
+            As defined in get_df
+        fileext : str
+            File extention wanted. Default: csv
+        outpath: str
+            Path to a wanted output folder. Default None, gets the variable 'outpath'
+            previously defined
+        outname : str
+
+        withcoord : bool
+
+        coordpath : str, optional
+
         """
         start = time.time()
         #Set the output path
@@ -482,15 +500,7 @@ class RechargeCalc():
         else:
             df[name] = newc
         return df
-    
-    def load_component(self, var, tag, df = None, read = False, path = None):
-        #Insert the df
-        if read: df = pd.read_csv(path)
-        if var == 'input':
-            self.input[tag] = df
-        elif var == 'recharge':
-            self.recharges[tag] = df
-    
+        
     def sel_recharge(self, meteo, irr, urb):
         self.conditions['meteo'] = meteo
         self.conditions['irr'] = irr

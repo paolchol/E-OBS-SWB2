@@ -209,22 +209,28 @@ r.totalR(meteopar, irrpar, urbpar)
 
 ### 6. Export
 
-#as .csv
+#### 6.1 Export as CSV
+
+By changing the `fileext` parameter, you could also write .txt or other file formats.
+```python
 outpath = "./Data/Calcolo_ricarica_totale"
 r.export('recharge', 'rtot', outpath = outpath)
-#as .shp
-#proj: crs in the PROJ4 format. In this case, Monte Mario EPSG:3003
-r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
-         proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
-         outpath = outpath)
-#If you don't want to keep the X and Y columns in the exported dataframe,
-#set dropcoord as True
-r.georef('recharge', 'rtot', "./Data/Calcolo_ricarica_totale/coord.csv",
-         proj = '+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs ',
-         outpath = outpath, outname = 'rtot_noXY', dropcoord = True)
+```
+
+#### 6.2 Export as a geo-referenced file
+
+```python
+r.georef('recharge', 'rtot', coordpath, crs = 'epsg:3003', outpath = outpath)
+```
+
+```python
+r.georef('recharge', 'rmeteo', coordpath, crs = 'epsg:3003', outpath = outpath, fname = 'rmeteo.geojson', driver = 'GeoJSON')
+```
 
 ### 7. Use external files
 
 If you already have one component of the total recharge ready, you can load it in the object and then perform the operations available from the class, like summing it with other components or modifying it.
 
 r.load_component()
+
+r.join_external()
