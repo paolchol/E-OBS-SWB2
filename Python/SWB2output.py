@@ -3,66 +3,89 @@
 Class "SWB2output" for SWB2 netCDF output handling
 It can be called using:
 from Python.SWB2output import SWB2output
-
 The working directory has to be set in ./E-OBS-SWB2 for this to work
 
 @author: paolo
 """
 
-# import os
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
 
-#The directory has to be set in ./E-OBS-SWB2 for this to work
-from Python.custom_functions import save_ArcGRID
-from Python.custom_functions import leap
-from Python.custom_functions import getdates
-from Python.custom_functions import getkeys
-
 class SWB2output():
     
     def __init__(self, path):
-        #Load the output netCDF file
-        #Extract its main metadata
-        
+        """
+        Load the NetCDF provided by SWB2 as output and extract its main 
+        metadata
+
+        Parameters
+        ----------
+        path : str
+            Path to the SWB2 NetCDF output file.
+        """        
         self.path = path
         self.netCDF = nc.Dataset(path)
-        start, end = getdates(self.netCDF.variables['time'].units,
+        start, end = self.getdates(self.netCDF.variables['time'].units,
                               self.netCDF.variables['time'].shape[0])
         self.metadata = {
             "start_date": start,
             "end_date": end,
-            "variables": getkeys(self.netCDF.variables),
-            "main_variable": getkeys(self.netCDF.variables)[3], 
-            "units": self.netCDF[getkeys(self.netCDF.variables)[3]].units,
-            "nodata_value": self.netCDF[getkeys(self.netCDF.variables)[3]]._FillValue
+            "variables": self.getkeys(self.netCDF.variables),
+            "main_variable": self.getkeys(self.netCDF.variables)[3], 
+            "units": self.netCDF[self.getkeys(self.netCDF.variables)[3]].units,
+            "nodata_value": self.netCDF[self.getkeys(self.netCDF.variables)[3]]._FillValue
             }
         self.results = {}
     
-    def print_md(self):
-        #Prints the original netCDF metadata
+    def print_metadata(self):
+        """
+        Print original and custom metadata
+        """
+        print('Original metadata')
         print(self.netCDF)
+        print('Extracted metadata')
+        print(self.metadata)
+    
+    #Operations on the data
+    #----------------------
     
     def extract(self):
-        #Returns the main variable of the output as a numpy 3d array
+        """
+        Returns
+        -------
+        numpy.array
+            Numpy 3D array containing the main variable of SWB2 output provided.
+        """
         variable = self.metadata['main_variable']
         return np.ma.getdata(self.netCDF[variable][:, :, :])
 
-    def sumtot(self, outpath = 'none', name = 'name'):
-        #Returns the sum over the whole time period
-        #If a path is provided as outpath, an ArcASCII GRID file is produced
+    def sumtot(self, outpath = None, name = 'name'):
+        """
+        Returns the sum of the main variable over the whole time period
+
+        Parameters
+        ----------
+        outpath : str, optional
+            Path fro the output file. The default is None.
+        name : str, optional
+            First part of the output file name. The default is 'name'.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Dataframe of the sum performed over the whole time period.
+        """
         variable = self.metadata["main_variable"]
         self.sumtotdf = np.sum(np.ma.getdata(self.netCDF[variable][:,:,:]), axis = 0)*0.0254 #meters
         
-        if(outpath != 'none'):
+        if outpath:
             df = pd.DataFrame(self.sumtotdf)
             size = round(np.ma.getdata(self.netCDF['x'][1]).item() - np.ma.getdata(self.netCDF['x'][0]).item())
             xll = round(np.ma.getdata(self.netCDF['x'][0]).item()) - size/2
             yll = round(np.ma.getdata(self.netCDF['y'][-1]).item()) - size/2
-            #name: prendere ModelMI. nel caso in cui sia p1_ prenderà p1
             fname = f'{outpath}/{name}_{variable}_sum_tot.asc'
-            save_ArcGRID(df, fname, xll, yll, size, -9999)
+            self.save_ArcGRID(df, fname, xll, yll, size, -9999)
             print(f'ArcGRID saved in {outpath} as: {name}_{variable}_sum_tot.asc')
         return self.sumtotdf
     
@@ -95,12 +118,12 @@ class SWB2output():
         
         for y in period:
             #Extract a single year
-            e += leap(y) if checkleap else 365
+            e += self.leap(y) if checkleap else 365
             year = np.ma.getdata(self.netCDF[variable][s:e, :, :])
             #Set up a counter
             base = 0
             for i, SP in enumerate(SPs, start = 1):
-                if (checkleap) & (leap(y) == 366): SP = SP+1 #& (i == 1)
+                if (checkleap) & (self.leap(y) == 366): SP = SP+1 #& (i == 1)
                 #Extract the variable in the Stress Period
                 sp = year[base:SP, :, :]
                 base = SP
@@ -121,7 +144,7 @@ class SWB2output():
                     name = variable if name == 'name' else name
                     fname = f'{outpath}/{name}_{y}_SP{i}_{units}.asc'
                     sp = pd.DataFrame(sp)
-                    save_ArcGRID(sp, fname, xll, yll, size, self.metadata['nodata_value'])
+                    self.save_ArcGRID(sp, fname, xll, yll, size, self.metadata['nodata_value'])
                 #Save in the 3D variable
                 var3d[k, :, :] = sp
                 k += 1
@@ -132,15 +155,25 @@ class SWB2output():
         self.results['SPsum3d'] = var3d
         if retval: return var3d
     
-    def obtain_df_SP(self, index = 'none'):
+    def obtain_df_SP(self, index = 'index'):
+        """
+        Obtain a dataframe containing the results of the sum operated in each 
+        stress period. Needs method SP_sum() to be performed before.
+        The result is saved in self.results['dfSP'].
+        
+        Parameters
+        ----------
+        index : str, optional
+            Name to be given to the index column in the resulting dataframe.
+            The default is 'index'.
+        """
         if 'SPsum3d' in self.results:
             df = pd.DataFrame(self.results['SPsum3d'][0, :, :])
         else:
             print('Error: Run SP_sum() method before running obtain_df_SP()')
             return
         df.insert(0, 'nrow', df.index.values)
-        df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol',
-         value_name = 'SP1')
+        df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol', value_name = 'SP1')
         df['nrow'] = df['nrow'] + 1
         df['ncol'] = df['ncol'] + 1
         df = self.insertind(df, df['nrow'], df['ncol'], name = index)
@@ -154,6 +187,78 @@ class SWB2output():
                 df.insert(len(df.columns), f'SP{i+1}', df[f'SP{i+1}'])
         self.results['dfSP'] = df
     
+    #Export functions
+    #----------------
+    
+    def save_ArcGRID(self, df, fname, xll, yll, size, nodata):
+        """
+        Saves an ArcGRID from the provided dataframe
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            The dataframe you want to save as an ArcGRID.
+        fname : str
+            The name of the output file.
+        xll : float
+            x coordinate of the left bottom corner (lon).
+        yll : float
+            y coordinate of the left bottom corner (lat).
+        size : float
+            Cell size (m)
+        nodata : float
+            Value assigned to nodata.
+        """
+        def line_prepender(filename, line):
+            with open(filename, 'r+') as f:
+                content = f.read()
+                f.seek(0, 0)
+                f.write(line + '\n' + content)
+                #line.rstrip('\r\n') if you want ot remove something from line
+        df.to_csv(fname, sep = ' ', header = False, index = False)
+        header = f'ncols         {len(df.columns)}\nnrows         {len(df.index)}\nxllcorner     {xll}\nyllcorner     {yll}\ncellsize      {size}\nNODATA_value  {nodata}'
+        line_prepender(fname, header)
+    
+    #General functions
+    #-----------------   
+    
+    def close(self):
+        """
+        Close the netCDF file
+        """
+        self.netCDF.close()
+    
+    def getdates(self, string, n):
+        """
+        Get the starting and ending dates of an SWB2 netCDF output file
+        """
+        from datetime import date, timedelta
+        datestr = string.split(' ')[2]
+        y, m, d = datestr.split('-')
+        start = date(int(y), int(m), int(d))
+        end = start + timedelta(days = n-1)
+        return start, end
+    
+    def getkeys(dict):
+        """
+        Returns a dictionary's keys as a list
+        Got from:
+        https://www.geeksforgeeks.org/python-get-dictionary-keys-as-a-list/
+        Other method:
+        return list(dict.keys())
+
+        Parameters
+        ----------
+        dict : dict
+            Dictionary from which extract the keys.
+        
+        Returns
+        -------
+        list
+            Dictionary keys.
+        """
+        return [*dict]
+    
     def insertind(self, df, r, c, pos = 0, name = 'none'):
         # name = self.info['id'] if name == 'none' else name
         newc = []
@@ -165,6 +270,21 @@ class SWB2output():
             df[name] = newc
         return df
     
-    def close(self):
-        #Close the netCDF file
-        self.netCDF.close()
+    def leap(self, y):
+        """
+        Returns the number of days of the year provided
+
+        Parameters
+        ----------
+        y : int
+            Year for which to know the number of days.
+
+        Returns
+        -------
+        int
+            number of days of the year provided.
+        """
+        if (y%4 == 0) | (y%400 == 0):
+            return 366
+        else:
+            return 365

@@ -12,20 +12,43 @@ Functions are divided in four sections:
 
 # %% 0. Generic functions
 
-def leap(y):
-    #input: year (int)
-    #output: number of days (int)
+def leap(self, y):
+    """
+    Returns the number of days of the year provided
+
+    Parameters
+    ----------
+    y : int
+        Year for which to know the number of days.
+
+    Returns
+    -------
+    int
+        number of days of the year provided.
+    """
     if (y%4 == 0) | (y%400 == 0):
         return 366
     else:
         return 365
 
 def getkeys(dict):
-    #Returns the dictionary keys of a dictonary as a list
-    # got from:
-    # https://www.geeksforgeeks.org/python-get-dictionary-keys-as-a-list/
-    #Other method
-    # return list(dict.keys())
+    """
+    Returns a dictionary's keys as a list
+    Got from:
+    https://www.geeksforgeeks.org/python-get-dictionary-keys-as-a-list/
+    Other method:
+    return list(dict.keys())
+
+    Parameters
+    ----------
+    dict : dict
+        Dictionary from which extract the keys.
+    
+    Returns
+    -------
+    list
+        Dictionary keys.
+    """
     return [*dict]
 
 def get_MMDD(m, d):
@@ -91,11 +114,24 @@ def transf(lat_t, lon_t, zoneN, zoneL, var = 'xy'):
 # %% 2. ArcASCII GRID creation (general)
 
 def save_ArcGRID(df, fname, xll, yll, size, nodata):
-    #df has to be a Pandas DataFrame
-    #xll: x coordinate of the left bottom corner (lon)
-    #yll: y coordinate of the left bottom corner (lat)
-    #size: cell size (m)
-    #nodata: value assigned to nodata
+    """
+    Saves an ArcGRID from the provided dataframe
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe you want to save as an ArcGRID.
+    fname : str
+        The name of the output file.
+    xll : float
+        x coordinate of the left bottom corner (lon).
+    yll : float
+        y coordinate of the left bottom corner (lat).
+    size : float
+        Cell size (m)
+    nodata : float
+        Value assigned to nodata.
+    """
     def line_prepender(filename, line):
         with open(filename, 'r+') as f:
             content = f.read()
