@@ -39,6 +39,7 @@ f = EOBSobject(var, inpath, outpath, folder = True)
 inpath = './Data/E-OBS/file.nc'
 f = EOBSobject(inpath, var)
 
+#Ifyou need this function for SWB2
 f = EOBSobject(var, inpath, outpath, swb2 = True)
 
 # Inserire un'opzione per flippare il dataset e l'asse della latitudine

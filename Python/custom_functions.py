@@ -10,6 +10,8 @@ Functions are divided in four sections:
 @author: paolo
 """
 
+from datetime import date
+
 # %% 0. Generic functions
 
 def leap(self, y):
@@ -72,10 +74,14 @@ def repeat_list(l, nrep, array = False):
 
 def date_toeobs(y,m,d):
     #Returns how many days have passed from 1950-01-01 (starting counting day for E-OBS data)
-    from datetime import date
     start = date(1950,1,1)
     d = date(y,m,d)
     count = d - start #how many days have passed since start
+    return count.days
+
+def date_fromstart(y, m, d, start = date(1950, 1, 1)):
+    d = date(y, m, d)
+    count = d - start
     return count.days
 
 def eobs_todate(x, number = False):

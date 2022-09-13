@@ -16,9 +16,31 @@ class EOBSobject():
     
     def __init__(self, var, inpath = None, outpath = None, outname = None,
                  fname = None, API = False, folder = False, swb2 = False):
+        """
+        
         #var: name of the variable inside the netcdf file
         #folder: default is False (path to a single file). True, path to a folder
         
+        
+        Parameters
+        ----------
+        var : TYPE
+            DESCRIPTION.
+        inpath : TYPE, optional
+            DESCRIPTION. The default is None.
+        outpath : TYPE, optional
+            DESCRIPTION. The default is None.
+        outname : TYPE, optional
+            DESCRIPTION. The default is None.
+        fname : TYPE, optional
+            DESCRIPTION. The default is None.
+        API : TYPE, optional
+            DESCRIPTION. The default is False.
+        folder : TYPE, optional
+            DESCRIPTION. The default is False.
+        swb2 : TYPE, optional
+            DESCRIPTION. The default is False.
+        """
         #Store the info
         self.info = {
             'var': var,
@@ -195,7 +217,7 @@ class EOBSobject():
     def save_netcdf(self, res = None, method = 'raw', readme = True):
         #Check the 	Climate and Forecast Metadata Convention v1.4 (CF-v1.4)
         #and try to keep the metadata as they are defined there
-        if readme: self.print_readme(res, method, savedas = 'NetCDF')
+        if readme: self.write_readme(res, method, savedas = 'NetCDF')
         outname = self.info['outname']
         if method == 'raw':
             #Saves the same dataset, just by applying a custom format
@@ -230,7 +252,7 @@ class EOBSobject():
             tunits = 'days since 1980-01-01 00:00:00 UTC'
             
             #Experiment to uniform also the files for SWB2:
-            # - try to keep the same numeration as E-OBS and run SWB2
+            # - try to keep the same time enumeration as E-OBS and run SWB2
             # - try to keep the "start_day" as YYYY-MM-DD
         else:
             tunits = self.netcdf['time'].units
@@ -294,7 +316,7 @@ class EOBSobject():
         """
         Save the E-OBS dataset as daily ArcGRID files
         """
-        if readme: self.print_readme(res, method, savedas = 'ArcGRID')
+        if readme: self.write_readme(res, method, savedas = 'ArcGRID')
         if method == 'raw':
             la = self.get_lat(method)
             lo = self.get_lon(method)
@@ -402,7 +424,7 @@ class EOBSobject():
         if export: self.save_arcgrid(res, method, False, True, var3d, f'E-OBS_SP_sum_{units}')
         if store: self.SP_sum_df = var3d
     
-    def print_readme(self, res = None, method = None, savedas = None, path = None, outname = None):
+    def write_readme(self, res = None, method = None, savedas = None, path = None, outname = None):
         if not path: path = self.paths['outpath']
         if not outname: outname = self.info['outname']
         
@@ -538,9 +560,14 @@ class EOBSobject():
     def transf_eobstime(self, x, to = date(1980, 1, 1)):
         """
         Returns the time as number of days starting from a desired point in time
-        x: date in the E-OBS format
-        to: time reference to be transformed to
-            standard: Daymet, starting from 1980-01-01
+        
+        Parameters
+        ----------
+        x : int
+            date in the E-OBS format
+        to : datetime.date
+            time reference to be transformed to. Default is Daymet,
+            starting from 1980-01-01
         """
         dstart = to
         estart = date(1950, 1, 1)
