@@ -421,7 +421,7 @@ class EOBSobject():
                 var3d[k, :, :] = sp
                 k += 1
             s = e #It will get the subsequent day
-        if export: self.save_arcgrid(res, method, False, True, var3d, f'E-OBS_SP_sum_{units}')
+        if export: self.save_arcgrid(res, method, False, custom = True, customdf = var3d, customname = f'E-OBS_SP_sum_{units}')
         if store: self.SP_sum_df = var3d
     
     def write_readme(self, res = None, method = None, savedas = None, path = None, outname = None):
