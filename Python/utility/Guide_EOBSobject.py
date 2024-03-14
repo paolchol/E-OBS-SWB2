@@ -111,7 +111,7 @@ var = ['rr', 'tn', 'tx']
 #Also outpath and inpath could be provided in lists, if you want to refer to
 #single files each time in different folders
 for v in var:
-    f = EOBSobject(inpath, v, outpath)
+    f = EOBSobject(v, inpath, outpath)
     f.load()
     f.cut_spacetime(coord, start, end)
     f.close()
