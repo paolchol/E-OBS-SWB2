@@ -19,13 +19,13 @@ import pandas as pd
 from datetime import date
 
 # %% Call the class
-os.chdir('C:/Users/user/OneDrive - Politecnico di Milano/GitHub/E-OBS-SWB2')
+os.chdir('C:/Users/HP/Documents/GitHub/E-OBS-SWB2')
 from Python.EOBSobject import EOBSobject
 
 # Paths to the input and output data folders
-files_dir = 'C:/Users/user/OneDrive - Politecnico di Milano/SWB2/'
-inpath = os.path.join(files_dir,'InputData/E-OBS')
-outpath = os.path.join(files_dir,'OutputData/E-OBS')
+files_dir = 'C:/Users/HP/OneDrive - Politecnico di Milano/SWB2/DataPreparation/EOBS_object/'
+inpath = os.path.join(files_dir,'InputData')
+outpath = os.path.join(files_dir,'OutputData')
 
 # Extreme coords of MODEL-MI area
 coord = {'lon': [8.691, 8.929, 9.524, 9.537],
@@ -42,4 +42,4 @@ var = ['rr', 'tn', 'tx']
 for v in var:
     f = EOBSobject(v, inpath, outpath, folder = True, swb2 = True)
     f.load()
-    f.cut_spacetime(coord, start, end)
+    f.cut_spacetime(coord, start, end, contourcell=2)
