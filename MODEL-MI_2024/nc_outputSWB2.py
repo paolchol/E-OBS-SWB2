@@ -7,6 +7,8 @@ Input files (output from SWB2):
 
 Class(es):
 - EOBS-SWB2/Python/SWB2output.py
+
+#
 """
 
 import os
@@ -21,8 +23,10 @@ from Python.SWB2output import SWB2output
 #Path to net infiltration netCDF file produced by SWB2
 swb2path = "C:/Users/HP/OneDrive - Politecnico di Milano/SWB2/MODEL-MI/output/R1_net_infiltration__2019-01-01_2022-12-31__338_by_660.nc"
 
+#Check the file
+nc_file = nc.Dataset(swb2path)
+
 #Create the object
-#nobj = nc.Dataset(swb2path)
 f = SWB2output(swb2path)
 f.metadata #print all the metadata available
 print(f.metadata['end_date']) #print one variable of the metadata
