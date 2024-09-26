@@ -31,10 +31,14 @@ class SWB2output():
         self.metadata = {
             "start_date": start,
             "end_date": end,
-            "variables": self.getkeys(self.netCDF.variables),
-            "main_variable": self.getkeys(self.netCDF.variables)[3], 
-            "units": self.netCDF[self.getkeys(self.netCDF.variables)[3]].units,
-            "nodata_value": self.netCDF[self.getkeys(self.netCDF.variables)[3]]._FillValue
+            # "variables": self.getkeys(self.netCDF.variables),
+            # "main_variable": self.getkeys(self.netCDF.variables)[3], 
+            # "units": self.netCDF[self.getkeys(self.netCDF.variables)[3]].units,
+            # "nodata_value": self.netCDF[self.getkeys(self.netCDF.variables)[3]]._FillValue
+            "variables": [*self.netCDF.variables],
+            "main_variable": [*self.netCDF.variables][3], 
+            "units": self.netCDF[[*self.netCDF.variables][3]].units,
+            "nodata_value": self.netCDF[[*self.netCDF.variables][3]]._FillValue
             }
         self.results = {}
     
