@@ -104,8 +104,13 @@ class RechargeCalc():
     def meteoricR(self, SPs, units = 'ms', fixrow = 1, fixcol = 1, export = False, ret = False):
         """
         Compute the meteoric recharge dataframe
-        SPs: Stress periods definition, in days
-            e.g. SPs = [90, 76, 92, 107] represents 4 SP of length 90, 76..
+        SPs: list of int
+            Stress periods definition, in days
+            e.g. SPs = [90, 76, 92, 107] represents 4 SP of length 90, 76.
+        fixrow: int, optional
+            Row location
+        fixcol: int, optional
+            Column location
         """
         print('Meteoric recharge dataframe creation')
         print('------------------------------------')
@@ -118,6 +123,7 @@ class RechargeCalc():
         rmeteo = pd.DataFrame(rmeteo3d[0, :, :])
         rmeteo.insert(0, 'nrow', rmeteo.index.values)
         rmeteo = pd.melt(rmeteo, id_vars = 'nrow', var_name = 'ncol', value_name = 'SP1')
+        rmeteo['ncol'] = pd.to_numeric(rmeteo['ncol'])
         rmeteo = self.insert_ind(rmeteo, rmeteo['nrow'], rmeteo['ncol'], fixrow, fixcol)
         
         for i in range(1, rmeteo3d.shape[0]):
@@ -145,7 +151,6 @@ class RechargeCalc():
             joined = joined.reset_index(level = 0)
             rmeteo = joined.copy()
         
-        rmeteo['ncol'] = pd.to_numeric(rmeteo['ncol'])
         #Save the variables
         self.info['SPs'] = SPs
         self.recharges['rmeteo'] = rmeteo
@@ -288,6 +293,8 @@ class RechargeCalc():
             loc = self.find_SPcol(self.recharges[k].columns, self.info['id'], True)
             toolr = pd.merge(tool, self.recharges[k].loc[:, loc],
                              how = 'left', on = self.info['id'])
+            if toolr.shape[1] > tool3d.shape[2]:
+                toolr = toolr.loc[:, toolr.columns[:tool3d.shape[2]+1]]
             tool3d[i, :, :] = toolr.iloc[:, 1:]
         toolsum = pd.DataFrame(np.sum(tool3d, axis = 0))
         toolsum.columns = toolr.columns[1:]
@@ -332,7 +339,7 @@ class RechargeCalc():
         elif var == 'recharge':
             self.recharges[tag] = df
 
-    def modify_recharge(self, var, tag, coeff, single_cond = True,
+    def modify_recharge(self, var, tag, coeff, cond = 'pass', single_cond = True,
                         multi_cond = False, col = None, valcol = None):
         """
         Modifies the values of the cells that have col == valcol
@@ -340,15 +347,41 @@ class RechargeCalc():
         
         col and valcol can be provided as lists, by setting single_cond to False
         and multi_cond as True
+
+        var : str
+            as defined in RechargeCalc.get_df
+        tag : str
+            as defined in RechargeCalc.get_df
+        coeff: float
+            multiplication coefficient
+        cond: str, optional
+            if no condition is imposed (i.e. the multiplication coeff
+            will be applied to all rows) set this parameter as "null". Default is "pass"
+        single_cond: bool, optional
+            Set it to True if a single condition on the rows is applied.
+            Default is True
+        multi_cond: bool, optional
+            Set it to True and set single_cond to False if multiple conditions are passed
+            Default is False
+        col: str of list of str, optional
+            the column inside the indicator file where to apply the coeff
+        valcol: str or list 
+            the values of the respective column inside the indicator
+            file where to apply the coeff
         """
-        if single_cond:
+        if cond == 'null':
+            pass
+        elif single_cond:
             cond = self.input['ind'][col] == valcol
         elif multi_cond:
             cond = self.input['ind'][col[0]] == valcol[0]
             for i in range(1, len(col)):
                 cond = (cond) & (self.input['ind'][col[i]] == valcol[i])
         df = self.get_df(var, tag)
-        idx = self.input['ind'].loc[cond, self.info['id']]
+        if cond != 'null':
+            idx = self.input['ind'].loc[cond, self.info['id']]
+        else:
+            idx = self.input['ind'].loc[:, self.info['id']]
         idx2 = df[self.info['id']].isin(idx)
         df.loc[idx2, self.find_SPcol(df)] = df.loc[idx2, self.find_SPcol(df)] * coeff
         self.recharges[tag] = df
