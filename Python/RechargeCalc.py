@@ -12,11 +12,15 @@ The working directory has to be set in ./E-OBS-SWB2 for this to work
 
 import glob
 import numpy as np
+import os
 import pandas as pd
+import sys
 import time
 
-#The directory has to be set in ./E-OBS-SWB2 for this to work
-from Python.SWB2output import SWB2output
+sys.path.append(os.getcwd())
+
+# Import the SWB2output class
+from SWB2output import SWB2output
 
 class RechargeCalc():
     
@@ -133,24 +137,11 @@ class RechargeCalc():
             df = self.insert_ind(df, df['nrow'], df['ncol'], fixrow, fixcol)
             if f'SP{i+1}' not in rmeteo.columns:
                 rmeteo = rmeteo.join(df.loc[:,[self.info['id'], f'SP{i+1}']].set_index(self.info['id']), on = self.info['id'])
-                
         lastSP = i+1
-        if lastSP < self.info['nSP']:
-            print(f"Replicating columns to create a dataframe of {self.info['nSP']} SPs")           
+        # Replicate columns if needed
+        if lastSP < self.info['nSP']:         
             x = lastSP
-            y = self.info['nSP']
-            k, d = divmod(y/x, 1)
-            k = round(k)
-            tool = rmeteo.set_index('indicatore').copy()
-            concatenated = pd.concat([tool[self.find_SPcol(tool)]]*k, axis = 1)
-            sps = self.find_SPcol(rmeteo, 'indicatore', True)
-            df = rmeteo.loc[:, sps[0:round(x*d)+1]].copy()
-            joined = concatenated.join(df.set_index(self.info['id']), on = self.info['id'], rsuffix = '_new')
-            cc = [f'SP{i+1}' for i in range(len(joined.columns))]
-            joined.columns = cc
-            joined = joined.reset_index(level = 0)
-            rmeteo = joined.copy()
-        
+            rmeteo = self.replicate_columns(x, rmeteo)        
         #Save the variables
         self.info['SPs'] = SPs
         self.recharges['rmeteo'] = rmeteo
@@ -182,8 +173,8 @@ class RechargeCalc():
         #Create the output dataframe
         cond = self.input['ind']['zona_agricola'] == 1
         rirr = self.input['ind'].loc[:, [self.info['id'], 'distretto', 'zona_agricola']]
-        tool = pd.DataFrame(np.zeros((len(rirr), self.info['nSP'])), index = rirr[self.info['id']])
-        tool.columns = [f'SP{i+1}' for i in range(self.info['nSP'])]
+        tool = pd.DataFrame(np.zeros((len(rirr), len(self.find_SPcol(irr)))), index = rirr[self.info['id']])
+        tool.columns = [f'SP{i+1}' for i in range(len(self.find_SPcol(irr)))]
         rirr = rirr.join(tool, on = self.info['id'])
         #Calculate the irrigation recharge for each district and SP
         for distr in irr['distretto']:
@@ -202,6 +193,10 @@ class RechargeCalc():
                 else:
                     Q = float(sp_irr.loc[sp_irr['distretto'] == distr, sp].values[0])
                     rirr.loc[idx, sp] = Q
+        # Replicate columns if needed
+        if len(self.find_SPcol(irr))<self.info['nSP']:
+            x = len(self.find_SPcol(irr))
+            rirr = self.replicate_columns(x, rirr)
         #Store the variables
         if areas:
             area = [sum((cond) & (self.input['ind']['distretto'] == distr)) * self.info['cell_area_m2'] for distr in irr['distretto']]
@@ -244,8 +239,8 @@ class RechargeCalc():
         
         urb = self.input['urb'].copy()
         rurb = self.input['ind'].loc[:, [self.info['id'], 'nome_com'] + list(set(col))]
-        tool = pd.DataFrame(np.zeros((len(rurb), self.info['nSP'])), index = rurb[self.info['id']])
-        tool.columns = [f'SP{i+1}' for i in range(self.info['nSP'])]
+        tool = pd.DataFrame(np.zeros((len(rurb), len(self.find_SPcol(urb)))), index = rurb[self.info['id']])
+        tool.columns = [f'SP{i+1}' for i in range(len(self.find_SPcol(urb)))]
         rurb = rurb.join(tool, on = self.info['id'])
         
         for com in urb['nome_com']:
@@ -254,11 +249,15 @@ class RechargeCalc():
             for sp in self.find_SPcol(urb):
                 E = abs(urb.loc[urb['nome_com'] == com, sp].values.item())
                 rurb.loc[idx, sp] = E / A * coeff
+        # Replicate columns if needed
+        if len(self.find_SPcol(urb))<self.info['nSP']:
+            x = len(self.find_SPcol(urb))
+            rurb = self.replicate_columns(x, rurb)
+        #Store the variables
         if areas:
             area = [sum((cond) & (self.input['ind']['nome_com'] == com)) * self.info['cell_area_m2'] for com in urb['nome_com']]
             urb.insert(1, 'area', area)
             self.input['urb'] = urb
-        #Store the variables
         self.recharges['rurb'] = rurb.copy()
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
@@ -466,6 +465,7 @@ class RechargeCalc():
             example, the file format
         """
         import geopandas as gp
+        from shapely.geometry import Point
         
         start = time.time()
         outpath = self.set_outpath(outpath)
@@ -476,12 +476,13 @@ class RechargeCalc():
         coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
         tool = pd.merge(coord, self.get_df(var, tag), on = self.info['id'])
         #Create the GeoDataFrame
-        geodf = gp.GeoDataFrame(tool, geometry = gp.points_from_xy(tool['X'], tool['Y']))
+        points = [Point(x,y) for x,y in zip(tool.X,tool.Y)]
+        geodf = gp.GeoDataFrame(tool, geometry = points)
         geodf.set_crs(crs, inplace = True)
         if setindex: geodf.set_index(self.info['id'], inplace = True)
         if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
         #Save the GeoDataFrame in the format selected. Default: ESRI Shapefile
-        geodf.to_file(f'{outpath}/{fname}', index = setindex, **kwargs)
+        geodf.to_file(f'{outpath}/{fname}', index = setindex, engine = 'fiona', **kwargs)
         end = time.time()
         print(f'Shapefile saved in {outpath} as {fname}')
         print(f'Elapsed time: {round(end-start, 2)} s')
@@ -533,6 +534,24 @@ class RechargeCalc():
         else:
             df[name] = newc
         return df
+    
+    def replicate_columns(self, x, toreplicate):
+        print(f"Replicating columns to create a dataframe of {self.info['nSP']} SPs")
+        # x = len(self.find_SPcol(irr))
+        y = self.info['nSP']
+        k, d = divmod(y/x, 1)
+        k = round(k)
+        tool = toreplicate.set_index('indicatore').copy()
+        concatenated = pd.concat([tool[self.find_SPcol(tool)]]*k, axis = 1)
+        sps = self.find_SPcol(toreplicate, 'indicatore', True)
+        df = toreplicate.loc[:, sps[0:round(x*d)+1]].copy()
+        joined = concatenated.join(df.set_index(self.info['id']), on = self.info['id'], rsuffix = '_new')
+        cc = [f'SP{i+1}' for i in range(len(joined.columns))]
+        joined.columns = cc
+        joined = joined.reset_index(level = 0)
+        replicated = joined.copy()
+        return replicated
+
         
     def sel_recharge(self, meteo, irr, urb):
         self.conditions['meteo'] = meteo
