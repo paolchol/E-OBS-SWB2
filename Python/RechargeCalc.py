@@ -105,16 +105,32 @@ class RechargeCalc():
     #Recharges calculation
     #---------------------
     
-    def meteoricR(self, SPs, units = 'ms', fixrow = 1, fixcol = 1, export = False, ret = False):
+    def meteoricR(self, SPs, units = 'ms', fixrow = 1, fixcol = 1, export = False, ret = False,
+                  rep = True):
         """
         Compute the meteoric recharge dataframe
+
         SPs: list of int
-            Stress periods definition, in days
-            e.g. SPs = [90, 76, 92, 107] represents 4 SP of length 90, 76.
+            Stress periods lenghts, in days
+            e.g. SPs = [90, 76, 92, 107] represents 4 SP of length 90, 76, 92 and 107.
+        units: str, optional
+            The desired unit of the meteoric recharge to be obtained.
+            'ms': meter/second
+            'inches': inches/second
+            Default is 'ms'.
         fixrow: int, optional
-            Row location
+            The first row number in the MODFLOW model to be associated
+            with the recharge dataframe. Default is 1.
         fixcol: int, optional
-            Column location
+            The first column number in the MODFLOW model to be associated
+            with the recharge dataframe. Default is 1.
+        export: bool, optional
+            If True, exports the recharge as .csv. Default is False
+        ret: bool, optional
+            If True, returns the recharge as pandas.DataFrame. Default is False
+        rep: bool, optional
+            If True, replicates the columns to have the same number of stress-periods
+            as self.info['nSP']
         """
         print('Meteoric recharge dataframe creation')
         print('------------------------------------')
@@ -139,9 +155,10 @@ class RechargeCalc():
                 rmeteo = rmeteo.join(df.loc[:,[self.info['id'], f'SP{i+1}']].set_index(self.info['id']), on = self.info['id'])
         lastSP = i+1
         # Replicate columns if needed
-        if lastSP < self.info['nSP']:         
-            x = lastSP
-            rmeteo = self.replicate_columns(x, rmeteo)        
+        if rep:
+            if lastSP < self.info['nSP']:         
+                x = lastSP
+                rmeteo = self.replicate_columns(x, rmeteo)        
         #Save the variables
         self.info['SPs'] = SPs
         self.recharges['rmeteo'] = rmeteo
@@ -151,12 +168,31 @@ class RechargeCalc():
         if ret: return rmeteo
     
     def irrigationR(self, coeffs, specialpath = 'none', multicoeff = False,
-                    splist = None, areas = False, export = False, ret = False):
+                    splist = None, areas = False, export = False, ret = False,
+                    rep = True):
         """
+        Compute the irrigation recharge dataframe
+
         coeffs: dictionary
-                Contains the coefficients needed to calculate the irrigation
-                recharge from the provided discharge in each SP
-        splist: list of SPs in which to use the second line of coefficients
+            Contains the coefficients needed to calculate the irrigation
+            recharge from the provided discharge in each SP
+        specialpath: str, optional
+            Path to the "special_irr" file, containing irrigation disctricts
+            for which the irrigation recharge is already computed and will just be
+            just added to the corresponding cells. Default is 'none'
+        splist: list of str, optional
+            List of SPs in which to use the second line of coefficients.
+            Only used if multicoeff = True. Default is None
+        areas: bool, optional
+            If True, saves the computed areas associated to municipalities.
+            Default is False
+        export: bool, optional
+            If True, exports the recharge as .csv. Default is False
+        ret: bool, optional
+            If True, returns the recharge as pandas.DataFrame. Default is False
+        rep: bool, optional
+            If True, replicates the columns to have the same number of stress-periods
+            as self.info['nSP']
         """
         print('Irrigation recharge dataframe creation')
         print('--------------------------------------')
@@ -194,9 +230,10 @@ class RechargeCalc():
                     Q = float(sp_irr.loc[sp_irr['distretto'] == distr, sp].values[0])
                     rirr.loc[idx, sp] = Q
         # Replicate columns if needed
-        if len(self.find_SPcol(irr))<self.info['nSP']:
-            x = len(self.find_SPcol(irr))
-            rirr = self.replicate_columns(x, rirr)
+        if rep:
+            if len(self.find_SPcol(irr))<self.info['nSP']:
+                x = len(self.find_SPcol(irr))
+                rirr = self.replicate_columns(x, rirr)
         #Store the variables
         if areas:
             area = [sum((cond) & (self.input['ind']['distretto'] == distr)) * self.info['cell_area_m2'] for distr in irr['distretto']]
@@ -210,18 +247,47 @@ class RechargeCalc():
         if ret: return rirr
     
     def urbanR(self, coeff, col = None, valcol = None, option = None,
-               areas = False, export = False, ret = False):
+               areas = False, export = False, ret = False, rep = True):
         """
         Compute the urban recharge dataframe
         The urban recharge is calculated as a fraction of the pumped volumes. It
         is due to the losses from the extraction pumps and pipes.
         
-        coeff: coefficient to apply to the extractions
-        col: list object, containing strings
-        valcol: list object, containing any format compatible with the values
-                to check
-        option: list object, containing 1 if the condition wanted is AND, or
-                0 if the condition wanted is OR
+        coeff: float
+            Loss coefficient. This will be applied to the extracted flows to obtain the 
+            infrastructure losses as a percentage of them
+        col: list of str, optional
+            Columns to check in the self.input['ind'] dataframe where to calculate the 
+            urban recharge. If multiple columns are provided, a combined condition will be applied.
+            In this case, the option list has to be provided, indicating which relation to apply.
+            Default is None
+            Examples:
+            1.
+            col = ['land_cover']
+            valcol = [123]
+                The computation will be performed on the cells which have:
+                    self.input['ind']['land_cover'] == 124
+            2.
+            col = ['land_cover', 'urban_zone']
+            valcol = [123, 1]
+            option = [0]
+                The computation will be performed on the cells which have:
+                    self.input['ind']['land_cover'] == 124 | self.input['ind']['urban_zone'] == 1
+        valcol: list, optional
+            Contains the columns' value to impose the condition as explained in the col section.
+            One value for each value inserted in col is needed.
+        option: list of int, optional
+            Contains 1 if the condition wanted is AND, or 0 if the condition wanted is OR.
+            The needed number of values is equal to the length of col minus 1.
+        areas: bool, optional
+            If True, saves the computed areas associated to municipalities
+        export: bool, optional
+            If True, exports the recharge as .csv. Default is False
+        ret: bool, optional
+            If True, returns the recharge as pandas.DataFrame. Default is False
+        rep: bool, optional
+            If True, replicates the columns to have the same number of stress-periods
+            as self.info['nSP']
         """
         print('Urban recharge dataframe creation')
         print('---------------------------------')
@@ -250,9 +316,10 @@ class RechargeCalc():
                 E = abs(urb.loc[urb['nome_com'] == com, sp].values.item())
                 rurb.loc[idx, sp] = E / A * coeff
         # Replicate columns if needed
-        if len(self.find_SPcol(urb))<self.info['nSP']:
-            x = len(self.find_SPcol(urb))
-            rurb = self.replicate_columns(x, rurb)
+        if rep:
+            if len(self.find_SPcol(urb))<self.info['nSP']:
+                x = len(self.find_SPcol(urb))
+                rurb = self.replicate_columns(x, rurb)
         #Store the variables
         if areas:
             area = [sum((cond) & (self.input['ind']['nome_com'] == com)) * self.info['cell_area_m2'] for com in urb['nome_com']]
