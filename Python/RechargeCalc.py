@@ -443,13 +443,16 @@ class RechargeCalc():
             cond = self.input['ind'][col[0]] == valcol[0]
             for i in range(1, len(col)):
                 cond = (cond) & (self.input['ind'][col[i]] == valcol[i])
-        df = self.get_df(var, tag)
+        df = self.get_df(var, tag).copy()
         if cond != 'null':
             idx = self.input['ind'].loc[cond, self.info['id']]
         else:
             idx = self.input['ind'].loc[:, self.info['id']]
-        idx2 = df[self.info['id']].isin(idx)
+        # idx2 = df[self.info['id']].isin(idx)
+        idx2 = [i for i in idx if i in df[self.info['id']]]
+        df.set_index(self.info['id'], inplace=True)
         df.loc[idx2, self.find_SPcol(df)] = df.loc[idx2, self.find_SPcol(df)] * coeff
+        df.reset_index(names = self.info['id'], inplace=True)
         self.recharges[tag] = df
         
     def add_attibute():
