@@ -544,7 +544,7 @@ class RechargeCalc():
         coord = pd.read_csv(coordpath)
         coord = self.insert_ind(coord, coord['row'], coord['column'], name = self.info['id'])
         coord = coord.loc[:, (self.info['id'], 'X', 'Y')]
-        tool = pd.merge(coord, self.get_df(var, tag), on = self.info['id'])
+        tool = pd.merge(coord, self.get_df(var, tag).copy(), on = self.info['id'])
         #Create the GeoDataFrame
         points = [Point(x,y) for x,y in zip(tool.X,tool.Y)]
         geodf = gp.GeoDataFrame(tool, geometry = points)
