@@ -3,9 +3,10 @@
 RechargeCalc class definition
 Used to calculate the total recharge
 It can be called using:
-        from Python.RechargeCalc import RechargeCalc
+from RechargeCalc import RechargeCalc
+after adding the folder to your sys paths
 
-The working directory has to be set in ./E-OBS-SWB2 for this to work
+Keep SWB2output.py in the same folder for this to work
 
 @author: paolo
 """
@@ -152,11 +153,9 @@ class RechargeCalc():
         
         for i in range(1, rmeteo3d.shape[0]):
             df = pd.DataFrame(rmeteo3d[i, :, :])
-            df.insert(0, 'nrow', df.index.values)
-            df = pd.melt(df, id_vars = 'nrow', var_name = 'ncol', value_name = f'SP{i+1}')
-            df = self.insert_ind(df, df['nrow'], df['ncol'], fixrow, fixcol)
-            if f'SP{i+1}' not in rmeteo.columns:
-                rmeteo = rmeteo.join(df.loc[:,[self.info['id'], f'SP{i+1}']].set_index(self.info['id']), on = self.info['id'])
+            df = pd.melt(df, value_name = f'SP{i+1}')
+            if  f'SP{i+1}' not in rmeteo.columns:
+                rmeteo = pd.concat([rmeteo, df[f'SP{i+1}']], axis = 1)
         lastSP = i+1
         # Replicate columns if needed
         if rep:
@@ -336,7 +335,8 @@ class RechargeCalc():
         if export: self.export('recharge', 'rurb')
         if ret: return rurb
     
-    def totalR(self, meteopar = None, irrpar = None, urbpar = None, export = False):
+    def totalR(self, meteopar = None, irrpar = None, urbpar = None, export = False,
+               fillna = False):
         """
         Sum the recharge components
         """
@@ -373,6 +373,8 @@ class RechargeCalc():
         rtot = self.input['ind'].loc[:, ('row', 'column', self.info['id'])]
         rtot = pd.merge(rtot, toolsum, how = 'left', on = self.info['id'])
         #Store the variable
+        if fillna:
+            rtot[rtot.isna()] = 0
         self.recharges['rtot'] = rtot
         end = time.time()
         print(f'Elapsed time: {round(end - start, 2)} s')
