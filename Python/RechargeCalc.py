@@ -24,7 +24,7 @@ from SWB2output import SWB2output
 
 class RechargeCalc():
     
-    def __init__(self, sy, ey, cell_area, uniqueid, nSP, customid = False,
+    def __init__(self, cell_area, uniqueid, nSP, customid = False,
                  meteo = True, irr = True, urb = True):
         """
         Initialize the class. Creates the dictionaries "info", "recharges" and 
@@ -53,8 +53,6 @@ class RechargeCalc():
             DESCRIPTION. The default is True.
         """
         self.info = {
-            "start_year": sy,
-            "end_year": ey,
             "cell_area_m2": cell_area,
             "id": uniqueid,
             "nSP": nSP,
