@@ -50,7 +50,7 @@ class RechargeCalc():
         irr : bool
             Consideration of the irrigation recharge component. The default is True.
         urb : bool
-            DESCRIPTION. The default is True.
+            Consideration of the urban recharge component. The default is True.
         """
         self.info = {
             "cell_area_m2": cell_area,
@@ -103,7 +103,7 @@ class RechargeCalc():
     #Recharges calculation
     #---------------------
     
-    def meteoricR(self, SPs, units = 'ms', fixrow = 1, fixcol = 1, export = False, ret = False,
+    def meteoricR(self, SPs = None, frequency = None, units = 'ms', fixrow = 1, fixcol = 1, export = False, ret = False,
                   rep = True):
         """
         Compute the meteoric recharge dataframe
@@ -133,9 +133,15 @@ class RechargeCalc():
         print('Meteoric recharge dataframe creation')
         print('------------------------------------')
         start = time.time()
-        SPs = self.set_SPs(SPs, 1)
         f = SWB2output(self.paths['swb2_output'])
-        rmeteo3d = f.SP_sum(SPs, units = units, retval = True) #return the SP sum directly in m/s
+        if SPs is not None:
+            SPs = self.set_SPs(SPs, 1)
+            rmeteo3d = f.SP_sum(SPs=SPs, units = units, retval = True) #return the SP sum directly in m/s
+        elif frequency is not None:
+            rmeteo3d = f.SP_sum(frequency=frequency, units = units, retval = True) #return the SP sum directly in m/s
+        else:
+            print('SPs or frequency must be provided')
+            return        
         f.close()
         
         rmeteo = pd.DataFrame(rmeteo3d[0, :, :])
@@ -159,6 +165,7 @@ class RechargeCalc():
                 rmeteo = self.replicate_columns(x, rmeteo)        
         #Save the variables
         self.info['SPs'] = SPs
+        self.info['frequency'] = frequency
         self.recharges['rmeteo'] = rmeteo
         end = time.time()
         print(f'Elapsed time: {round(end-start, 2)} s')
