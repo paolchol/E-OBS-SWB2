@@ -89,45 +89,86 @@ class SWB2output():
             print(f'ArcGRID saved in {outpath} as: {name}_{variable}_sum_tot.asc')
         return self.sumtotdf
     
-    def SP_sum(self, SPs, outpath = 'none', name = 'name', units = 'none',
+    def SP_sum(self, SPs = None, frequency = None, outpath = 'none', name = 'name', units = 'none',
                retval = False, checkleap = True):
         """
         Perform a sum of the main variable over the stress periods provided
         as SPs
+
+        SPs: list of int
+            lenghts of the stress periods in one year over which to sum.
+            Only works if the periods analysed include a whole year
+        frequency: int
+            Frequency in days over which to operate the sum. e.g. 7 means
+            a 7-day sum over all the period        
         
         Returns a 3D variable containing all the sums as the 0 index
         If outpath is specified, saves an ArcASCII GRID file for each sum
         """
+        if SPs is None and frequency is None:
+            print('SPs or frequency need to be specified')
+            return
+        
         variable = self.metadata['main_variable']
         units = self.metadata['units'] if units == 'none' else units
         print(f'Performing the sum of {variable} over the stress periods provided')
         print(f'Output unit measure: {units}')
-        
-        #Get the necessary variables
-        starty = self.metadata['start_date'].year
-        endy = self.metadata['end_date'].year
+
         if(outpath != 'none'):
-            size = round(np.ma.getdata(self.netCDF['x'][1]).item() - np.ma.getdata(self.netCDF['x'][0]).item())
-            xll = round(np.ma.getdata(self.netCDF['x'][0]).item()) - size/2
-            yll = round(np.ma.getdata(self.netCDF['y'][-1]).item()) - size/2
+                size = round(np.ma.getdata(self.netCDF['x'][1]).item() - np.ma.getdata(self.netCDF['x'][0]).item())
+                xll = round(np.ma.getdata(self.netCDF['x'][0]).item()) - size/2
+                yll = round(np.ma.getdata(self.netCDF['y'][-1]).item()) - size/2
         
-        period = range(starty, endy+1)
-        s, e, k = 0, 0, 0
-        #Create the 3D variable
-        var3d = np.zeros((len(period)*len(SPs), self.netCDF[variable].shape[1], self.netCDF[variable].shape[2]))
+        if SPs is not None:
+            #Get the necessary variables
+            starty = self.metadata['start_date'].year
+            endy = self.metadata['end_date'].year
+            
+            period = range(starty, endy+1)
+            s, e, k = 0, 0, 0
+            #Create the 3D variable
+            var3d = np.zeros((len(period)*len(SPs), self.netCDF[variable].shape[1], self.netCDF[variable].shape[2]))
+            
+            for y in period:
+                #Extract a single year
+                e += self.leap(y) if checkleap else 365
+                year = np.ma.getdata(self.netCDF[variable][s:e, :, :])
+                #Set up a counter
+                base = 0
+                for i, SP in enumerate(SPs, start = 1):
+                    if (checkleap) & (self.leap(y) == 366): SP = SP+1 #& (i == 1)
+                    #Extract the variable in the Stress Period
+                    sp = year[base:SP, :, :]
+                    base = SP
+                    #Sum the variable in the stress period
+                    if(units == 'inches'):
+                        #Keep in inches (make the transformation later)
+                        #Useful because otherwise ArcGIS can't read the values (too small)
+                        sp = np.sum(sp, axis = 0) #inches
+                    elif(units == 'ms'):
+                        #Transform into m/s
+                        sp = np.sum(sp, axis = 0)*0.0254/(60*60*24*sp.shape[0]) #m/s
+                    else:
+                        return print('Unrecognised unit. The available units are:\
+                                    inches, ms (for meters/second)')
+                
+                    if(outpath != 'none'):
+                        #Save as Arc GRID ASCII file
+                        name = variable if name == 'name' else name
+                        fname = f'{outpath}/{name}_{y}_SP{i}_{units}.asc'
+                        sp = pd.DataFrame(sp)
+                        self.save_ArcGRID(sp, fname, xll, yll, size, self.metadata['nodata_value'])
+                    #Save in the 3D variable
+                    var3d[k, :, :] = sp
+                    k += 1
+                s = e #It will get the subsequent day
         
-        for y in period:
-            #Extract a single year
-            e += self.leap(y) if checkleap else 365
-            year = np.ma.getdata(self.netCDF[variable][s:e, :, :])
-            #Set up a counter
-            base = 0
-            for i, SP in enumerate(SPs, start = 1):
-                if (checkleap) & (self.leap(y) == 366): SP = SP+1 #& (i == 1)
-                #Extract the variable in the Stress Period
-                sp = year[base:SP, :, :]
-                base = SP
-                #Sum the variable in the stress period
+        if frequency is not None:
+            var3d = np.zeros((round(self.netCDF[variable].shape[0]/frequency),
+                             self.netCDF[variable].shape[1], self.netCDF[variable].shape[2]))
+            s, e = 0, frequency
+            for k in range(var3d.shape[0]):
+                sp = np.ma.getdata(self.netCDF[variable][s:e, :, :])
                 if(units == 'inches'):
                     #Keep in inches (make the transformation later)
                     #Useful because otherwise ArcGIS can't read the values (too small)
@@ -137,18 +178,17 @@ class SWB2output():
                     sp = np.sum(sp, axis = 0)*0.0254/(60*60*24*sp.shape[0]) #m/s
                 else:
                     return print('Unrecognised unit. The available units are:\
-                                 inches, ms (for meters/second)')
-            
+                                inches, ms (for meters/second)')
                 if(outpath != 'none'):
-                    #Save as Arc GRID ASCII file
-                    name = variable if name == 'name' else name
-                    fname = f'{outpath}/{name}_{y}_SP{i}_{units}.asc'
-                    sp = pd.DataFrame(sp)
-                    self.save_ArcGRID(sp, fname, xll, yll, size, self.metadata['nodata_value'])
+                            #Save as Arc GRID ASCII file
+                            name = variable if name == 'name' else name
+                            fname = f'{outpath}/{name}_{y}_SP{i}_{units}.asc'
+                            sp = pd.DataFrame(sp)
+                            self.save_ArcGRID(sp, fname, xll, yll, size, self.metadata['nodata_value'])
                 #Save in the 3D variable
                 var3d[k, :, :] = sp
-                k += 1
-            s = e #It will get the subsequent day
+                s = e
+                e += frequency
         
         print('End of the procedure')
         if outpath != 'none': print(f'The ASCII files are saved in {outpath}')
