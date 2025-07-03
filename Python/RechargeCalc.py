@@ -33,10 +33,6 @@ class RechargeCalc():
 
         Parameters:
         ----------
-        sy : int
-            Initial year
-        ey : int
-            Final year
         cell_area : float
             Area of the cell in square meters
         uniqueid : str
@@ -459,13 +455,14 @@ class RechargeCalc():
         df = self.get_df(var, tag).copy()
         if cond != 'null':
             idx = self.input['ind'].loc[cond, self.info['id']]
+            idx2 = [i for i in idx if i in df[self.info['id']]]
+            df.set_index(self.info['id'], inplace=True)
+            df.loc[idx2, self.find_SPcol(df)] = df.loc[idx2, self.find_SPcol(df)] * coeff
+            df.reset_index(names = self.info['id'], inplace=True)
         else:
-            idx = self.input['ind'].loc[:, self.info['id']]
-        # idx2 = df[self.info['id']].isin(idx)
-        idx2 = [i for i in idx if i in df[self.info['id']]]
-        df.set_index(self.info['id'], inplace=True)
-        df.loc[idx2, self.find_SPcol(df)] = df.loc[idx2, self.find_SPcol(df)] * coeff
-        df.reset_index(names = self.info['id'], inplace=True)
+            df.loc[:, self.find_SPcol(df)] = df.loc[:, self.find_SPcol(df)] * coeff
+            # idx = self.input['ind'].loc[:, self.info['id']]
+        # idx2 = df[self.info['id']].isin(idx)        
         self.recharges[tag] = df
         
     def add_attibute():
