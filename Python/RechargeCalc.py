@@ -336,7 +336,7 @@ class RechargeCalc():
         if ret: return rurb
     
     def totalR(self, meteopar = None, irrpar = None, urbpar = None, export = False,
-               fillna = False):
+               fillna = False, print_rel = True):
         """
         Sum the recharge components
         """
@@ -372,6 +372,12 @@ class RechargeCalc():
         toolsum[self.info['id']] = tool
         rtot = self.input['ind'].loc[:, ('row', 'column', self.info['id'])]
         rtot = pd.merge(rtot, toolsum, how = 'left', on = self.info['id'])
+        # Print the relative importance of the recharges
+        # return tool3d
+        if print_rel:
+            for i in range(tool3d.shape[0]):
+                print(keys[i], ': ', np.sum(tool3d[i,:,:])/np.sum(np.sum(tool3d, axis=0))*100)
+
         #Store the variable
         if fillna:
             rtot[rtot.isna()] = 0
