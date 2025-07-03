@@ -124,7 +124,10 @@ class SWB2output():
             starty = self.metadata['start_date'].year
             endy = self.metadata['end_date'].year
             
-            period = range(starty, endy+1)
+            if starty == endy:
+                period = [starty]
+            else:
+                period = range(starty, endy+1)
             s, e, k = 0, 0, 0
             #Create the 3D variable
             var3d = np.zeros((len(period)*len(SPs), self.netCDF[variable].shape[1], self.netCDF[variable].shape[2]))
