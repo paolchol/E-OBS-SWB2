@@ -406,6 +406,9 @@ class EOBSobject():
                 if (checkleap) & (self.leap(y) == 366): SP = SP+1 #& (i == 1)
                 #Extract the variable in the Stress Period
                 sp = year[base:SP, :, :]
+                print(y, i)
+                if (y == 2019) & (i==4):
+                    return sp
                 base = SP
                 #Sum the variable in the stress period
                 if units == self.info['units']:
