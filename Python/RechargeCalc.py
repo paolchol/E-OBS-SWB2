@@ -33,10 +33,6 @@ class RechargeCalc():
 
         Parameters:
         ----------
-        sy : int
-            Initial year
-        ey : int
-            Final year
         cell_area : float
             Area of the cell in square meters
         uniqueid : str
