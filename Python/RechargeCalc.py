@@ -512,7 +512,8 @@ class RechargeCalc():
         print(f'{end-start} s')
     
     def georef(self, var, tag, coordpath, crs = 'epsg:4326', outpath = None,
-               fname = None, setindex = False, dropcoord = True, **kwargs):
+               fname = None, setindex = False, dropcoord = True, reproj = False,
+               to_crs = None, **kwargs):
         """
         Writes a dataframe selected from the ones created in any OGR data
         source supported by Fiona. By default an ESRI shapefile is written.
@@ -559,6 +560,8 @@ class RechargeCalc():
         points = [Point(x,y) for x,y in zip(tool.X,tool.Y)]
         geodf = gp.GeoDataFrame(tool, geometry = points)
         geodf.set_crs(crs, inplace = True)
+        if reproj:
+            geodf.to_crs(to_crs, inplace = True)
         if setindex: geodf.set_index(self.info['id'], inplace = True)
         if dropcoord: geodf.drop(['X', 'Y'], axis = 1, inplace = True)
         #Save the GeoDataFrame in the format selected. Default: ESRI Shapefile
