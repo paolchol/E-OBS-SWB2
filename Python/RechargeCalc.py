@@ -369,7 +369,6 @@ class RechargeCalc():
         rtot = self.input['ind'].loc[:, ('row', 'column', self.info['id'])]
         rtot = pd.merge(rtot, toolsum, how = 'left', on = self.info['id'])
         # Print the relative importance of the recharges
-        # return tool3d
         if print_rel:
             for i in range(tool3d.shape[0]):
                 print(keys[i], ': ', np.sum(tool3d[i,:,:])/np.sum(np.sum(tool3d, axis=0))*100)
@@ -634,7 +633,6 @@ class RechargeCalc():
         joined = joined.reset_index(level = 0)
         replicated = joined.copy()
         return replicated
-
         
     def sel_recharge(self, meteo, irr, urb):
         self.conditions['meteo'] = meteo
