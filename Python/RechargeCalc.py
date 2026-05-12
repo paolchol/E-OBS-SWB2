@@ -105,7 +105,7 @@ class RechargeCalc():
         """
         Compute the meteoric recharge dataframe
 
-        SPs: list of int
+        SPs: list of int, optional
             Stress periods lenghts, in days
             e.g. SPs = [90, 76, 92, 107] represents 4 SP of length 90, 76, 92 and 107.
         units: str, optional
