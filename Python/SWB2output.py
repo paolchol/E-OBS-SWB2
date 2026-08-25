@@ -64,6 +64,91 @@ class SWB2output():
         variable = self.metadata['main_variable']
         return np.ma.getdata(self.netCDF[variable][:, :, :])
 
+    def SP_sum_total(self, SPs, units='ms', retval=False):
+        """
+        Sum SWB2 net infiltration over stress periods defined for the
+        entire simulation.
+
+        SPs: list of stress-period lengths in days.
+        """
+
+        variable = 'net_infiltration'
+
+        print(f'Performing the sum of {variable} over the stress periods')
+        print(f'Output unit measure: {units}')
+
+        data = np.ma.getdata(self.netCDF[variable])
+
+        print("Variable:", variable)
+        print("Data shape:", data.shape)
+
+        if data.ndim != 3:
+            raise ValueError(
+                f"Expected SWB2 variable to have 3 dimensions "
+                f"(time, y, x), but got shape {data.shape}"
+            )
+
+        n_days = data.shape[0]
+
+        print("Number of daily records:", n_days)
+        print("Number of SPs:", len(SPs))
+        print("SP lengths:", SPs)
+        print("Total SP days:", sum(SPs))
+
+        if sum(SPs) != n_days:
+            raise ValueError(
+                f"Stress periods cover {sum(SPs)} days, "
+                f"but SWB2 output contains {n_days} days."
+            )
+
+        # Create output
+        var3d = np.zeros(
+            (len(SPs), data.shape[1], data.shape[2]),
+            dtype=np.float32
+        )
+
+        start = 0
+
+        for i, SP in enumerate(SPs):
+
+            end = start + SP
+
+            # Extract stress period
+            sp = data[start:end, :, :]
+
+            # Sum daily recharge
+            if units == 'inches':
+                # Total recharge in inches
+                result = np.sum(sp, axis=0)
+
+            elif units == 'ms':
+                # inches/day -> m/s
+                result = (
+                    np.sum(sp, axis=0)
+                    * 0.0254
+                    / (86400 * SP)
+                )
+
+            else:
+                raise ValueError(
+                    "Unrecognised unit. Available units: "
+                    "'inches', 'ms'"
+                )
+
+            var3d[i, :, :] = result
+
+            print(
+                f"SP{i+1}: days {start}–{end-1} "
+                f"({SP} days)"
+            )
+
+            start = end
+
+        self.results['SPsum3d'] = var3d
+
+        if retval:
+            return var3d
+        
     def sumtot(self, outpath = None, name = 'name'):
         """
         Returns the sum of the main variable over the whole time period
